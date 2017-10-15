@@ -17,7 +17,7 @@ public:
 
 
 	void move(float dx, float dy, float dz);
-	void rotate(float pitch, float yaw, float roll);
+	void rotate(float pitch, float yaw);
 
 
 	const Vector3f &getPosition() const;
@@ -33,7 +33,7 @@ private:
 
 
 	void rotateFirstPerson(float pitch, float yaw);
-	void updateView(bool orthogonalizeAxes);
+	void updateView();
 
 
 	static const Vector3f WORLD_XAXIS;
@@ -46,7 +46,7 @@ private:
 	Vector3f		m_xAxis;
 	Vector3f		m_yAxis;
 	Vector3f		m_zAxis;
-
+	Vector3f		m_viewDir;
 
 
 };

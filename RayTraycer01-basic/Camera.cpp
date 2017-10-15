@@ -25,8 +25,7 @@ Camera::Camera(Vector3f &eye, Vector3f &xAxis, Vector3f &yAxis, Vector3f &zAxis)
 	m_yAxis = yAxis;
 	m_zAxis = zAxis;
 
-
-	updateView(true);
+	updateView();
 
 
 }
@@ -37,12 +36,10 @@ Camera::~Camera()
 }
 
 
-void Camera::updateView(bool orthogonalizeAxes)
+void Camera::updateView()
 {
 
 	// Regenerate the camera's local axes to orthogonalize them.
-	if (orthogonalizeAxes)
-	{
 		Vector3f::normalize(m_zAxis);
 
 		m_yAxis = Vector3f::cross(m_zAxis, m_xAxis);
@@ -51,13 +48,8 @@ void Camera::updateView(bool orthogonalizeAxes)
 		m_xAxis = Vector3f::cross(m_yAxis, m_zAxis);
 		Vector3f::normalize(m_xAxis);
 
-	}
-
-
+		m_viewDir = -m_zAxis;
 }
-
-
-
 
 
 void Camera::move(float dx, float dy, float dz)
@@ -66,30 +58,19 @@ void Camera::move(float dx, float dy, float dz)
 	// world units upwards or downwards; and dz world units forwards
 	// or backwards.
 
-	Vector3f eye = m_eye;
-	Vector3f forwards;
+	m_eye += m_xAxis * dx;
+	m_eye += WORLD_YAXIS * dy;
+	m_eye += m_viewDir * dz;
 
-
-	forwards = Vector3f::cross(WORLD_YAXIS, m_xAxis);
-	Vector3f::normalize(forwards);
-
-
-	eye += m_xAxis * dx;
-	eye += WORLD_YAXIS * dy;
-	eye += forwards * dz;
-
-	setPosition(eye);
 }
 
 
-
-void Camera::rotate(float yaw, float pitch, float roll)
+void Camera::rotate(float yaw, float pitch)
 {
-	// Rotates the camera based on its current behavior.
-	// Note that not all behaviors support rolling.
+	// Rotates the camera
 
 	rotateFirstPerson(pitch, yaw);
-	updateView(true);
+	updateView();
 }
 
 void Camera::rotateFirstPerson(float pitch, float yaw)
@@ -155,7 +136,7 @@ const Vector3f &Camera::getCamZ() const{
 	return m_zAxis;
 }
 const Vector3f &Camera::getViewDirection() const{
-	return -m_zAxis;
+	return m_viewDir;
 }
 
 

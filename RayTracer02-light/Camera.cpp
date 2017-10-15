@@ -132,7 +132,7 @@ void Camera::rotateFirstPerson(float pitch, float yaw)
 void Camera::setPosition(const Vector3f &position)
 {
 	m_eye = position;
-	updateView(false);
+
 }
 
 

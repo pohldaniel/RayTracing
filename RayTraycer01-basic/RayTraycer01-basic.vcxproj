@@ -10,6 +10,23 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Bitmap.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="Vector.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Bitmap.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="Ray.h" />
+    <ClInclude Include="Sphere.h" />
+    <ClInclude Include="Vector.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0EFDFDAA-CE42-48AA-B628-572224297D6F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -75,23 +92,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Bitmap.cpp" />
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Camera.cpp" />
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Color.cpp" />
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\main.cpp" />
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Ray.cpp" />
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Sphere.cpp" />
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Vector.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Bitmap.h" />
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Camera.h" />
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Color.h" />
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Ray.h" />
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Sphere.h" />
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer01-basic\RayTracer01\Vector.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

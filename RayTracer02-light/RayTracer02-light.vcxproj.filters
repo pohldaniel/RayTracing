@@ -15,51 +15,51 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Bitmap.cpp">
+    <ClCompile Include="Bitmap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Camera.cpp">
+    <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Color.cpp">
+    <ClCompile Include="Color.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Light.cpp">
+    <ClCompile Include="Light.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\main.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Ray.cpp">
+    <ClCompile Include="Ray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Sphere.cpp">
+    <ClCompile Include="Sphere.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Vector.cpp">
+    <ClCompile Include="Vector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Bitmap.h">
+    <ClInclude Include="Bitmap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Camera.h">
+    <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Color.h">
+    <ClInclude Include="Color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Light.h">
+    <ClInclude Include="Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Ray.h">
+    <ClInclude Include="Ray.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Sphere.h">
+    <ClInclude Include="Sphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Users\Daniel\Desktop\RayTraycing\RayTracer02-light\RayTracer02\Vector.h">
+    <ClInclude Include="Vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

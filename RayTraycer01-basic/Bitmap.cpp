@@ -151,7 +151,7 @@ bool Bitmap::loadBitmap24(char *filename)
 
 	// swap the R and B values to get RGB since the bitmap color format is in BGR
 	//count backwards so you start at the front of the image
-	for (int i = 0; i<(Bitmap::bmih).biSizeImage; i += 3) {
+	for (unsigned int i = 0; i<(Bitmap::bmih).biSizeImage; i += 3) {
 		//jump over the padding before the start of a new line
 		if (((i + paddingByte) % padWidth == 0) && (i + paddingByte) != 0) {
 
@@ -314,7 +314,7 @@ bool Bitmap::loadBitmap24B(char *filename)
 
 bool Bitmap::writeBitmap24(COLORREF *(*RGBMatrix), int height, int width){
 
-	for (int i = 0, h = 0, m = 0; i < bmi->bmiHeader.biSizeImage - paddingByte; i += 3, m += 3) {
+	for (unsigned int i = 0, h = 0, m = 0; i < bmi->bmiHeader.biSizeImage - paddingByte; i += 3, m += 3) {
 		//jump over the padding before the start of a new line
 		if ((m + paddingByte) == padWidth) {
 			i += paddingByte;

@@ -1,1 +1,1 @@
-#Minimal Win32 RayTracer for educational purposes
+# Minimal Win32 RayTracer for educational purposes

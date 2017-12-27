@@ -313,9 +313,8 @@ void ComposeFrame(){
 	//scene objects
 	Sphere sphere(Vector3f(0, 0, 0), 1);
 
-	int n = 1;
+	int n = 2;
 
-	float vps = 1.0;
 
 	float pxamnt;
 	float pyamnt;
@@ -325,6 +324,27 @@ void ComposeFrame(){
 	for (int y = 0; y < 480; y++){
 		for (int x = 0; x < 640; x++){
 			
+			//without antialiasing
+			
+			Vector3f  rayDirection = projectionMap->map(x, y, camera->getViewDirection(), camera->getCamX(), camera->getCamY());
+
+			Ray ray(camera->getPosition(), rayDirection);
+			if (sphere.RaySphereIntersection(ray)){
+
+				
+
+				bitmap->setPixel24(x, y, Color(255, 0, 0));
+
+			}
+			else{
+
+				bitmap->setPixel24(x, y, Color(0, 0, 0));
+			}
+
+			
+			
+			//with antialiasing
+			/**********************************************************************************************************************
 			Color color = Color(0, 0, 0);
 			float r = 0;
 
@@ -358,6 +378,7 @@ void ComposeFrame(){
 			color = Color(r, 0, 0);
 
 			bitmap->setPixel24(x, y, color);
+			************************************************************************************************************************/
 		}
 	}
 

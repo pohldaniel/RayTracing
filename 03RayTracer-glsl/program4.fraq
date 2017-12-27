@@ -120,12 +120,12 @@ void main(void)
 		
 	
    disk.normal = vec3(0.0, 1.0, 0.0);
-	disk.position = vec3(0.0, 0.0, 0.0);
+	disk.position = vec3(0.0, -1.0, 0.0);
 	disk.radius = 2;
 	 
 	
 	
-	ray.origin =  vec4(u_campos + vec3(0.0,1.0,0.0),1.0);
+	ray.origin =  vec4(u_campos ,1.0);
 	ray.direction = ProjectionMap(gl_FragCoord.xy);
 	ray.direction = vec4(normalize(ray.direction.xyz), 1.0);
 	

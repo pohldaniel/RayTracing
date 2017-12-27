@@ -124,8 +124,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  scene = new Scene();
 
-					  scene->addSphere(&Sphere(Vector3f(0, 0, -7), 1, Color(255, 0, 0)));
-					  scene->addSphere(&Sphere(Vector3f(1.0, 0, -5), 1, Color(0, 255, 0)));
+					  scene->addSphere(&Sphere(Vector3f(0, 0, -7), 1, Color(1.0, 0, 0)));
+					  scene->addSphere(&Sphere(Vector3f(1.0, 0, -5), 1, Color(0, 1.0, 0)));
 					  pinhole->renderScene(*scene);
 
 

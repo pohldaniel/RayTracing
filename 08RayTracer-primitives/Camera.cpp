@@ -194,8 +194,8 @@ void Pinhole::renderScene(const Scene& scene) {
 	vp.s /= m_zoom;
 	ray.origin = m_eye;
 
-	for (int y = 0; y < vp.vres; y++){
-		for (int x = 0; x < vp.hres; x++){// across 					
+	for (int y = 0; y < 480; y++){
+		for (int x =0; x < 640; x++){// across 					
 			color = Color(0, 0, 0);
 
 			for (int i = 0; i < numSamples; i++){

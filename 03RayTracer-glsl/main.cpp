@@ -21,7 +21,7 @@
 //program 7: Cylinder
 //program 8: Ellipsoid
 
-int usedProgram = 1;
+int usedProgram = 2;
 int height = 600;
 int width =800;
 

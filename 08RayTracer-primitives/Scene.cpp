@@ -18,8 +18,6 @@ Scene::Scene(){
 }
 
 
-
-
 Scene::Scene(const ViewPlane vp){
 
 	Scene::vp = vp;
@@ -46,34 +44,46 @@ Scene::~Scene()
 	{
 
 		delete Scene::bitmap;
+		Scene::bitmap = NULL;
 	}
 
 	
 
+	for (int j = 0; j < primitives.size(); j++){
+		
+		delete primitives[j];
+		primitives[j] = NULL;
+	}
+
+		
+	
+
 }
 
 
-void Scene::addSphere(Sphere* sphere) {
-	spheres.push_back(sphere);
+void Scene::addPrimitive(Primitives* primitive) {
+	primitives.push_back(primitive);
 
 }
 
 
-Hit Scene::hitObjects(const Ray& ray) const {
+Hit Scene::hitObjects(const Ray& ray)const  {
 
 	Hit		  hit;
-	float		tmin = 500;
+	float	  tmin = 1.0E10;
+	Color	 color;
 
-	
-	
-	for (int j = 0; j < spheres.size(); j++){
-		if (spheres[j]->hit(ray, hit)) {
-			hit.color = spheres[j]->color;
-			tmin = hit.t;
+	for (int j = 0; j <primitives.size(); j++){
+		if (primitives[j]->hit(ray, hit) && hit.t < tmin) {
+
+			//if (hit.t < tmin){
+				hit.color = primitives[j]->getColor();
+				tmin = hit.t;
+			//}
+				//std::cout << hit.t << std::endl;
 		}
 	}
 	
-
 	return hit;
 }
 
@@ -84,7 +94,6 @@ void Scene::setPixel(const int x, const int y, const Color& color)const {
 	int g = (int)( color.g * 255.0);
 	int b = (int)(color.b * 255.0);
 	
-
 
 	bitmap->setPixel24(x, y, r, g, b);
 }

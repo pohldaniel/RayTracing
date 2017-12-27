@@ -84,7 +84,7 @@ bool RayPlaneIntersection(Ray ray, Plane plane ){
 
 	float result = -1;
 	
-	result = -dot(plane.normal,ray.origin.xyz)/dot(plane.normal,ray.direction.xyz);
+	result = (plane.distance -dot(plane.normal,ray.origin.xyz))/dot(plane.normal,ray.direction.xyz);
 
 	if(result > 0.0) return true;
 	
@@ -113,11 +113,11 @@ void main(void)
 		
 	
     plane.normal = vec3(0.0, 1.0, 0.0);
-	plane.distance = 0.0;
+	plane.distance = -1.0;
 	 
 	
 	
-	ray.origin =  vec4(u_campos + vec3(0.0,1.0,0.0),1.0);
+	ray.origin =  vec4(u_campos ,1.0);
 	ray.direction = ProjectionMap(gl_FragCoord.xy);
 	ray.direction = vec4(normalize(ray.direction.xyz), 1.0);
 	

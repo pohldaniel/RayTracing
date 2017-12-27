@@ -8,14 +8,18 @@
 class Primitives{
 public:
 	Primitives();
-
+	Primitives(const Color& color);
 	~Primitives();
 
-	virtual bool hit(const Ray& ray, Hit &hit) const = 0;
+	virtual bool hit(const Ray& ray, Hit &hit) = 0;
 
+	Color getColor();
+
+private:
+	Color color;
 };
 
-
+//////////////////////////////////////////////////////////////////
 class Sphere : public Primitives{
 
 public:
@@ -24,7 +28,7 @@ public:
 	Sphere(Vector3f position, double radius, Color color);
 	~Sphere();
 
-	bool hit(const Ray &ray, const Hit &hit) const;
+	bool hit(const Ray &ray, Hit &hit);
 
 	
 
@@ -32,9 +36,23 @@ private:
 
 	Vector3f position;
 	double radius;
-	Color color;
-
 };
+///////////////////////////////////////////////////////////////////
+class Plane : public Primitives{
+
+public:
+
+	Plane();
+	Plane(Vector3f normal, float distance, Color color);
+	~Plane();
+
+	bool hit(const Ray &ray, Hit &hit);
 
 
+
+private:
+
+	Vector3f normal;
+	float distance;
+};
 #endif

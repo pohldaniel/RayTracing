@@ -8,7 +8,7 @@
 
 #include "Bitmap.h"
 #include "Camera.h"
-#include "Sphere.h"
+#include "Primitives.h"
 #include "Hit.h"
 
 
@@ -19,7 +19,8 @@ public:
 	
 	ViewPlane vp;
 	Bitmap *bitmap;
-	std::vector<Sphere*>	spheres;
+	std::vector<Primitives*>	primitives;
+
 public:
 
 	Scene();
@@ -29,8 +30,9 @@ public:
 	~Scene();
 
 	void addSphere(Sphere* sphere);
+	void addPrimitive(Primitives* primitive);
 
-	Hit hitObjects(const Ray& ray) const;
+	Hit hitObjects(const Ray& ray)const ;
 
 	void setViewPlane(const ViewPlane &vp);
 	void setPixel(const int x, const int y, const Color& color) const;

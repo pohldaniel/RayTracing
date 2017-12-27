@@ -1,0 +1,142 @@
+#version 410 core
+//precision highp float;
+//precision mediump float;
+#define PI 3.1415926535897932384
+
+uniform vec3 u_campos;
+uniform vec3 u_viewdir;
+uniform vec3 u_camright;
+uniform vec3 u_camup;
+uniform float u_resx;
+uniform float u_resy;
+uniform float u_aspectRatio;
+uniform float u_scale;
+uniform float u_time;
+
+
+
+struct Disk{
+	vec3 normal;
+	vec3 position;
+	float radius;
+};
+
+struct Ray{
+	vec4	origin;
+	vec4	direction;
+};
+
+
+
+mat4 rotate(vec3 axis, float degrees){
+	
+	float rad = (degrees*PI)/180.0;
+	float x	  = axis.x;
+	float y	  = axis.y;
+	float z	  = axis.z;
+	float c	  = cos(rad);
+	float s   = sin(rad);
+	
+	return mat4(
+	(x*x)*(1.0-c) + c    , (x*y)*(1.0-c) - (z*s) , (z*x)*(1.0-c) + (y*s) , 0.0 ,
+	(x*y)*(1.0-c) + (z*s), (y*y)*(1.0-c) + c	 , (z*y)*(1.0-c) - (x*s) , 0.0 ,
+	(x*z)*(1.0-c) - (y*s), (y*z)*(1.0-c) + (x*s) , (z*z)*(1.0-c) + c     , 0.0 ,
+	 0.0				 ,  0.0				 	 ,  0.0					 , 1.0
+	);
+}
+
+mat4 shear(float hxy, float hxz, float hyx, float hyz, float hzx, float hzy){
+
+float D = 1- (hxy*hyx) - (hxz*hzx) - (hyz*hzy) + (hxy*hyz*hzx) + (hxz*hyx*hzy);
+
+return mat4(
+	1-(hyz*hzy)      , -hyx + (hyz*hzx) , -hzx + (hyx*hzy)   , 0.0 ,
+	-hxy + (hxz*hzy) , 1 - (hxz*hzx)  	, -hzy + (hxy*hzx)   , 0.0 ,
+	-hxz + (hxy*hyz) , -hyz + (hxz*hyx) , 1 - (hxy*hyx)    	 , 0.0 ,
+	 0.0		     ,  0.0			    , 0.0			     , D
+	)*1.0/D;
+
+}
+
+
+mat4 translate(float dx, float dy, float dz){
+
+	return mat4(
+	1.0 , 0.0 , 0.0 , -dx ,
+	0.0 , 1.0 , 0.0 , -dy ,
+	0.0 , 0.0 , 1.0 , -dz ,
+	0.0 , 0.0 , 0.0 , 1.0
+	);
+}
+
+mat4 scale(float a, float b, float c){
+
+	return mat4(
+	1.0/a , 0.0   , 0.0   , 0.0 ,
+	0.0   , 1.0/b , 0.0   , 0.0 ,
+	0.0   , 0.0   , 1.0/c , 0.0 ,
+	0.0   , 0.0   , 0.0   , 1.0
+	);
+}
+
+
+bool RayDiskIntersection(Ray ray, Disk disk ){
+
+	float result = -1;
+	
+	result = dot(disk.position -ray.origin.xyz,disk.normal)/dot(disk.normal,ray.direction.xyz);
+
+	if(result < 0.0) return false;
+	
+	vec3 p = ray.origin.xyz + result *ray.direction.xyz;
+	vec3 v = p - disk.position;
+	
+	result = disk.radius * disk.radius - dot(v,v);
+	
+	if(dot(v,v) <= disk.radius * disk.radius) return true;
+	
+return false;
+}
+
+
+
+
+vec4 ProjectionMap(vec2 uv){
+
+float xamnt = (uv.x+0.5)/u_resx;
+float yamnt = (uv.y+0.5)/u_resy;
+
+
+return vec4(u_viewdir + u_aspectRatio*u_scale*(2.0*xamnt-1.0)*u_camright + (2.0*yamnt-1.0)*u_scale*u_camup,1.0);
+}
+
+
+Ray ray;
+Disk disk;
+
+
+void main(void)
+{
+		
+	
+   disk.normal = vec3(0.0, 1.0, 0.0);
+	disk.position = vec3(0.0, 0.0, 0.0);
+	disk.radius = 2;
+	 
+	
+	
+	ray.origin =  vec4(u_campos + vec3(0.0,1.0,0.0),1.0);
+	ray.direction = ProjectionMap(gl_FragCoord.xy);
+	ray.direction = vec4(normalize(ray.direction.xyz), 1.0);
+	
+
+	vec3 col = vec3(0.0);
+	if( RayDiskIntersection( ray,  disk)  )
+	{
+		col = vec3(0.2,0.3,0.4);
+		
+	}
+	gl_FragColor = vec4( col, 1.0 );
+	
+	
+}

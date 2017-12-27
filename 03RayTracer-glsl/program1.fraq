@@ -1,0 +1,154 @@
+#version 410 core
+
+#define PI 3.1415926535897932384626433832795
+
+uniform vec3 u_campos;
+uniform vec3 u_viewdir;
+uniform vec3 u_camright;
+uniform vec3 u_camup;
+uniform float u_resx;
+uniform float u_resy;
+uniform float u_aspectRatio;
+uniform float u_scale;
+uniform float u_time;
+
+struct Sphere{
+	vec3 position;
+	vec4 color;
+	float radius;
+	float radiusQuad;
+	
+};
+
+struct Ray{
+	vec4	origin;
+	vec4	direction;
+};
+
+mat4 rotate(vec3 axis, float degrees){
+	
+	float rad = (degrees*PI)/180.0;
+	float x	  = axis.x;
+	float y	  = axis.y;
+	float z	  = axis.z;
+	float c	  = cos(rad);
+	float s   = sin(rad);
+	
+	return mat4(
+	(x*x)*(1.0-c) + c    , (x*y)*(1.0-c) - (z*s) , (z*x)*(1.0-c) + (y*s) , 0.0 ,
+	(x*y)*(1.0-c) + (z*s), (y*y)*(1.0-c) + c	 , (z*y)*(1.0-c) - (x*s) , 0.0 ,
+	(x*z)*(1.0-c) - (y*s), (y*z)*(1.0-c) + (x*s) , (z*z)*(1.0-c) + c     , 0.0 ,
+	 0.0				 ,  0.0				 	 ,  0.0					 , 1.0
+	);
+}
+
+mat4 shear(float hxy, float hxz, float hyx, float hyz, float hzx, float hzy){
+
+float D = 1- (hxy*hyx) - (hxz*hzx) - (hyz*hzy) + (hxy*hyz*hzx) + (hxz*hyx*hzy);
+
+return mat4(
+	1-(hyz*hzy)      , -hyx + (hyz*hzx) , -hzx + (hyx*hzy)   , 0.0 ,
+	-hxy + (hxz*hzy) , 1 - (hxz*hzx)  	, -hzy + (hxy*hzx)   , 0.0 ,
+	-hxz + (hxy*hyz) , -hyz + (hxz*hyx) , 1 - (hxy*hyx)    	 , 0.0 ,
+	 0.0		     ,  0.0			    , 0.0			     , D
+	)*1.0/D;
+
+}
+
+mat4 translate(float dx, float dy, float dz){
+
+	return mat4(
+	1.0 , 0.0 , 0.0 , -dx ,
+	0.0 , 1.0 , 0.0 , -dy ,
+	0.0 , 0.0 , 1.0 , -dz ,
+	0.0 , 0.0 , 0.0 , 1.0
+	);
+}
+
+mat4 scale(float a, float b, float c){
+
+	return mat4(
+	1.0/a , 0.0   , 0.0   , 0.0 ,
+	0.0   , 1.0/b , 0.0   , 0.0 ,
+	0.0   , 0.0   , 1.0/c , 0.0 ,
+	0.0   , 0.0   , 0.0   , 1.0
+	);
+}
+
+bool RaySphereIntersection(Ray ray, Sphere sphere)
+{
+	
+	vec3 L = ray.origin.xyz- sphere.position;
+	
+	//eyes = ray.origin - sphere.position (obj.pos)
+	
+	float a = ray.direction.x * ray.direction.x + ray.direction.y * ray.direction.y + ray.direction.z * ray.direction.z;
+	float b = 2 * ( ray.direction.x * L.x + ray.direction.y * L.y + ray.direction.z * L.z );
+	float c = L.x * L.x + L.y * L.y + L.z * L.z - sphere.radiusQuad;
+	
+	float discr = b * b - 4 * a * c;
+	if (discr > 0.001)
+	{	
+		return true;	
+	}
+	return false;
+}
+
+
+
+vec4 ProjectionMap(vec2 uv){
+
+float xamnt = (uv.x+0.5)/u_resx;
+float yamnt = (uv.y+0.5)/u_resy;
+
+
+return vec4(u_viewdir + u_aspectRatio*u_scale*(2.0*xamnt-1.0)*u_camright + (2.0*yamnt-1.0)*u_scale*u_camup,1.0);
+}
+
+
+Sphere sphere;
+Ray ray;
+
+
+
+void main(void)
+{
+	
+	sphere.color = vec4(0, 1, 1, 0);
+	sphere.radius = 1;
+	sphere.radiusQuad = 1;
+	sphere.position = vec3(0, 0, 0);
+	
+	//ray.origin = u_campos;
+	//ray.direction = ProjectionMap(gl_FragCoord.xy);
+	
+	ray.origin =  vec4(u_campos,1.0);
+	ray.direction = ProjectionMap(gl_FragCoord.xy);
+	
+
+	mat4 trafo1 = scale(2.0,1.0,1.0);
+	mat4 trafo2 = translate(0.3,0.3,0.0);
+	mat4 trafo3 = shear(0.75,0.0,0.0,0.0,0.0,0.0);
+	mat4 T = trafo1 * trafo2 * trafo3;
+	
+	ray.origin = ray.origin* T ;
+	ray.direction =  ray.direction * T;
+	
+	
+	ray.direction = vec4(normalize(ray.direction.xyz), 1.0);
+	
+	
+	vec4 color = vec4(0,0,0,0);
+	
+	if (RaySphereIntersection(ray, sphere)){
+	
+		color = sphere.color;
+	
+	}
+	
+	
+	
+	
+	gl_FragColor = color;
+	
+}

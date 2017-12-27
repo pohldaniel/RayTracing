@@ -1,0 +1,22 @@
+#version 410 core
+
+uniform float u_time;
+uniform int u_resx;
+uniform int u_resy;
+
+void main()
+{
+	
+  vec2 uv = 2.0*(  gl_FragCoord.xy/vec2(u_resx, u_resy)- vec2(1.0,1.0) );
+  
+  float distance = length(uv);
+  // Calculate the angle to the current fragement from the center of screen
+  float angle = atan(uv.y, uv.x);
+
+  float pi2 = 3.14159265 * 2.0;
+  
+  gl_FragColor = sin(distance * 50.0 + angle + u_time + (vec4(0.0,1.0,2.0,0.0) * pi2 / 3.0));
+  gl_FragColor = clamp(gl_FragColor, 0.0, distance);
+  
+  
+}

@@ -17,7 +17,7 @@ uniform float u_time;
 
 struct Torus{
 	float a; // distance from the center of the hole inside and the center of its tube
-	float b; // radius of th tube
+	float b; // radius of the tube
 	vec4 color;
 };
 
@@ -82,6 +82,7 @@ mat4 scale(float a, float b, float c){
 
 // f(x) = (|x|² + R² - r²)² - 4·R²·|xy|² = 0
 
+
 bool RayTorusIntersection(Ray ray,    Torus torus )
 {
 	float Ra2 = torus.a*torus.a;
@@ -138,7 +139,7 @@ bool RayTorusIntersection(Ray ray,    Torus torus )
 	float d1o2 = d1/2.0;
 	
 	
-	if( abs(d1)< EPSILON )
+	if( abs(d1)< 0.0001 )
 	{
 		
 		d2 = sqrt(d2);
@@ -209,8 +210,6 @@ bool RayTorusIntersection(Ray ray,    Torus torus )
 }
 
 
-
-
 vec4 ProjectionMap(vec2 uv){
 
 float xamnt = (uv.x+0.5)/u_resx;
@@ -221,6 +220,8 @@ return vec4(u_viewdir + u_aspectRatio*u_scale*(2.0*xamnt-1.0)*u_camright + (2.0*
 }
 
 
+
+
 Ray ray;
 Torus torus;
 
@@ -228,19 +229,13 @@ Torus torus;
 void main(void)
 {
 		
-	
-    torus.a = 1.0;
+	torus.a = 1.0;
 	torus.b	= 0.5;
 	 
-	
-	
 	ray.origin =  vec4(u_campos,1.0);
-	
-	//ray.origin = u_campos;
 	ray.direction = ProjectionMap(gl_FragCoord.xy);
 	
 	mat4 trafo2 = rotate(vec3(0.0,1.0,0.0), u_time );
-	mat4 trafo3 = translate(0.5,0.5,0.0);
 	mat4 T = trafo2;
 	
 	
@@ -251,12 +246,11 @@ void main(void)
 	
 
 	vec3 col = vec3(0.0);
-	if( RayTorusIntersection( ray,  torus )  )
+	if(RayTorusIntersection(ray,torus)  )
 	{
 		col = vec3(0.2,0.3,0.4);
 		
 	}
 	gl_FragColor = vec4( col, 1.0 );
-	
 	
 }

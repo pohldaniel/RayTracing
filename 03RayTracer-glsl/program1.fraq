@@ -78,20 +78,28 @@ mat4 scale(float a, float b, float c){
 bool RaySphereIntersection(Ray ray, Sphere sphere)
 {
 	
-	vec3 L = ray.origin.xyz- sphere.position;
+	vec3 L = sphere.position - ray.origin.xyz;
 	
-	//eyes = ray.origin - sphere.position (obj.pos)
+
+	float b = dot(ray.direction.xyz, L);
+	float c = dot(L, L) - sphere.radius*sphere.radius;
 	
-	float a = ray.direction.x * ray.direction.x + ray.direction.y * ray.direction.y + ray.direction.z * ray.direction.z;
-	float b = 2 * ( ray.direction.x * L.x + ray.direction.y * L.y + ray.direction.z * L.z );
-	float c = L.x * L.x + L.y * L.y + L.z * L.z - sphere.radiusQuad;
+	float d = b*b - c;
+	if(d < 0.0) return false;
 	
-	float discr = b * b - 4 * a * c;
-	if (discr > 0.001)
-	{	
-		return true;	
+	//----------------------------------
+	float result = -1.0;
+	
+	result = b - sqrt(d);
+	if(result < 0.0){
+	
+	result = b + sqrt(d);
+	
 	}
-	return false;
+	
+	if(result > 0.0) return true;
+	
+return false;
 }
 
 

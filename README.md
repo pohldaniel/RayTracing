@@ -1,4 +1,4 @@
-# Minimal Win32 RayTracer for educational purposes only
+# RayTracer for educational purposes only
 
 Move the camera with 'w' 'a' 's' 'd' 'q' 'e' and mouse, release the capture with space.
 

@@ -15,7 +15,7 @@
 
 
 int usedQuadProgram = 1;
-int usedProgram = 4;
+int usedProgram = 5;
 int resolutiony = 480;
 int resolutionx = 640;
 bool g_enableVerticalSync;

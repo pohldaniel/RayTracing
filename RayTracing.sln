@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "07RayTracer-antialiasing", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "08RayTracer-primitives", "08RayTracer-primitives\08RayTracer-primitives.vcxproj", "{1F865878-9E9E-4DC8-A2BA-4FAD123500A2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "09RayTracer-orientablePrimitives", "09RayTracer-orientablePrimitives\09RayTracer-orientablePrimitives.vcxproj", "{E85FE357-9D31-46AF-9149-B0EE55034D7B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -57,6 +59,10 @@ Global
 		{1F865878-9E9E-4DC8-A2BA-4FAD123500A2}.Debug|Win32.Build.0 = Debug|Win32
 		{1F865878-9E9E-4DC8-A2BA-4FAD123500A2}.Release|Win32.ActiveCfg = Release|Win32
 		{1F865878-9E9E-4DC8-A2BA-4FAD123500A2}.Release|Win32.Build.0 = Release|Win32
+		{E85FE357-9D31-46AF-9149-B0EE55034D7B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E85FE357-9D31-46AF-9149-B0EE55034D7B}.Debug|Win32.Build.0 = Debug|Win32
+		{E85FE357-9D31-46AF-9149-B0EE55034D7B}.Release|Win32.ActiveCfg = Release|Win32
+		{E85FE357-9D31-46AF-9149-B0EE55034D7B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

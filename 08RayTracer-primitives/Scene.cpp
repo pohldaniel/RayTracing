@@ -76,11 +76,9 @@ Hit Scene::hitObjects(const Ray& ray)const  {
 	for (int j = 0; j <primitives.size(); j++){
 		if (primitives[j]->hit(ray, hit) && hit.t < tmin) {
 
-			//if (hit.t < tmin){
 				hit.color = primitives[j]->getColor();
 				tmin = hit.t;
-			//}
-				//std::cout << hit.t << std::endl;
+		
 		}
 	}
 	

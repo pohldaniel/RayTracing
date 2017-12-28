@@ -17,6 +17,8 @@ Sampler::Sampler(const int numSamples, const int numSets){
 
 	Sampler::numSamples = numSamples;
 	Sampler::numSets = numSets;
+	Sampler::count = 0;
+
 	Sampler::samples.reserve(numSamples * numSets);
 
 }

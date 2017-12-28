@@ -59,23 +59,24 @@ void Scene::addSphere(Sphere* sphere) {
 }
 
 
-Hit Scene::hitObjects(const Ray& ray) const {
+Hit Scene::hitObjects(const Ray& ray)const  {
 
 	Hit		  hit;
-	float		tmin = 500;
+	float	  tmin = 1.0E10;
+	Color	 color;
 
-	
-	
-	for (int j = 0; j < spheres.size(); j++){
-		if (spheres[j]->hit(ray, hit)) {
+	for (int j = 0; j <spheres.size(); j++){
+		if (spheres[j]->hit(ray, hit) && hit.t < tmin) {
+
 			hit.color = spheres[j]->color;
 			tmin = hit.t;
+
 		}
 	}
-	
 
 	return hit;
 }
+
 
 
 void Scene::setPixel(const int x, const int y, Color& color)const {

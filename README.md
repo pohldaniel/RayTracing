@@ -17,3 +17,6 @@ https://www.shadertoy.com/view/Md3XRM
 https://www.shadertoy.com/view/4ljGRd
 https://www.shadertoy.com/view/ldsfDX
 https://www.shadertoy.com/view/4djXRD
+
+Output from 09RayTracer-orientablePrimitives.
+![bsp1](https://user-images.githubusercontent.com/30089026/34413435-d91096b2-ebe3-11e7-88f9-c476e2421ca9.jpg)

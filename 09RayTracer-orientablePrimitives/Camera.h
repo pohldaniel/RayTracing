@@ -15,38 +15,38 @@ class Camera
 
 public:
 
-	
-
 	Camera();
-	Camera(const Vector3f &eye, 
-		   const Vector3f &xAxis, 
-		   const Vector3f &yAxis, 
-		   const Vector3f &zAxis,
-		   Sampler  *sampler);
+	Camera(const Vector3f &eye,
+		const Vector3f &xAxis,
+		const Vector3f &yAxis,
+		const Vector3f &zAxis,
+		const float zoom,
+		Sampler  *sampler);
 
-	Camera(const Vector3f &eye, 
-		   const Vector3f &xAxis, 
-		   const Vector3f &yAxis, 
-		   const Vector3f &zAxis, 
-		   const Vector3f &target, 
-		   const Vector3f &up,
-		   Sampler  *sampler);
+	Camera(const Vector3f &eye,
+		const Vector3f &xAxis,
+		const Vector3f &yAxis,
+		const Vector3f &zAxis,
+		const Vector3f &target,
+		const Vector3f &up,
+		const float zoom,
+		Sampler  *sampler);
 
 	Camera(const Camera& camera);	// copy constructor
 
 	~Camera();
 
 
-	
-	
+
+
 	const Vector3f &getPosition() const;
 	const Vector3f &getCamX() const;
 	const Vector3f &getCamY() const;
 	const Vector3f &getCamZ() const;
 	const Vector3f &getViewDirection() const;
-	
 
-	virtual void renderScene(const Scene& scene)=0;
+
+	virtual void renderScene(const Scene& scene) = 0;
 
 protected:
 
@@ -64,45 +64,70 @@ protected:
 	Vector3f		m_yAxis;		// v
 	Vector3f		m_zAxis;		// w --> eye - target
 	Vector3f		m_viewDir;		// 
+	float			m_zoom;			// zoom factor
 
 	Sampler	*m_sampler;
 
 };
 
+class Orthographic : public Camera{
+public:
+	Orthographic();
 
-class Pinhole:  public Camera{
-	public:
+	Orthographic(const Vector3f &eye,
+		const Vector3f &xAxis,
+		const Vector3f &yAxis,
+		const Vector3f &zAxis,
+		const float zoom,
+		Sampler *sampler);
 
-		Pinhole();
-		
-		Pinhole(const Vector3f &eye,
-				const Vector3f &xAxis,
-				const Vector3f &yAxis,
-				const Vector3f &zAxis,
-				const float d,
-				const float zoom,
-				Sampler *sampler);
+	Orthographic(const Vector3f &eye,
+		const Vector3f &xAxis,
+		const Vector3f &yAxis,
+		const Vector3f &zAxis,
+		const Vector3f &target,
+		const Vector3f &up,
+		const float zoom,
+		Sampler *sampler);
+
+	~Orthographic();
+
+	void renderScene(const Scene& scene);
+
+};
+
+class Pinhole : public Camera{
+public:
+
+	Pinhole();
+
+	Pinhole(const Vector3f &eye,
+		const Vector3f &xAxis,
+		const Vector3f &yAxis,
+		const Vector3f &zAxis,
+		const float zoom,
+		const float d,
+		Sampler *sampler);
 
 
-		Pinhole(const Vector3f &eye,
-			    const Vector3f &xAxis,
-			    const Vector3f &yAxis,
-			    const Vector3f &zAxis,
-			    const Vector3f &target,
-			    const Vector3f &up,
-				const float d,
-				const float zoom, 
-				Sampler  *sampler);
+	Pinhole(const Vector3f &eye,
+		const Vector3f &xAxis,
+		const Vector3f &yAxis,
+		const Vector3f &zAxis,
+		const Vector3f &target,
+		const Vector3f &up,
+		const float zoom,
+		const float d,
+		Sampler  *sampler);
 
-		~Pinhole();
-		
-		Vector3f &getViewDirection(float px, float py) const;
-		void renderScene(const Scene& scene);
+	~Pinhole();
 
-	private:
-	
-		float	m_d;		// view plane distance
-		float	m_zoom;		// zoom factor
+	Vector3f &getViewDirection(float px, float py) const;
+	void renderScene(const Scene& scene);
+
+private:
+
+	float	m_d;		// view plane distance
 };
 
 

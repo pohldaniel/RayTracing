@@ -21,14 +21,16 @@ public:
 	Camera(const Vector3f &eye, 
 		   const Vector3f &xAxis, 
 		   const Vector3f &yAxis, 
-		   const Vector3f &zAxi);
+		   const Vector3f &zAxi, 
+		   const float zoom);
 
 	Camera(const Vector3f &eye, 
 		   const Vector3f &xAxis, 
 		   const Vector3f &yAxis, 
 		   const Vector3f &zAxis, 
 		   const Vector3f &target, 
-		   const Vector3f &up);
+		   const Vector3f &up,
+		   const float zoom);
 
 	Camera(const Camera& camera);	// copy constructor
 
@@ -62,11 +64,34 @@ protected:
 	Vector3f		m_yAxis;		// v
 	Vector3f		m_zAxis;		// w --> eye - target
 	Vector3f		m_viewDir;		// 
-
+	float			m_zoom;			// zoom factor
 
 
 };
 
+class Orthographic : public Camera{
+public:
+	Orthographic();
+
+	Orthographic(const Vector3f &eye,
+				 const Vector3f &xAxis,
+				 const Vector3f &yAxis,
+				 const Vector3f &zAxis,
+				 const float zoom);
+
+	Orthographic(const Vector3f &eye,
+				 const Vector3f &xAxis,
+				 const Vector3f &yAxis,
+				 const Vector3f &zAxis,
+				 const Vector3f &target,
+				 const Vector3f &up,
+				 const float zoom);
+
+	~Orthographic();
+
+	void renderScene(const Scene& scene);
+
+};
 
 class Pinhole:  public Camera{
 	public:
@@ -77,8 +102,8 @@ class Pinhole:  public Camera{
 				const Vector3f &xAxis,
 				const Vector3f &yAxis,
 				const Vector3f &zAxis,
-				const float d,
-				const float zoom);
+				const float zoom,
+				const float d);
 
 
 		Pinhole(const Vector3f &eye,
@@ -87,8 +112,8 @@ class Pinhole:  public Camera{
 			    const Vector3f &zAxis,
 			    const Vector3f &target,
 			    const Vector3f &up,
-				const float d,
-				const float zoom);
+				const float zoom,
+				const float d);
 
 		~Pinhole();
 		
@@ -98,7 +123,7 @@ class Pinhole:  public Camera{
 	private:
 	
 		float	m_d;		// view plane distance
-		float	m_zoom;		// zoom factor
+		
 };
 
 

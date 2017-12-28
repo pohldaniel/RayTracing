@@ -67,7 +67,7 @@ Hit Scene::hitObjects(const Ray& ray)const  {
 
 	for (int j = 0; j <spheres.size(); j++){
 		if (spheres[j]->hit(ray, hit) && hit.t < tmin) {
-
+		
 			hit.color = spheres[j]->color;
 			tmin = hit.t;
 

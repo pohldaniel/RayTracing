@@ -121,7 +121,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  Regular *regular = new Regular();
 					 
-					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 500, 1.0, regular);
+					
+					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 1.0, 500, regular);
 
 					  scene = new Scene();
 					  scene->addSphere(&Sphere(Vector3f(1.0, 0, -5), 1, Color(0, 1.0, 0)));

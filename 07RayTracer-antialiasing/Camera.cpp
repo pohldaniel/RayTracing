@@ -15,13 +15,13 @@ Camera::Camera()
 	m_yAxis.set(0.0f, 1.0f, 0.0f);
 	m_zAxis.set(0.0f, 0.0f, 1.0f);
 	m_viewDir.set(0.0f, 0.0f, -1.0f);
-
+	m_zoom = 1.0;
 	m_sampler = new Regular();
 	
 }
 
 
-Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis, const Vector3f &zAxis, Sampler *sampler){
+Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis, const Vector3f &zAxis, const float zoom, Sampler *sampler){
 
 
 	m_eye = eye;
@@ -29,20 +29,21 @@ Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis
 	m_yAxis = yAxis;
 	m_zAxis = zAxis;
 	m_sampler = sampler;
-
+	m_zoom = zoom;
 
 	updateView();
 
 
 }
 
-Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis, const Vector3f &zAxis, const Vector3f &target, const Vector3f &up, Sampler *sampler){
+Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis, const Vector3f &zAxis, const Vector3f &target, const Vector3f &up, const float zoom, Sampler *sampler){
 
 	m_eye = eye;
 	m_xAxis = xAxis;
 	m_yAxis = yAxis;
 	m_zAxis = zAxis;
 	m_sampler = sampler;
+	m_zoom = zoom;
 
 	updateView(eye, target, up);
 }
@@ -132,24 +133,75 @@ const Vector3f &Camera::getViewDirection() const{
 }
 
 ///////////////////////////////////////////////////////////////////////
+Orthographic::~Orthographic(){}
 
+Orthographic::Orthographic() :Camera(){};
+
+Orthographic::Orthographic(const Vector3f &eye,
+	const Vector3f &xAxis,
+	const Vector3f &yAxis,
+	const Vector3f &zAxis,
+	const float zoom,
+	Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, zoom, sampler){}
+
+Orthographic::Orthographic(const Vector3f &eye,
+	const Vector3f &xAxis,
+	const Vector3f &yAxis,
+	const Vector3f &zAxis,
+	const Vector3f &target,
+	const Vector3f &up,
+	const float zoom,
+	Sampler  *sampler) : Camera(eye, xAxis, yAxis, zAxis, target, up, zoom, sampler){	}
+
+void Orthographic::renderScene(const Scene& scene) {
+	
+	ViewPlane	vp = scene.vp;
+
+	int n = (int)sqrt((float)m_sampler->getNumSamples());
+	int numSamples = n*n;
+
+	Color		color;
+	Ray			ray;
+	Vector2f	sp;
+	float		px;
+	float		py;
+
+	vp.s /= m_zoom;
+	ray.direction = Vector3f(0.0, 0.0, -1.0);
+
+	for (int y = 0; y < vp.vres; y++){
+		for (int x = 0; x < vp.hres; x++){// across 
+			color = Color(0, 0, 0);
+
+			for (int i = 0; i < numSamples; i++){
+				sp = m_sampler->sampleUnitSquare();
+				ray.origin = Vector3f(x - 0.5 * vp.hres + sp[0], y - 0.5 * vp.vres + sp[0], getPosition()[2])*vp.s;
+				color = color + scene.hitObjects(ray).color;
+			}
+
+			color = color / numSamples;
+
+			scene.setPixel(x, y, color);
+		}
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////
 Pinhole::Pinhole() :Camera()
 {
 
 	m_d = 500;
-	m_zoom = 1.0;
 }
 
 Pinhole::Pinhole(const Vector3f &eye,
 				 const Vector3f &xAxis,
 				 const Vector3f &yAxis,
 				 const Vector3f &zAxis,
-				 const float d,
 				 const float zoom,
-				 Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, sampler){
+				 const float d,
+				 Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, zoom, sampler){
 	m_d = d;
-	m_zoom = zoom;
-
 }
 
 Pinhole::Pinhole(const Vector3f &eye,
@@ -158,12 +210,12 @@ Pinhole::Pinhole(const Vector3f &eye,
 				 const Vector3f &zAxis,
 				 const Vector3f &target,
 				 const Vector3f &up,
-				 const float d,
 				 const float zoom,
-				 Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, target, up, sampler){
+				 const float d,
+				 Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, target, up, zoom , sampler){
 
 	m_d = d;
-	m_zoom = zoom;
+
 }
 
 

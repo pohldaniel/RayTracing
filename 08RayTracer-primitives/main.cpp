@@ -120,15 +120,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  Regular *regular = new Regular();
 					 
-					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 500, 1.0, regular);
-
+					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 1.0, 500, regular);
+					  Orthographic *orthographic = new Orthographic(camPos, xAxis, yAxis, zAxis, 100, regular);
 					  scene = new Scene();
 
-					  scene->addPrimitive(new Plane(Vector3f(0.0, 1.0, 0.0), -1.0, Color(0, 0, 1.0)));
+					  scene->addPrimitive(new Plane(Vector3f(0.0, 0.0, 1.0), -9.0, Color(0, 0, 1.0)));
 					  scene->addPrimitive(new Sphere(Vector3f(-1.0, -1.0, -7), 2, Color(1.0, 0, 0)));
 					  scene->addPrimitive(new Sphere(Vector3f(1.0, 0, -5), 1, Color(0, 1.0, 0)));
 					
-					  pinhole->renderScene(*scene);
+					  orthographic->renderScene(*scene);
 
 
 					  InvalidateRect(hWnd, 0, true);

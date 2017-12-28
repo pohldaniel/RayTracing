@@ -15,31 +15,32 @@ Camera::Camera()
 	m_yAxis.set(0.0f, 1.0f, 0.0f);
 	m_zAxis.set(0.0f, 0.0f, 1.0f);
 	m_viewDir.set(0.0f, 0.0f, -1.0f);
-
+	m_zoom = 1.0;
 	
 }
 
 
-Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis, const Vector3f &zAxis){
+Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis, const Vector3f &zAxis, const float zoom){
 
 
 	m_eye = eye;
 	m_xAxis = xAxis;
 	m_yAxis = yAxis;
 	m_zAxis = zAxis;
-
+	m_zoom = zoom;
 
 	updateView();
 
 
 }
 
-Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis, const Vector3f &zAxis, const Vector3f &target, const Vector3f &up){
+Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis, const Vector3f &zAxis, const Vector3f &target, const Vector3f &up, const float zoom){
 
 	m_eye = eye;
 	m_xAxis = xAxis;
 	m_yAxis = yAxis;
 	m_zAxis = zAxis;
+	m_zoom = zoom;
 
 	updateView(eye, target, up);
 }
@@ -127,8 +128,46 @@ const Vector3f &Camera::getCamZ() const{
 const Vector3f &Camera::getViewDirection() const{
 	return m_viewDir;
 }
+/////////////////////////////////////////////////////////////////////
+Orthographic::~Orthographic(){}
+
+Orthographic::Orthographic() :Camera(){};
+
+Orthographic::Orthographic(const Vector3f &eye,
+	const Vector3f &xAxis,
+	const Vector3f &yAxis,
+	const Vector3f &zAxis,
+	const float zoom) :Camera(eye, xAxis, yAxis, zAxis, zoom){}
+
+Orthographic::Orthographic(const Vector3f &eye,
+	const Vector3f &xAxis,
+	const Vector3f &yAxis,
+	const Vector3f &zAxis,
+	const Vector3f &target,
+	const Vector3f &up,
+	const float zoom) : Camera(eye, xAxis, yAxis, zAxis, target, up, zoom){	}
+
+void Orthographic::renderScene(const Scene& scene) {
+	ViewPlane	vp = scene.vp;
+	Color		color;
+	Ray			ray;
+	vp.s /= m_zoom;
+
+	ray.direction = Vector3f(0.0, 0.0, -1.0);
+
+	for (int y = 0; y < vp.vres; y++){
+		for (int x = 0; x < vp.hres; x++){// across 
+			ray.origin = Vector3f(x - 0.5 * vp.hres + 0.5, y - 0.5 * vp.vres + 0.5, getPosition()[2])*vp.s;
+			color = scene.hitObjects(ray).color;
+			scene.setPixel(x, y, color);
+			
+		}
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////
+
+Pinhole::~Pinhole(){}
 
 Pinhole::Pinhole() :Camera()
 {
@@ -141,10 +180,10 @@ Pinhole::Pinhole(const Vector3f &eye,
 				 const Vector3f &xAxis,
 				 const Vector3f &yAxis,
 				 const Vector3f &zAxis,
-				 const float d,
-				 const float zoom) :Camera(eye, xAxis, yAxis, zAxis){
+				 const float zoom,
+				 const float d) :Camera(eye, xAxis, yAxis, zAxis, zoom){
 	m_d = d;
-	m_zoom = zoom;
+
 
 }
 
@@ -154,11 +193,11 @@ Pinhole::Pinhole(const Vector3f &eye,
 				 const Vector3f &zAxis,
 				 const Vector3f &target,
 				 const Vector3f &up,
-				 const float d,
-				 const float zoom) :Camera(eye, xAxis, yAxis, zAxis, target, up){
+				 const float zoom,
+				 const float d) :Camera(eye, xAxis, yAxis, zAxis, target, up, zoom){
 
 	m_d = d;
-	m_zoom = zoom;
+
 }
 
 
@@ -174,11 +213,8 @@ Vector3f & Pinhole::getViewDirection(float px, float py) const{
 void Pinhole::renderScene(const Scene& scene) {
 	
 	ViewPlane	vp = scene.vp;
-	
 	Color		color;
 	Ray			ray;
-	
-	
 	
 	vp.s /= m_zoom;
 	ray.origin = m_eye;
@@ -186,11 +222,8 @@ void Pinhole::renderScene(const Scene& scene) {
 	for (int y = 0; y < vp.vres; y++){
 		for (int x = 0; x < vp.hres; x++){// across 					
 			
-			ray.direction = getViewDirection(x - 0.5 * vp.hres, y - 0.5 * vp.vres);
+			ray.direction = getViewDirection(x - 0.5 * vp.hres + 0.5, y - 0.5 * vp.vres + 0.5) * vp.s;
 			color = scene.hitObjects(ray).color;
-
-			
-			
 			scene.setPixel(x, y, color);
 		}
 	}

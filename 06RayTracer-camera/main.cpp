@@ -119,14 +119,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  Vector3f yAxis{ 0, 1, 0 };
 					  Vector3f zAxis{ 0, 0, 1 };
 
-			
-					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 500, 1.0);
+					  Orthographic *orthographic = new Orthographic(camPos, xAxis, yAxis, zAxis, 100);
+					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 1.0, 500);
+					 
 
 					  scene = new Scene();
-
+					
 					  scene->addSphere(&Sphere(Vector3f(0, 0, -7), 1, Color(1.0, 0, 0)));
 					  scene->addSphere(&Sphere(Vector3f(1.0, 0, -5), 1, Color(0, 1.0, 0)));
-					  pinhole->renderScene(*scene);
+					  orthographic->renderScene(*scene);
 
 
 					  InvalidateRect(hWnd, 0, true);

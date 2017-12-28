@@ -82,11 +82,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	
 
-	
-
-	
-	
-
 	while (GetMessage(&msg, 0, 0, 0))
 	{
 		TranslateMessage(&msg);
@@ -112,23 +107,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_CREATE:
-	{
+	{				  //orthographi view
+					 // Vector3f camPos{ 0, 0, 500.0 };
+
 					  Vector3f camPos{ 0, 0, 5.0 };
 					  Vector3f xAxis{ 1, 0, 0 };
 					  Vector3f yAxis{ 0, 1, 0 };
 					  Vector3f zAxis{ 0, 0, 1 };
 
-					  Regular *regular = new Regular(16,1);
+					  Regular *regular = new Regular(4,1);
 					 
-					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 500, 1.0, regular);
+					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 1.0, 500, regular);
+					  //Orthographic *orthographic = new Orthographic(camPos, xAxis, yAxis, zAxis, 50, regular);
 
 					  scene = new Scene();
 
 					  Torus *torus = new Torus(1.0, 0.5, Color(0.5, 0.5, 0.5));
 					
-					  torus->rotate(Vector3f(0.0, 0.0, 1.0), 90);
-					  torus->rotate(Vector3f(1.0, 0.0, 0.0), 70);
-					  torus->translate(0.0, 3.0, -5.0);
+					  torus->rotate(Vector3f(0.0, 1.0, 0.0), 77);
+					  torus->rotate(Vector3f(1.0, 0.0, 0.0), 20);
+					  torus->translate(1.5, 1.0, 0.0);
 					 
 					  scene->addPrimitive(torus);
 

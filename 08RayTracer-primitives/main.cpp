@@ -18,7 +18,6 @@ int height = 480;
 int width = 640;
 Scene *scene;
 
-
 //prototype funktions
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParma, LPARAM lParam);
 

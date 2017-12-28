@@ -35,7 +35,7 @@ public:
 	Hit hitObjects(const Ray& ray)const ;
 
 	void setViewPlane(const ViewPlane &vp);
-	void setPixel(const int x, const int y, const Color& color) const;
+	void setPixel(const int x, const int y, Color& color) const;
 	
 };
 

@@ -78,8 +78,8 @@ Hit Scene::hitObjects(const Ray& ray) const {
 }
 
 
-void Scene::setPixel(const int x, const int y, const Color& color)const {
-
+void Scene::setPixel(const int x, const int y, Color& color)const {
+	color.clamp();
 	int r = (int)(color.r * 255.0);
 	int g = (int)( color.g * 255.0);
 	int b = (int)(color.b * 255.0);

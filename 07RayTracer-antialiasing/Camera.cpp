@@ -210,7 +210,7 @@ void Pinhole::renderScene(const Scene& scene) {
 
 			}
 			
-			color / numSamples;
+			color = color / numSamples;
 			
 			scene.setPixel(x, y, color);
 		}

@@ -12,9 +12,9 @@ Color::Color(){
 
 Color::Color(float r, float g, float b){
 
-	Color::r = (r > 1.0) ? 1.0 : (r < 0) ? 0 : r;
-	Color::g = (g > 1.0) ? 1.0 : (g < 0) ? 0 : g;
-	Color::b = (b > 1.0) ? 1.0 : (b < 0) ? 0 : b;
+	Color::r = r;
+	Color::g = g;
+	Color::b = b;
 
 }
 
@@ -24,6 +24,13 @@ Color::Color(const Color &c){
 	g = c.g;
 	b = c.b;
 }
+
+void Color::clamp(){
+	r = (r > 1.0) ? 1.0 : (r < 0) ? 0 : r;
+	g = (g > 1.0) ? 1.0 : (g < 0) ? 0 : g;
+	b = (b > 1.0) ? 1.0 : (b < 0) ? 0 : b;
+}
+
 
 Color &Color::operator+(const Color &rhs)const {
 
@@ -37,5 +44,5 @@ Color Color::operator*(float scalar) const{
 
 Color Color::operator/(float scalar) const{
 
-	return Color((r / scalar), g / scalar, b / scalar);
+	return Color(r / scalar, g / scalar, b / scalar);
 }

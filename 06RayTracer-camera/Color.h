@@ -16,6 +16,7 @@ public:
 	Color operator*(float scalar) const;
 	Color operator/(float scalar) const;
 
+	void clamp();
 
 public:
 

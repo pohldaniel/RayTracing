@@ -3,23 +3,23 @@
 
 #include "Vector.h"
 #include "Ray.h"
-
 #include "Hit.h"
 
-class Sphere{
+class Sphere {
+	friend class Scene;
 public:
-	Vector3f position;
-	double radius;
-	
-	Color color;
-
-	bool Sphere::hit(const Ray &ray, const Hit &hit) const;
-
-
-
 
 	Sphere(Vector3f position, double radius, Color color);
 	~Sphere();
+
+	bool hit(const Ray &ray, Hit &hit);
+
+
+
+private:
+	Color color;
+	Vector3f position;
+	double radius;
 };
 
 #endif

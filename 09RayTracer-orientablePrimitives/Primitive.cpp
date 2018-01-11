@@ -1,22 +1,22 @@
-#include "Primitives.h"
+#include "Primitive.h"
 
-Primitives::Primitives(){
+Primitive::Primitive(){
 	orientable = false;
 	color = Color(1.0, 0.0, 0.0);
-	Primitives::T.identity();
+	Primitive::T.identity();
 }
 
-Primitives::Primitives(const Color& color){
+Primitive::Primitive(const Color& color){
 	orientable = false;
-	Primitives::color = color;
-	Primitives::T.identity();
+	Primitive::color = color;
+	Primitive::T.identity();
 }
 
-Primitives::~Primitives(){
+Primitive::~Primitive(){
 
 }
 
-Color Primitives::getColor(){
+Color Primitive::getColor(){
 
 	return color;
 }
@@ -24,20 +24,20 @@ Color Primitives::getColor(){
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
-OrientablePrimitives::OrientablePrimitives():Primitives(){
+OrientablePrimitives::OrientablePrimitives() :Primitive(){
 	orientable = true;
-	
+
 }
 
 
-OrientablePrimitives::OrientablePrimitives(const Color& color ) : Primitives(color){
+OrientablePrimitives::OrientablePrimitives(const Color& color) : Primitive(color){
 	orientable = true;
-	
+
 }
 
 OrientablePrimitives::~OrientablePrimitives(){
-	
-	
+
+
 }
 
 void OrientablePrimitives::rotate(const Vector3f &axis, float degrees){
@@ -60,14 +60,14 @@ void OrientablePrimitives::translate(float dx, float dy, float dz){
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-Sphere::Sphere():Primitives(){
+Sphere::Sphere() :Primitive(){
 
 	Sphere::position = Vector3f(0.0, 0.0, 0.0);
 	Sphere::radius = 1;
-	
+
 }
 
-Sphere::Sphere(Vector3f position, double radius, Color color):Primitives(color){
+Sphere::Sphere(Vector3f position, double radius, Color color) :Primitive(color){
 	Sphere::position = position;
 	Sphere::radius = radius;
 
@@ -79,7 +79,7 @@ Sphere::~Sphere(){}
 
 bool Sphere::hit(const Ray &ray, Hit &hit) {
 
-//Use position - origin to get a negative b
+	//Use position - origin to get a negative b
 	Vector3f L = position - ray.origin;
 
 
@@ -95,30 +95,30 @@ bool Sphere::hit(const Ray &ray, Hit &hit) {
 	result = b - sqrt(d);
 	if (result < 0.0){
 
-	result = b + sqrt(d);
+		result = b + sqrt(d);
 
 	}
 
 
 	if (result > 0.0){
 
-	hit.t = result;
-	return true;
+		hit.t = result;
+		return true;
 
 	}
 
-return false;
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-Plane::Plane() :Primitives(){
+Plane::Plane() :Primitive(){
 
 	Plane::normal = Vector3f(0.0, 1.0, 0.0);
 	Plane::distance = -1.0;
 
 }
 
-Plane::Plane(Vector3f normal, float distance, Color color) :Primitives(color){
+Plane::Plane(Vector3f normal, float distance, Color color) :Primitive(color){
 	Plane::normal = normal;
 	Plane::distance = distance;
 
@@ -129,7 +129,7 @@ Plane::~Plane(){}
 bool Plane::hit(const Ray &ray, Hit &hit){
 
 	float result = -1;
-	
+
 	result = (distance - Vector3f::dot(normal, ray.origin)) / Vector3f::dot(normal, ray.direction);
 
 	if (result > 0.0){
@@ -142,13 +142,13 @@ bool Plane::hit(const Ray &ray, Hit &hit){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Torus::Torus():OrientablePrimitives(){
+Torus::Torus() :OrientablePrimitives(){
 
 	Torus::a = 1.0;
 	Torus::b = 0.5;
 }
 
-Torus::Torus(float a, float b, Color color) :OrientablePrimitives( color){
+Torus::Torus(float a, float b, Color color) :OrientablePrimitives(color){
 
 	Torus::a = a;
 	Torus::b = b;
@@ -160,42 +160,42 @@ Torus::~Torus(){
 
 bool Torus::hit(const Ray &ray, Hit &hit){
 
-	float Ra2 = Torus::a*Torus::a;
-	float ra2 = Torus::b*Torus::b;
+	double Ra2 = Torus::a*Torus::a;
+	double ra2 = Torus::b*Torus::b;
 
-	
-	float m = Vector3f::dot(ray.origin, ray.origin);
-	float n = Vector3f::dot(ray.origin, ray.direction);
 
-	float k = (m - ra2 - Ra2) / 2.0;
-	float a = n;												
-	float b = n*n + Ra2*ray.direction[0]*ray.direction[0] + k;
-	float c = k*n + Ra2*ray.origin[0]*ray.direction[0];			
-	float d = k*k + Ra2*ray.origin[0]*ray.origin[0] - Ra2*ra2;	
+	double m = Vector3f::dot(ray.origin, ray.origin);
+	double n = Vector3f::dot(ray.origin, ray.direction);
+
+	double k = (m - ra2 - Ra2) / 2.0;
+	double a = n;
+	double b = n*n + Ra2*ray.direction[0] * ray.direction[0] + k;
+	double c = k*n + Ra2*ray.origin[0] * ray.direction[0];
+	double d = k*k + Ra2*ray.origin[0] * ray.origin[0] - Ra2*ra2;
 
 	//----------------------------------
 
-	float p = -3.0*a*a + 2.0*b;
-	float q = 2.0*a*a*a - 2.0*a*b + 2.0*c;
-	float r = -3.0*a*a*a*a + 4.0*a*a*b - 8.0*a*c + 4.0*d;
+	double p = -3.0*a*a + 2.0*b;
+	double q = 2.0*a*a*a - 2.0*a*b + 2.0*c;
+	double r = -3.0*a*a*a*a + 4.0*a*a*b - 8.0*a*c + 4.0*d;
 	p /= 3.0;
 	r /= 3.0;
-	float Q = p*p + r;
-	float R = 3.0*r*p - p*p*p - q*q;
+	double Q = p*p + r;
+	double R = 3.0*r*p - p*p*p - q*q;
 
-	float h = R*R - Q*Q*Q;
-	float z = 0.0;
+	double h = R*R - Q*Q*Q;
+	double z = 0.0;
 
 	// discriminant > 0
 	if (h < 0.0)
 	{
-		float sQ = sqrt(Q);
+		double sQ = sqrt(Q);
 		z = 2.0*sQ*cos(acos(R / (sQ*Q)) / 3.0);
 	}
 	// discriminant < 0
 	else
 	{
-		float sQ = pow(sqrt(h) + abs(R), 1.0 / 3.0);
+		double sQ = pow(sqrt(h) + abs(R), 1.0 / 3.0);
 		if (R < 0.0){
 			z = -(sQ + Q / sQ);
 		}
@@ -208,9 +208,9 @@ bool Torus::hit(const Ray &ray, Hit &hit){
 
 	//----------------------------------
 
-	float d1 = z - 3.0*p;
-	float d2 = z*z - 3.0*r;
-	float d1o2 = d1 / 2.0;
+	double d1 = z - 3.0*p;
+	double d2 = z*z - 3.0*r;
+	double d1o2 = d1 / 2.0;
 
 	if (abs(d1)< 0.0001)
 	{
@@ -226,11 +226,11 @@ bool Torus::hit(const Ray &ray, Hit &hit){
 
 	//----------------------------------
 
-	float result = -1.0;
-	float result2 = -1.0;
+	double result = -1.0;
+	double result2 = -1.0;
 
-	float t1;
-	float t2;
+	double t1;
+	double t2;
 
 	h = d1o2 - z + d2;
 	if (h>0.0)
@@ -284,5 +284,5 @@ bool Torus::hit(const Ray &ray, Hit &hit){
 		return true;
 	}
 
-return false;
+	return false;
 }

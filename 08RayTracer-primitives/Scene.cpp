@@ -61,7 +61,7 @@ Scene::~Scene()
 }
 
 
-void Scene::addPrimitive(Primitives* primitive) {
+void Scene::addPrimitive(Primitive* primitive) {
 	primitives.push_back(primitive);
 
 }

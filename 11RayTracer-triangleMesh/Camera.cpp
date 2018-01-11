@@ -17,7 +17,7 @@ Camera::Camera()
 	m_viewDir.set(0.0f, 0.0f, -1.0f);
 	m_zoom = 1.0;
 	m_sampler = new Regular();
-	
+
 }
 
 
@@ -68,21 +68,21 @@ void Camera::updateView()
 {
 
 	// Regenerate the camera's local axes to orthogonalize them.
-		Vector3f::normalize(m_zAxis);
+	Vector3f::normalize(m_zAxis);
 
-		m_yAxis = Vector3f::cross(m_zAxis, m_xAxis);
-		Vector3f::normalize(m_yAxis);
+	m_yAxis = Vector3f::cross(m_zAxis, m_xAxis);
+	Vector3f::normalize(m_yAxis);
 
-		m_xAxis = Vector3f::cross(m_yAxis, m_zAxis);
-		Vector3f::normalize(m_xAxis);
+	m_xAxis = Vector3f::cross(m_yAxis, m_zAxis);
+	Vector3f::normalize(m_xAxis);
 
-		m_viewDir = -m_zAxis;
+	m_viewDir = -m_zAxis;
 }
 
 void Camera::updateView(const Vector3f &eye, const Vector3f &target, const Vector3f &up){
-	
+
 	m_eye = eye;
-	
+
 	m_zAxis = m_eye - target;
 	Vector3f::normalize(m_zAxis);
 
@@ -154,7 +154,7 @@ Orthographic::Orthographic(const Vector3f &eye,
 	Sampler  *sampler) : Camera(eye, xAxis, yAxis, zAxis, target, up, zoom, sampler){	}
 
 void Orthographic::renderScene(const Scene& scene) {
-	
+
 	ViewPlane	vp = scene.vp;
 
 	int n = (int)sqrt((float)m_sampler->getNumSamples());
@@ -195,43 +195,40 @@ Pinhole::Pinhole() :Camera()
 }
 
 Pinhole::Pinhole(const Vector3f &eye,
-				 const Vector3f &xAxis,
-				 const Vector3f &yAxis,
-				 const Vector3f &zAxis,
-				 const float zoom,
-				 const float d,
-				 Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, zoom, sampler){
+	const Vector3f &xAxis,
+	const Vector3f &yAxis,
+	const Vector3f &zAxis,
+	const float zoom,
+	const float d,
+	Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, zoom, sampler){
 	m_d = d;
 }
 
 Pinhole::Pinhole(const Vector3f &eye,
-				 const Vector3f &xAxis,
-				 const Vector3f &yAxis,
-				 const Vector3f &zAxis,
-				 const Vector3f &target,
-				 const Vector3f &up,
-				 const float zoom,
-				 const float d,
-				 Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, target, up, zoom , sampler){
+	const Vector3f &xAxis,
+	const Vector3f &yAxis,
+	const Vector3f &zAxis,
+	const Vector3f &target,
+	const Vector3f &up,
+	const float zoom,
+	const float d,
+	Sampler  *sampler) : Camera(eye, xAxis, yAxis, zAxis, target, up, zoom, sampler){
 
 	m_d = d;
 
 }
 
-
-
 Vector3f & Pinhole::getViewDirection(float px, float py) const{
 	Vector3f dir = m_xAxis *px + m_yAxis*py + m_viewDir * m_d;
-	Vector3f::normalize(dir);
-	
+
 	return(dir);
 
 }
 
 void Pinhole::renderScene(const Scene& scene) {
-	
+
 	ViewPlane	vp = scene.vp;
-	
+
 
 	int n = (int)sqrt((float)m_sampler->getNumSamples());
 	int numSamples = n*n;
@@ -241,8 +238,8 @@ void Pinhole::renderScene(const Scene& scene) {
 	Vector2f	sp;
 	float		px;
 	float		py;
-	
-	
+
+
 	vp.s /= m_zoom;
 	ray.origin = m_eye;
 
@@ -255,18 +252,15 @@ void Pinhole::renderScene(const Scene& scene) {
 				px = vp.s * (x - 0.5 * vp.hres + sp[0]);
 				py = vp.s * (y - 0.5 * vp.vres + sp[1]);
 
-				
+
 
 				ray.direction = getViewDirection(px, py);
-
-				
-
 				color = color + scene.hitObjects(ray).color;
 
 			}
-			
+
 			color = color / numSamples;
-			
+
 			scene.setPixel(x, y, color);
 		}
 	}

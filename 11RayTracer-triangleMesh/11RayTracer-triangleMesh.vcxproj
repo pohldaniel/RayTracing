@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}</ProjectGuid>
+    <ProjectGuid>{7B2D1178-C069-4B65-BEA7-75086984E19D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>My01RayTracerbasic</RootNamespace>
+    <RootNamespace>My11RayTracertriangleMesh</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -79,18 +79,26 @@
     <ClCompile Include="Bitmap.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Hit.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="Ray.cpp" />
-    <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="Sampler.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Vector.cpp" />
+    <ClCompile Include="ViewPlane.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bitmap.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="Hit.h" />
+    <ClInclude Include="Primitive.h" />
     <ClInclude Include="Ray.h" />
-    <ClInclude Include="Sphere.h" />
+    <ClInclude Include="Sampler.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Vector.h" />
+    <ClInclude Include="ViewPlane.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

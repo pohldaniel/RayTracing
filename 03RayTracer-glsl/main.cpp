@@ -42,7 +42,6 @@ enum DIRECTION {
 	DIR_FORCE_32BIT = 0x7FFFFFFF
 };
 
-
 bool g_enableVerticalSync;
 GLuint vbo;
 GLuint program;

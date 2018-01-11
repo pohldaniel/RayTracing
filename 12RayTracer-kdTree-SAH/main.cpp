@@ -1,47 +1,52 @@
-// includes
-#include <windows.h>			// standard Windows app include
+#define WIN32_LEAN_AND_MEAN
+
+#include <windows.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <vector> 
 #include <iostream>
-#include <stdlib.h>
+#include "Primitive.h"
+#include "Bitmap.h"
 
-#include "Scene.h"
-#include "Sampler.h"
-
+#include "scene.h"
 #include "Camera.h"
-#include "Sphere.h"
 
 
-// globals
+#define SCRWIDTH	800
+#define SCRHEIGHT	600
 
-int height = 480;
-int width = 640;
+
+
+Bitmap *bitmap;
 Scene *scene;
 
-
-//prototype funktions
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParma, LPARAM lParam);
 
 
-// the main windows entry point
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
-{
 
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
 
 	AllocConsole();
 	AttachConsole(GetCurrentProcessId());
 	freopen("CON", "w", stdout);
 	SetConsoleTitle("Debug console");
 	MoveWindow(GetConsoleWindow(), 790, 0, 500, 200, true);
-	
+
 	WNDCLASSEX windowClass;		// window class
 	HWND	   hwnd;			// window handle
 	MSG		   msg;				// message
 	HDC		   hdc;				// device context handle
 
-	
 
-	
+	try {
+
+		bitmap = new Bitmap(SCRHEIGHT, SCRWIDTH, 24);
+	}
+	catch (const char* e) {
+		MessageBox(NULL, e, "Error", MB_OK);
+		return 0;
+	}
 
 	// fill out the window class structure
 	windowClass.cbSize = sizeof(WNDCLASSEX);
@@ -57,18 +62,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	windowClass.lpszClassName = "MyClass";
 	windowClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);			// windows logo small icon
 
+
 	// register the windows class
 	if (!RegisterClassEx(&windowClass))
 		return 0;
 
-	// class registered, so now create our window
 	hwnd = CreateWindowEx(NULL,						// extended style
 		"MyClass",									// class name
 		"RayTracer",							// app name
 		WS_OVERLAPPEDWINDOW,
 		0, 0,										// x,y coordinate
-		800,
-		600,										// width, height
+		1000,
+		800,										// width, height
 		NULL,										// handle to parent
 		NULL,										// handle to menu
 		hInstance,									// application instance
@@ -78,15 +83,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if (!hwnd)
 		return 0;
 
-	ShowWindow(hwnd, SW_SHOW);			// display the window
-	UpdateWindow(hwnd);					// update the window
+	ShowWindow(hwnd, SW_SHOW);
+	UpdateWindow(hwnd);
 
-	
-
-	
-
-	
-	
 
 	while (GetMessage(&msg, 0, 0, 0))
 	{
@@ -94,14 +93,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		DispatchMessage(&msg);
 	}
 
-	
+	delete bitmap;
 	return msg.wParam;
 }
 
 
-
-
-// the Windows Procedure event handler
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc, hmemdc;
@@ -109,56 +105,67 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	POINT pt;
 	RECT rect;
 
-
 	switch (message)
 	{
+
 	case WM_CREATE:
-	{
-					  Vector3f camPos{ 0, 0, 0 };
-					  Vector3f xAxis{ 1, 0, 0 };
-					  Vector3f yAxis{ 0, 1, 0 };
-					  Vector3f zAxis{ 0, 0, 1 };
-
-					  Regular *regular = new Regular(1,1);
-					 
+	{				 
+					  Mesh* mesh = new Mesh();
+					  mesh->loadObject("face.obj", 2.0);
 					
-					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 500.0, 1, regular);
 
+
+					  Torus *torus = new Torus(1.0, 0.5, Color(0.5, 0.5, 0.5));
+
+					  torus->rotate(Vector3f(0.0, 1.0, 0.0), 77);
+					  torus->rotate(Vector3f(1.0, 0.0, 0.0), 20);
+					  torus->translate(0.4, 0.0, 2.0);
+
+					  mesh->translate(0.0 , 0.2 , 0.0);
+					  Vector3f camPos( 0.0f, 0.0f, 20.0f );
+					  Vector3f xAxis( 1, 0, 0 );
+					  Vector3f yAxis( 0, 1, 0 );
+					  Vector3f zAxis( 0, 0, 1 );
+					
+
+					  Regular *regular = new Regular(4, 1);
+
+					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 500.0, 1.0, regular);
+
+					
 					  scene = new Scene();
-					  scene->addSphere(&Sphere(Vector3f(1.0, 0, -5), 1, Color(0, 1.0, 0)));
-					  scene->addSphere(&Sphere(Vector3f(0, 0, -7), 1, Color(1.0, 0, 0)));
+
+					  scene->addPrimitive(new Plane(Vector3f(0.0, 1.0, 0.0), -6.0, Color(0, 0, 1.0)));
+					  scene->addPrimitive(new Sphere(Vector3f(-6.0, -4.0, 0), 4, Color(1.0, 0, 0)));
+					  scene->addPrimitive(mesh);	
+					  scene->addPrimitive(torus);
 					 
 					  pinhole->renderScene(*scene);
-
-
+				
 					  InvalidateRect(hWnd, 0, true);
 					  return 0;
 	}
 	case WM_PAINT:
 	{
-
 					 hdc = BeginPaint(hWnd, &ps);
 
 					 hmemdc = CreateCompatibleDC(NULL);
 					 HGDIOBJ m_old = SelectObject(hmemdc, scene->bitmap->hbitmap);
-					
+
 					 BitBlt(hdc, scene->bitmap->width / 12, scene->bitmap->height / 12, scene->bitmap->width, scene->bitmap->height, hmemdc, 0, 0, SRCCOPY);
 
 					 SelectObject(hmemdc, m_old);
 					 DeleteDC(hmemdc);
 
 					 EndPaint(hWnd, &ps);
+
 					 return 0;
 	}
-
 	case WM_DESTROY:
 	{
-					   delete scene;
 					   PostQuitMessage(0);
 					   return 0;
-
 	}
-
 	case WM_KEYDOWN:
 	{
 					   switch (wParam)

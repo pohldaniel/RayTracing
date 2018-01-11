@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01RayTracer-basic", "01RayTracer-basic\01RayTracer-basic.vcxproj", "{AC25CA9E-3540-4345-9C5E-2ABF888F043A}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02RayTracer-light", "02RayTracer-light\02RayTracer-light.vcxproj", "{90148679-E9D3-4A99-AC74-1598EAD97B7E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03RayTracer-glsl", "03RayTracer-glsl\03RayTracer-glsl.vcxproj", "{73850530-6E19-4518-A293-8A5010968A5B}"
@@ -21,16 +19,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "08RayTracer-primitives", "0
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "09RayTracer-orientablePrimitives", "09RayTracer-orientablePrimitives\09RayTracer-orientablePrimitives.vcxproj", "{E85FE357-9D31-46AF-9149-B0EE55034D7B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11RayTracer-triangleMesh", "11RayTracer-triangleMesh\11RayTracer-triangleMesh.vcxproj", "{7B2D1178-C069-4B65-BEA7-75086984E19D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12RayTracer-kdTree-SAH", "12RayTracer-kdTree-SAH\12RayTracer-kdTree-SAH.vcxproj", "{B020379F-E669-44BC-BACB-D02E30A201FA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01RayTracer-basic", "01RayTracer-basic\01RayTracer-basic.vcxproj", "{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AC25CA9E-3540-4345-9C5E-2ABF888F043A}.Debug|Win32.ActiveCfg = Debug|Win32
-		{AC25CA9E-3540-4345-9C5E-2ABF888F043A}.Debug|Win32.Build.0 = Debug|Win32
-		{AC25CA9E-3540-4345-9C5E-2ABF888F043A}.Release|Win32.ActiveCfg = Release|Win32
-		{AC25CA9E-3540-4345-9C5E-2ABF888F043A}.Release|Win32.Build.0 = Release|Win32
 		{90148679-E9D3-4A99-AC74-1598EAD97B7E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{90148679-E9D3-4A99-AC74-1598EAD97B7E}.Debug|Win32.Build.0 = Debug|Win32
 		{90148679-E9D3-4A99-AC74-1598EAD97B7E}.Release|Win32.ActiveCfg = Release|Win32
@@ -63,6 +63,18 @@ Global
 		{E85FE357-9D31-46AF-9149-B0EE55034D7B}.Debug|Win32.Build.0 = Debug|Win32
 		{E85FE357-9D31-46AF-9149-B0EE55034D7B}.Release|Win32.ActiveCfg = Release|Win32
 		{E85FE357-9D31-46AF-9149-B0EE55034D7B}.Release|Win32.Build.0 = Release|Win32
+		{7B2D1178-C069-4B65-BEA7-75086984E19D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7B2D1178-C069-4B65-BEA7-75086984E19D}.Debug|Win32.Build.0 = Debug|Win32
+		{7B2D1178-C069-4B65-BEA7-75086984E19D}.Release|Win32.ActiveCfg = Release|Win32
+		{7B2D1178-C069-4B65-BEA7-75086984E19D}.Release|Win32.Build.0 = Release|Win32
+		{B020379F-E669-44BC-BACB-D02E30A201FA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B020379F-E669-44BC-BACB-D02E30A201FA}.Debug|Win32.Build.0 = Debug|Win32
+		{B020379F-E669-44BC-BACB-D02E30A201FA}.Release|Win32.ActiveCfg = Release|Win32
+		{B020379F-E669-44BC-BACB-D02E30A201FA}.Release|Win32.Build.0 = Release|Win32
+		{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}.Debug|Win32.Build.0 = Debug|Win32
+		{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}.Release|Win32.ActiveCfg = Release|Win32
+		{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

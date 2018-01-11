@@ -9,7 +9,7 @@
 #include "Sampler.h"
 
 #include "Camera.h"
-#include "Primitives.h"
+#include "Primitive.h"
 
 
 // globals

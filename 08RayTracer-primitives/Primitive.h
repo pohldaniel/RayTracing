@@ -1,15 +1,15 @@
-#ifndef _PRIMITIVES_H
-#define _PRIMITIVES_H
+#ifndef _PRIMITIVE_H
+#define _PRIMITIVE_H
 
 #include "Ray.h"
 #include "Hit.h"
 #include "Color.h"
 
-class Primitives{
+class Primitive{
 public:
-	Primitives();
-	Primitives(const Color& color);
-	~Primitives();
+	Primitive();
+	Primitive(const Color& color);
+	~Primitive();
 
 	virtual bool hit(const Ray& ray, Hit &hit) = 0;
 
@@ -20,17 +20,17 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////
-class Sphere : public Primitives{
+class Sphere : public Primitive{
 
 public:
-	
+
 	Sphere();
 	Sphere(Vector3f position, double radius, Color color);
 	~Sphere();
 
 	bool hit(const Ray &ray, Hit &hit);
 
-	
+
 
 private:
 
@@ -38,7 +38,7 @@ private:
 	double radius;
 };
 ///////////////////////////////////////////////////////////////////
-class Plane : public Primitives{
+class Plane : public Primitive{
 
 public:
 

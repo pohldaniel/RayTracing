@@ -89,8 +89,6 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 			ray = Ray(_ray.origin, _ray.direction.normalize());
 		}
 
-			 primitives[j]->hit(ray, hit);
-
 		if (primitives[j]->hit(ray, hit) && hit.t < tmin) {
 
 			hit.color = primitives[j]->color;

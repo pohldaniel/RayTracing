@@ -17,7 +17,7 @@ Camera::Camera()
 	m_viewDir.set(0.0f, 0.0f, -1.0f);
 	m_zoom = 1.0;
 	m_sampler = new Regular();
-	
+
 }
 
 
@@ -68,23 +68,28 @@ void Camera::updateView()
 {
 
 	// Regenerate the camera's local axes to orthogonalize them.
-		Vector3f::normalize(m_zAxis);
+	Vector3f::normalize(m_zAxis);
 
-		m_yAxis = Vector3f::cross(m_zAxis, m_xAxis);
-		Vector3f::normalize(m_yAxis);
+	m_yAxis = Vector3f::cross(m_zAxis, m_xAxis);
+	Vector3f::normalize(m_yAxis);
 
-		m_xAxis = Vector3f::cross(m_yAxis, m_zAxis);
-		Vector3f::normalize(m_xAxis);
+	m_xAxis = Vector3f::cross(m_yAxis, m_zAxis);
+	Vector3f::normalize(m_xAxis);
 
-		m_viewDir = -m_zAxis;
+	m_viewDir = -m_zAxis;
+
+
+	
 }
 
 void Camera::updateView(const Vector3f &eye, const Vector3f &target, const Vector3f &up){
-	
+
 	m_eye = eye;
-	
+
 	m_zAxis = m_eye - target;
 	Vector3f::normalize(m_zAxis);
+
+
 
 	m_xAxis = Vector3f::cross(up, m_zAxis);
 	Vector3f::normalize(m_xAxis);
@@ -96,7 +101,7 @@ void Camera::updateView(const Vector3f &eye, const Vector3f &target, const Vecto
 
 	// take care of the singularity by hardwiring in specific camera orientations
 
-	if (eye[0] == target[0] && eye[2] == target[2] && eye[1] > target[1]) { // camera looking vertically down
+	/*if (eye[0] == target[0] && eye[2] == target[2] && eye[1] > target[1]) { // camera looking vertically down
 		m_xAxis = Vector3f(0, 0, 1);
 		m_yAxis = Vector3f(1, 0, 0);
 		m_viewDir = Vector3f(0, 1, 0);
@@ -106,7 +111,7 @@ void Camera::updateView(const Vector3f &eye, const Vector3f &target, const Vecto
 		m_xAxis = Vector3f(0, 0, 1);
 		m_yAxis = Vector3f(1, 0, 0);
 		m_viewDir = Vector3f(0, -1, 0);
-	}
+	}*/
 
 }
 
@@ -153,8 +158,8 @@ Orthographic::Orthographic(const Vector3f &eye,
 	const float zoom,
 	Sampler  *sampler) : Camera(eye, xAxis, yAxis, zAxis, target, up, zoom, sampler){	}
 
-void Orthographic::renderScene(const Scene& scene) {
-	
+void Orthographic::renderScene( Scene& scene) {
+
 	ViewPlane	vp = scene.vp;
 
 	int n = (int)sqrt((float)m_sampler->getNumSamples());
@@ -165,7 +170,7 @@ void Orthographic::renderScene(const Scene& scene) {
 	Vector2f	sp;
 	float		px;
 	float		py;
-
+	int red, green, blue;
 	vp.s /= m_zoom;
 	ray.direction = Vector3f(0.0, 0.0, -1.0);
 
@@ -195,43 +200,40 @@ Pinhole::Pinhole() :Camera()
 }
 
 Pinhole::Pinhole(const Vector3f &eye,
-				 const Vector3f &xAxis,
-				 const Vector3f &yAxis,
-				 const Vector3f &zAxis,
-				 const float zoom,
-				 const float d,
-				 Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, zoom, sampler){
+	const Vector3f &xAxis,
+	const Vector3f &yAxis,
+	const Vector3f &zAxis,
+	const float zoom,
+	const float d,
+	Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, zoom, sampler){
 	m_d = d;
 }
 
 Pinhole::Pinhole(const Vector3f &eye,
-				 const Vector3f &xAxis,
-				 const Vector3f &yAxis,
-				 const Vector3f &zAxis,
-				 const Vector3f &target,
-				 const Vector3f &up,
-				 const float zoom,
-				 const float d,
-				 Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, target, up, zoom , sampler){
+	const Vector3f &xAxis,
+	const Vector3f &yAxis,
+	const Vector3f &zAxis,
+	const Vector3f &target,
+	const Vector3f &up,
+	const float zoom,
+	const float d,
+	Sampler  *sampler) : Camera(eye, xAxis, yAxis, zAxis, target, up, zoom, sampler){
 
 	m_d = d;
 
 }
 
-
-
 Vector3f & Pinhole::getViewDirection(float px, float py) const{
-	Vector3f dir = m_xAxis *px + m_yAxis*py + m_viewDir * m_d;
-	Vector3f::normalize(dir);
-	
+	Vector3f dir = (m_xAxis *px + m_yAxis*py + m_viewDir * m_d).normalize();
+
 	return(dir);
 
 }
 
-void Pinhole::renderScene(const Scene& scene) {
-	
+void Pinhole::renderScene( Scene& scene) {
+
 	ViewPlane	vp = scene.vp;
-	
+
 
 	int n = (int)sqrt((float)m_sampler->getNumSamples());
 	int numSamples = n*n;
@@ -242,31 +244,29 @@ void Pinhole::renderScene(const Scene& scene) {
 	float		px;
 	float		py;
 	
-	
+	int red, green, blue;
 	vp.s /= m_zoom;
 	ray.origin = m_eye;
 
-	for (int y = 0; y < vp.vres; y++){
-		for (int x = 0; x < vp.hres; x++){// across 					
+	for (int y = 0; y < 600; y++){
+		for (int x = 0; x <800; x++){					
 			color = Color(0, 0, 0);
 
 			for (int i = 0; i < numSamples; i++){
 				sp = m_sampler->sampleUnitSquare();
-				px = vp.s * (x - 0.5 * vp.hres + sp[0]);
-				py = vp.s * (y - 0.5 * vp.vres + sp[1]);
+				px = vp.s * (x - 0.5 * 800 + sp[0]);
+				py = vp.s * (y - 0.5 * 600 + sp[1]);
 
-				
+			
 
 				ray.direction = getViewDirection(px, py);
-
+				color = color + scene.hitObjects(ray).color;
 				
 
-				color = color + scene.hitObjects(ray).color;
-
 			}
-			
+
 			color = color / numSamples;
-			
+
 			scene.setPixel(x, y, color);
 		}
 	}

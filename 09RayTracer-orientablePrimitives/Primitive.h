@@ -1,5 +1,5 @@
-#ifndef _PRIMITIVES_H
-#define _PRIMITIVES_H
+#ifndef _PRIMITIVE_H
+#define _PRIMITIVE_H
 
 //for std::min
 #include <algorithm>
@@ -8,23 +8,23 @@
 #include "Hit.h"
 #include "Color.h"
 
-class Scene;
 
-class Primitives{
+
+class Primitive{
 
 	friend class Scene;
 
 public:
-	Primitives();
-	Primitives(const Color& color);
-	~Primitives();
+	Primitive();
+	Primitive(const Color& color);
+	~Primitive();
 
 	virtual bool hit(const Ray& ray, Hit &hit) = 0;
 
 	Color getColor();
 
 
-	
+
 
 
 protected:
@@ -37,7 +37,7 @@ protected:
 
 
 
-class OrientablePrimitives : public Primitives {
+class OrientablePrimitives : public Primitive {
 
 
 public:
@@ -48,22 +48,22 @@ public:
 
 	void rotate(const Vector3f &axis, float degrees);
 	void translate(float dx, float dy, float dz);
-	
-	
+private:
+
 };
 
 //////////////////////////////////////////////////////////////////
-class Sphere : public Primitives{
+class Sphere : public Primitive{
 
 public:
-	
+
 	Sphere();
 	Sphere(Vector3f position, double radius, Color color);
 	~Sphere();
 
 	bool hit(const Ray &ray, Hit &hit);
 
-	
+
 
 private:
 
@@ -71,7 +71,7 @@ private:
 	double radius;
 };
 ///////////////////////////////////////////////////////////////////
-class Plane : public Primitives{
+class Plane : public Primitive{
 
 public:
 

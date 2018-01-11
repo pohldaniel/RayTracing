@@ -4,12 +4,17 @@
 #include <vector> 
 #include <iostream>
 #include <stdlib.h>
+#include <string>
+#include <fstream>
+#include <algorithm>
+#include <cstdio>
 
 #include "Scene.h"
 #include "Sampler.h"
 
 #include "Camera.h"
-#include "Sphere.h"
+#include "Primitive.h"
+
 
 
 // globals
@@ -17,7 +22,6 @@
 int height = 480;
 int width = 640;
 Scene *scene;
-
 
 //prototype funktions
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParma, LPARAM lParam);
@@ -81,12 +85,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ShowWindow(hwnd, SW_SHOW);			// display the window
 	UpdateWindow(hwnd);					// update the window
 
-	
 
-	
-
-	
-	
 
 	while (GetMessage(&msg, 0, 0, 0))
 	{
@@ -108,28 +107,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	POINT pt;
 	RECT rect;
-
+	Mesh* triangleMesh;
 
 	switch (message)
 	{
 	case WM_CREATE:
-	{
-					  Vector3f camPos{ 0, 0, 0 };
+	{				
+					  triangleMesh = new Mesh();
+					  triangleMesh->loadObject("face.obj");
+					 
+					
+					  Vector3f camPos{ -0.3f, -1.5f, 20.0 };
 					  Vector3f xAxis{ 1, 0, 0 };
 					  Vector3f yAxis{ 0, 1, 0 };
 					  Vector3f zAxis{ 0, 0, 1 };
 
-					  Regular *regular = new Regular(1,1);
+					  Regular *regular = new Regular(4,1);
 					 
-					
-					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 500.0, 1, regular);
+					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 1.0, 600, regular);
+					  //Orthographic *orthographic = new Orthographic(camPos, xAxis, yAxis, zAxis, 50, regular);
 
 					  scene = new Scene();
-					  scene->addSphere(&Sphere(Vector3f(1.0, 0, -5), 1, Color(0, 1.0, 0)));
-					  scene->addSphere(&Sphere(Vector3f(0, 0, -7), 1, Color(1.0, 0, 0)));
+
+					
+					
+
+					  for (int i = 0; i <triangleMesh->triangles.size(); i++){
+
+						  scene->addPrimitive(triangleMesh ->triangles[i]);
+					  }
+
 					 
 					  pinhole->renderScene(*scene);
-
+					  
 
 					  InvalidateRect(hWnd, 0, true);
 					  return 0;
@@ -152,7 +162,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	case WM_DESTROY:
-	{
+	{				  
 					   delete scene;
 					   PostQuitMessage(0);
 					   return 0;
@@ -183,3 +193,5 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 }
+
+

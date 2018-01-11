@@ -9,7 +9,7 @@
 #include "Sampler.h"
 
 #include "Camera.h"
-#include "Primitives.h"
+#include "Primitive.h"
 
 
 // globals
@@ -110,12 +110,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{				  //orthographi view
 					 // Vector3f camPos{ 0, 0, 500.0 };
 
-					  Vector3f camPos{ 0, 0, 5.0 };
+					  Vector3f camPos{ 0, 0, 20.0 };
 					  Vector3f xAxis{ 1, 0, 0 };
 					  Vector3f yAxis{ 0, 1, 0 };
 					  Vector3f zAxis{ 0, 0, 1 };
 
-					  Regular *regular = new Regular(4,1);
+					  Regular *regular = new Regular(1,1);
 					 
 					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, 1.0, 500, regular);
 					  //Orthographic *orthographic = new Orthographic(camPos, xAxis, yAxis, zAxis, 50, regular);
@@ -130,9 +130,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					 
 					  scene->addPrimitive(torus);
 
-					  scene->addPrimitive(new Plane(Vector3f(0.0, 1.0, 0.0), -1.0, Color(0, 0, 1.0)));
+					 /* scene->addPrimitive(new Plane(Vector3f(0.0, 1.0, 0.0), -1.0, Color(0, 0, 1.0)));
 					  scene->addPrimitive(new Sphere(Vector3f(-1.0, -1.0, -7), 2, Color(1.0, 0, 0)));
-					  scene->addPrimitive(new Sphere(Vector3f(1.0, 0, -5), 1, Color(0.7, 0.3, 0.2)));
+					  scene->addPrimitive(new Sphere(Vector3f(1.0, 0, -5), 1, Color(0.7, 0.3, 0.2)));*/
 					
 					  
 

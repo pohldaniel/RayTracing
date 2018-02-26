@@ -21,8 +21,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "09RayTracer-orientablePrimi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11RayTracer-triangleMesh", "11RayTracer-triangleMesh\11RayTracer-triangleMesh.vcxproj", "{7B2D1178-C069-4B65-BEA7-75086984E19D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12RayTracer-kdTree-SAH", "12RayTracer-kdTree-SAH\12RayTracer-kdTree-SAH.vcxproj", "{B020379F-E669-44BC-BACB-D02E30A201FA}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01RayTracer-basic", "01RayTracer-basic\01RayTracer-basic.vcxproj", "{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}"
 EndProject
 Global
@@ -67,10 +65,6 @@ Global
 		{7B2D1178-C069-4B65-BEA7-75086984E19D}.Debug|Win32.Build.0 = Debug|Win32
 		{7B2D1178-C069-4B65-BEA7-75086984E19D}.Release|Win32.ActiveCfg = Release|Win32
 		{7B2D1178-C069-4B65-BEA7-75086984E19D}.Release|Win32.Build.0 = Release|Win32
-		{B020379F-E669-44BC-BACB-D02E30A201FA}.Debug|Win32.ActiveCfg = Debug|Win32
-		{B020379F-E669-44BC-BACB-D02E30A201FA}.Debug|Win32.Build.0 = Debug|Win32
-		{B020379F-E669-44BC-BACB-D02E30A201FA}.Release|Win32.ActiveCfg = Release|Win32
-		{B020379F-E669-44BC-BACB-D02E30A201FA}.Release|Win32.Build.0 = Release|Win32
 		{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}.Debug|Win32.ActiveCfg = Debug|Win32
 		{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}.Debug|Win32.Build.0 = Debug|Win32
 		{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}.Release|Win32.ActiveCfg = Release|Win32

@@ -21,8 +21,6 @@ https://www.shadertoy.com/view/4djXRD
 Output from 09RayTracer-orientablePrimitives.
 ![bsp1](https://user-images.githubusercontent.com/30089026/34413435-d91096b2-ebe3-11e7-88f9-c476e2421ca9.jpg)
 
-I have used some code from http://www.flipcode.com/archives/Raytracing_Topics_Techniques-Part_7_Kd-Trees_and_More_Speed.shtml and do not own the Copyright.
-
 Output from 12RayTracer-kdTree-SAH.
 ![bsp4](https://user-images.githubusercontent.com/30089026/34851359-f76fa6f6-f729-11e7-9454-08c32dfbc5fa.jpg)
 

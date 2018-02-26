@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11RayTracer-triangleMesh", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01RayTracer-basic", "01RayTracer-basic\01RayTracer-basic.vcxproj", "{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12RayTracer-kdTree-SAH", "12RayTracer-kdTree-SAH\12RayTracer-kdTree-SAH.vcxproj", "{1057AAB1-EF54-453E-A557-7C94DBE12C9A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -69,6 +71,10 @@ Global
 		{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}.Debug|Win32.Build.0 = Debug|Win32
 		{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}.Release|Win32.ActiveCfg = Release|Win32
 		{E1A9D17C-6153-44FB-A01C-7CD8456E8A43}.Release|Win32.Build.0 = Release|Win32
+		{1057AAB1-EF54-453E-A557-7C94DBE12C9A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1057AAB1-EF54-453E-A557-7C94DBE12C9A}.Debug|Win32.Build.0 = Debug|Win32
+		{1057AAB1-EF54-453E-A557-7C94DBE12C9A}.Release|Win32.ActiveCfg = Release|Win32
+		{1057AAB1-EF54-453E-A557-7C94DBE12C9A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

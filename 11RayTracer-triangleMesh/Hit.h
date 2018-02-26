@@ -1,5 +1,5 @@
-#ifndef _HIT_
-#define _HIT_
+#ifndef _HIT_H
+#define _HIT_H
 
 #include "Color.h"
 

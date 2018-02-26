@@ -22,6 +22,7 @@ Output from 09RayTracer-orientablePrimitives.
 ![bsp1](https://user-images.githubusercontent.com/30089026/34413435-d91096b2-ebe3-11e7-88f9-c476e2421ca9.jpg)
 
 Output from 12RayTracer-kdTree-SAH.
+
 ![bsp2](https://user-images.githubusercontent.com/30089026/36678161-55425b66-1b10-11e8-8ec3-5ac000167036.jpg)
 
 

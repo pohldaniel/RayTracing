@@ -116,7 +116,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  Vector3f target(0, 0.0, -10);
 					  Vector3f up(0, 1.0, 0.0);
 
-					  Regular *regular = new Regular(1, 1);
+					  Regular *regular = new Regular(4, 1);
 
 					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, target, up, 500.0, 1.0, regular);
 

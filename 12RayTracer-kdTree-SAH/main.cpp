@@ -121,7 +121,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  Pinhole *pinhole = new Pinhole(camPos, xAxis, yAxis, zAxis, target, up, 500.0, 1.0, regular);
 
 					
-					  scene = new Scene();
+					  scene = new Scene(ViewPlane(width, height, 1.0));
 					 
 					  scene->addPrimitive(new Plane(Vector3f(0.0, 1.0, 0.0), -6.0, Color(0, 0, 1.0)));
 					  scene->addPrimitive(new Sphere(Vector3f(-8.0, -4.0, 0), 4, Color(1.0, 0, 0)));

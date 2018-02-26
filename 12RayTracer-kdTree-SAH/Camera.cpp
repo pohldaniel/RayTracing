@@ -254,8 +254,8 @@ void Pinhole::renderScene( Scene& scene) {
 
 			for (int i = 0; i < numSamples; i++){
 				sp = m_sampler->sampleUnitSquare();
-				px = vp.s * (x - 0.5 * 800 + sp[0]);
-				py = vp.s * (y - 0.5 * 600 + sp[1]);
+				px = vp.s * (x - 0.5 * vp.hres + sp[0]);
+				py = vp.s * (y - 0.5 * vp.vres + sp[1]);
 
 			
 

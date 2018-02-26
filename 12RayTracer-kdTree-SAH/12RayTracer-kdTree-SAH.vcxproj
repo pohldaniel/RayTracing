@@ -86,7 +86,6 @@
     <ClCompile Include="Ray.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="Source.cpp" />
     <ClCompile Include="Vector.cpp" />
     <ClCompile Include="ViewPlane.cpp" />
   </ItemGroup>

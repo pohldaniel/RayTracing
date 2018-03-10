@@ -71,7 +71,7 @@ protected:
 	bool bounds;
 	BBox box;
 	Color m_color;
-	Vector3f normal;	
+	Vector3f normal;
 	bool  orientable;
 	Matrix4f T;
 	Texture* m_texture;
@@ -97,19 +97,19 @@ public:
 class Triangle :public OrientablePrimitive
 {
 public:
-	
+
 	Triangle();
 
-	Triangle(Vector3f &a_V1, Vector3f &a_V2, Vector3f &a_V3, Vector3f &normal);
-	Triangle(Vector3f &a_V1, Vector3f &a_V2, Vector3f &a_V3, Vector3f &normal, const Color& color);
+	//Triangle(Vector3f &a_V1, Vector3f &a_V2, Vector3f &a_V3, Vector3f &normal);
+	Triangle(Vector3f &a_V1, Vector3f &a_V2, Vector3f &a_V3, Color &color, Vector3f &normal);
 	~Triangle();
 
-	
+
 	void hit(const Ray& ray, Hit &hit);
 	void calcBounds();
 	Color getColor(Vector3f& a_Pos);
 
-	void setUV(double a_u1, double a_u2, double a_u3, double a_v1, double a_v2, double a_v3){
+	void setUV(float a_u1, float  a_u2, float  a_u3, float a_v1, float  a_v2, float  a_v3){
 
 		u1 = a_u1;
 		u2 = a_u2;
@@ -119,14 +119,16 @@ public:
 		v3 = a_v3;
 	}
 
+
+
 private:
-	
+
 	Vector3f m_a;
 	Vector3f m_b;
 	Vector3f m_c;
 
-	double u1, u2, u3, v1, v2, v3;
-	double m_U, m_V;
+	float u1, u2, u3, v1, v2, v3;
+
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,12 +144,12 @@ public:
 	Color getColor(Vector3f& a_Pos);
 
 	Vector3f getNormal(Vector3f& a_Pos);
-	
+
 private:
 
-	Vector3f m_Centre;						
-	double m_SqRadius, m_Radius, m_RRadius;	
-				
+	Vector3f m_Centre;
+	double m_SqRadius, m_Radius, m_RRadius;
+
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class Plane : public Primitive{
@@ -207,7 +209,8 @@ public:
 	KDTree* m_KDTree;
 
 private:
-	Triangle *triangle;
+	Triangle *m_triangle;
+
 
 	float	xmin;
 	float	xmax;
@@ -215,7 +218,7 @@ private:
 	float	ymax;
 	float	zmin;
 	float	zmax;
-	
+
 };
 
 

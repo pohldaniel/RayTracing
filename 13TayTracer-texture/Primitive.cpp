@@ -169,7 +169,7 @@ void OrientablePrimitive::translate(float dx, float dy, float dz){
 void OrientablePrimitive::scale(float a, float b, float c){
 
 	Matrix4f scaleMtx;
-	scaleMtx.scale(a , b , c);
+	scaleMtx.scale(a, b, c);
 	T = scaleMtx *T;
 
 }
@@ -178,12 +178,12 @@ Triangle::Triangle() {
 
 }
 
-Triangle::Triangle(Vector3f &a_V1, 
-				   Vector3f &a_V2, 
-				   Vector3f &a_V3, 
-				   Vector3f &normal) : OrientablePrimitive(Color(1.0, 0.0, 0.0), normal)
+Triangle::Triangle(Vector3f &a_V1,
+	Vector3f &a_V2,
+	Vector3f &a_V3,
+	Color	&color,
+	Vector3f &normal) : OrientablePrimitive(color, normal)
 {
-	
 	m_a = a_V1;
 	m_b = a_V2;
 	m_c = a_V3;
@@ -200,7 +200,7 @@ Triangle::~Triangle()
 }
 
 void Triangle::calcBounds(){
-	
+
 	float delta = 0.000001;
 	box.m_Pos[0] = min(min(m_a[0], m_b[0]), m_c[0]) - delta;
 	box.m_Pos[1] = min(min(m_a[1], m_b[1]), m_c[1]) - delta;
@@ -217,8 +217,8 @@ void Triangle::calcBounds(){
 
 // Möller Trumbore algorithm
 void Triangle::hit(const Ray &ray, Hit &hit){
-	
-	
+
+
 	//determinat of the triangle
 	Vector3f v0v1 = Triangle::m_b - Triangle::m_a;
 	Vector3f v0v2 = Triangle::m_c - Triangle::m_a;
@@ -228,7 +228,7 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 	float det = Vector3f::dot(P, v0v1);
 
 	if (det < 0.0001) return;
-	
+
 	float inv_det = 1.0 / det;
 
 	// Barycentric Coefficients 
@@ -239,40 +239,61 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 
 	//std::cout << u << std::endl;
 	if (u < 0.0 || u > 1.0) return;
-	
+
 	// prepare to test v parameter
 	Vector3f Q = Vector3f::cross(T, v0v1);
 
 	// the intersection is outside the triangle
 	float v = Vector3f::dot(ray.direction, Q) * inv_det;
-	if (v < 0 || u + v > 1) return ;
+	if (v < 0 || u + v > 1) return;
 
 	float result = -1.0;
 	result = Vector3f::dot(v0v2, Q) * inv_det;
-	
+
 	if (result > 0.0){
-		
+
 		hit.t = result;
 		hit.hitObject = true;
 	}
-	return ;
+	return;
 
 }
 
-Color Triangle::getColor(Vector3f& a_Pos){
+Color Triangle::getColor(Vector3f& pos){
 
 	if (m_texture){
 
-		double u = u1 + m_U * (u2 - u1) + m_V * (u3 - u1) + 1000.5;
-		double v = v1 + m_U * (v2 - v1) + m_V * (v3 - v1) + 1000.5;
+
+
+		Vector3f apos = Triangle::m_a - pos;
+		Vector3f bpos = Triangle::m_b - pos;
+		Vector3f cpos = Triangle::m_c - pos;
+
+		//calculate areas 
+		// main triangle
+		float abc = Vector3f::cross(m_a - m_b, m_a - m_c).magnitude();
+
+		//first triangle
+		float d1 = Vector3f::cross(bpos, cpos).magnitude() / abc;
+
+		//second triangle
+		float d2 = Vector3f::cross(cpos, apos).magnitude() / abc;
+
+		//third triangle
+		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
+		//////////////////
+
+		double u = u1*d1 + u2*d2 + u3*d3;
+		double v = v1*d1 + v2*d2 + v3*d3;
 
 		//std::cout << u << "  " << v << std::endl;
 
 		Color color = m_texture->getTexel(u, v) * Color(0.2f, 0.2f, 0.2f);
 
-		return color;
+		return  color;
 
-	} else{
+	}
+	else{
 
 		return m_color;
 
@@ -284,7 +305,7 @@ Sphere::Sphere(){
 
 }
 
-Sphere::Sphere(Vector3f& a_Centre, double a_Radius, Color color) :Primitive(color , Vector3f(0.0, 1.0, 0.0) )
+Sphere::Sphere(Vector3f& a_Centre, double a_Radius, Color color) :Primitive(color, Vector3f(0.0, 1.0, 0.0))
 {
 	m_Centre = a_Centre;
 	m_SqRadius = a_Radius * a_Radius;
@@ -298,7 +319,7 @@ Sphere::~Sphere(){
 
 Vector3f Sphere::getNormal(Vector3f& a_Pos)
 {
-		return (a_Pos - m_Centre) * m_RRadius;
+	return (a_Pos - m_Centre) * m_RRadius;
 }
 
 void Sphere::hit(const Ray &ray, Hit &hit) {
@@ -366,7 +387,8 @@ Color Sphere::getColor(Vector3f& pos){
 
 		return color;
 
-	} else {
+	}
+	else {
 
 		return m_color;
 	}
@@ -421,7 +443,8 @@ Color Plane::getColor(Vector3f& a_Pos)
 
 		return color;
 
-	} else{
+	}
+	else{
 
 		return m_color;
 	}
@@ -435,7 +458,7 @@ Torus::Torus() :OrientablePrimitive(){
 	Torus::b = 0.5;
 }
 
-Torus::Torus(float a, float b, Color color) :OrientablePrimitive(color, Vector3f(0.0 , 1.0 ,0.0)){
+Torus::Torus(float a, float b, Color color) :OrientablePrimitive(color, Vector3f(0.0, 1.0, 0.0)){
 
 	Torus::a = a;
 	Torus::b = b;
@@ -604,7 +627,8 @@ Color Torus::getColor(Vector3f& pos){
 
 		return color;
 
-	} else{
+	}
+	else{
 
 		return m_color;
 	}
@@ -612,6 +636,8 @@ Color Torus::getColor(Vector3f& pos){
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 Mesh::Mesh() {
+	Mesh::m_triangle;
+
 
 	Mesh::m_color = Color(1.0, 1.0, 0.0);
 	Mesh::xmin = FLT_MAX;
@@ -627,24 +653,27 @@ Mesh::Mesh() {
 
 Mesh::~Mesh(){
 
+
 }
 
 
 void Mesh::hit(const Ray& a_Ray, Hit &hit){
-	
+
 	// find the nearest intersection
 	m_KDTree->intersectRec(a_Ray, hit);
-	
+
+
+
 }
 
 bool Mesh::loadObject(const char* filename){
-	
-	return loadObject(filename, Vector3f(0.0, 0.0, 0.0) , 1.0);
+
+	return loadObject(filename, Vector3f(0.0, 0.0, 0.0), 1.0);
 }
 
 void Mesh::calcBounds(){
 
-	Vector3f p1 = Vector3f(xmin, ymin, zmin); 
+	Vector3f p1 = Vector3f(xmin, ymin, zmin);
 	Vector3f p2 = Vector3f(xmax, ymax, zmax);
 
 	box = BBox(p1, p2 - p1);
@@ -655,9 +684,11 @@ Color Mesh::getColor(Vector3f& a_Pos){
 
 	if (m_texture){
 
-		return triangle->getColor(a_Pos);
+		m_KDTree->m_primitive->setTexture(m_texture);
+		return m_KDTree->m_primitive->getColor(a_Pos);
 
-	} else {
+	}
+	else {
 
 		return m_color;
 	}
@@ -668,8 +699,9 @@ bool Mesh::loadObject(const char* filename, Vector3f &translate, float scale){
 
 	std::vector<std::string*>coord;
 	std::vector<Vector3f*> vertex;
-	std::vector<std::array<int, 5>> vec;
+	std::vector<std::array<int, 9>> face;
 	std::vector<Vector3f*> normals;
+	std::vector<Vector2f*> texture;
 	std::ifstream in(filename);
 
 	if (!in.is_open()){
@@ -695,6 +727,12 @@ bool Mesh::loadObject(const char* filename, Vector3f &translate, float scale){
 			sscanf(coord[i]->c_str(), "v %f %f %f", &tmpx, &tmpy, &tmpz);
 			vertex.push_back(new Vector3f(tmpx*scale, tmpy * scale, tmpz * scale));
 		}
+		else if ((*coord[i])[0] == 'v' && (*coord[i])[1] == 't'){
+
+			float tmpu, tmpv;
+			sscanf(coord[i]->c_str(), "vt %f %f", &tmpu, &tmpv);
+			texture.push_back(new Vector2f(tmpu, tmpv));
+		}
 		else if ((*coord[i])[0] == 'v' && (*coord[i])[1] == 'n'){
 			float tmpx, tmpy, tmpz;
 			sscanf(coord[i]->c_str(), "vn %f %f %f", &tmpx, &tmpy, &tmpz);
@@ -702,21 +740,22 @@ bool Mesh::loadObject(const char* filename, Vector3f &translate, float scale){
 		}
 		else if ((*coord[i])[0] == 'f'){
 
-			int a, b, c, d, e;
+			int a, b, c, n1, n2, n3, t1, t2, t3;
 
-			if (std::count(coord[i]->begin(), coord[i]->end(), ' ') == 3){
 
-				sscanf(coord[i]->c_str(), "f %d//%d %d//%d %d//%d", &a, &b, &c, &b, &d, &b);
+			if (texture.size()>0){
+				sscanf(coord[i]->c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d ", &a, &t1, &n1, &b, &t2, &n2, &c, &t3, &n3);
 
-				vec.push_back({ { b, a, c, d, 0 } });
+				face.push_back({ { a, b, c, n1, n2, n3, t1, t2, t3 } });
+
 			}
 			else{
 
-				sscanf(coord[i]->c_str(), "f %d//%d %d//%d %d//%d ", &a, &d, &b, &d, &c, &d);
-			
-				vec.push_back({ { a, b, c, d, 0 } });
+				sscanf(coord[i]->c_str(), "f %d/%d %d/%d %d/%d", &a, &n1, &b, &n2, &c, &n3);
 
+				face.push_back({ { a, b, c, n1, n2, n2, 0, 0, 0 } });
 			}
+
 
 		}
 	}
@@ -727,27 +766,40 @@ bool Mesh::loadObject(const char* filename, Vector3f &translate, float scale){
 	Vector3f *c;
 	Triangle *triangle;
 
-	for (int i = 0; i < vec.size(); i++){	
+	for (int i = 0; i < face.size(); i++){
 
-			a = vertex[(vec[i])[0] - 1];
-			b = vertex[(vec[i])[1] - 1];
-			c = vertex[(vec[i])[2] - 1];
+		a = vertex[(face[i])[0] - 1];
+		b = vertex[(face[i])[1] - 1];
+		c = vertex[(face[i])[2] - 1];
 
-			normal = normals[(vec[i])[3] - 1];
 
-			xmin = min(a->getVec()[0] + translate.getVec()[0], min(b->getVec()[0] + translate.getVec()[0], min(c->getVec()[0] + translate.getVec()[0], xmin)));
-			ymin = min(a->getVec()[1] + translate.getVec()[1], min(b->getVec()[1] + translate.getVec()[1], min(c->getVec()[1] + translate.getVec()[1], ymin)));
-			zmin = min(a->getVec()[2] + translate.getVec()[2], min(b->getVec()[2] + translate.getVec()[2], min(c->getVec()[2] + translate.getVec()[2] , zmin)));
 
-			xmax = max(a->getVec()[0] + translate.getVec()[0], max(b->getVec()[0] + translate.getVec()[0], max(c->getVec()[0] + translate.getVec()[0], xmax)));
-			ymax = max(a->getVec()[1] + translate.getVec()[1], max(b->getVec()[1] + translate.getVec()[1], max(c->getVec()[1] + translate.getVec()[1], ymax)));
-			zmax = max(a->getVec()[2] + translate.getVec()[2], max(b->getVec()[2] + translate.getVec()[2], max(c->getVec()[2] + translate.getVec()[2], zmax)));
+		normal = normals[(face[i])[3] - 1];
 
-			triangle = new Triangle(*a + translate, *b + translate, *c + translate, Vector3f(0.0, 0.0, 1.0));
+		xmin = min(a->getVec()[0] + translate.getVec()[0], min(b->getVec()[0] + translate.getVec()[0], min(c->getVec()[0] + translate.getVec()[0], xmin)));
+		ymin = min(a->getVec()[1] + translate.getVec()[1], min(b->getVec()[1] + translate.getVec()[1], min(c->getVec()[1] + translate.getVec()[1], ymin)));
+		zmin = min(a->getVec()[2] + translate.getVec()[2], min(b->getVec()[2] + translate.getVec()[2], min(c->getVec()[2] + translate.getVec()[2], zmin)));
 
-			triangles.push_back(triangle);
+		xmax = max(a->getVec()[0] + translate.getVec()[0], max(b->getVec()[0] + translate.getVec()[0], max(c->getVec()[0] + translate.getVec()[0], xmax)));
+		ymax = max(a->getVec()[1] + translate.getVec()[1], max(b->getVec()[1] + translate.getVec()[1], max(c->getVec()[1] + translate.getVec()[1], ymax)));
+		zmax = max(a->getVec()[2] + translate.getVec()[2], max(b->getVec()[2] + translate.getVec()[2], max(c->getVec()[2] + translate.getVec()[2], zmax)));
+
+		triangle = new Triangle(*a + translate, *b + translate, *c + translate, Color(1.0, 0.0, 1.0), Vector3f(0.0, 0.0, 1.0));
+
+		if (texture.size() > 0){
+
+			triangle->setUV(texture[(face[i])[6] - 1]->getVec()[0],
+				texture[(face[i])[7] - 1]->getVec()[0],
+				texture[(face[i])[8] - 1]->getVec()[0],
+				texture[(face[i])[6] - 1]->getVec()[1],
+				texture[(face[i])[7] - 1]->getVec()[1],
+				texture[(face[i])[8] - 1]->getVec()[1]);
+
+		}
+
+		triangles.push_back(triangle);
 	}
-	std::cout <<"Number of faces: " << vec.size() << std::endl;
+	std::cout << "Number of faces: " << face.size() << std::endl;
 	calcBounds();
 	std::cout << "Build KDTree!" << std::endl;
 
@@ -760,7 +812,7 @@ bool Mesh::loadObject(const char* filename, Vector3f &translate, float scale){
 		delete coord[i];
 
 	}
-	
+
 	for (int i = 0; i < normals.size(); i++){
 		delete normals[i];
 	}

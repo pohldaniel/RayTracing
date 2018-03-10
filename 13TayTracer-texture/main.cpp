@@ -100,11 +100,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_CREATE:
 	{
-					  Vector3f camPos(0.0f, 0.0f, 20.0f);
+					  //Vector3f camPos(-30.0, 0.0, 30.0);
+					  Vector3f camPos(0.0, 0.0, 20.0);
 					  Vector3f xAxis(1, 0, 0);
 					  Vector3f yAxis(0, 1, 0);
 					  Vector3f zAxis(0, 0, 1);
-					  Vector3f target(10.0, 0.0, -10);
+					  //Vector3f target(15.0, 0.0, -10);
+					  Vector3f target(0.0, 0.0, -10);
+
 					  Vector3f up(0, 1.0, 0.0);
 
 					  Regular *regular = new Regular(16, 1);
@@ -115,31 +118,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  scene = new Scene(ViewPlane(width, height, 1.0));
 
 					  Mesh* mesh = new Mesh();
-					  mesh->loadObject("objs/coat.obj", Vector3f(10.0, -5.0, 0.0), 20.0);
-					  //mesh->translate(0.4, -0.4, 0.0);
+					  mesh->loadObject("objs/face.obj", Vector3f(0.0, 0.0, 0.0), 1.0);
+					  mesh->setTexture(new Texture("textures/wood.bmp"));
+					  mesh->getTexture()->setUVScale(1.0, 1.0);
+					  //mesh->rotate(Vector3f(0.0, 1.0, 0.0), -30);
 
 					  Plane *plane = new Plane(Vector3f(0.0, 1.0, 0.0), -6.0, Color(0, 0, 1.0));
 					  plane->setTexture(new Texture("textures/wood.bmp"));
 					  plane->getTexture()->setUVScale(0.05, 0.05);
 
-					  Sphere *sphere = new Sphere(Vector3f(1.0, 0.0, -10.0), 4, Color(0.7, 0.3, 0.2));
+					  Sphere *sphere = new Sphere(Vector3f(5.0, 0.0, -10.0), 8, Color(0.7, 0.3, 0.2));
 					  sphere->setTexture(new Texture("textures/marble.bmp"));
 					  sphere->getTexture()->setUVScale(10.0, 10.0);
 
 					  Torus *torus = new Torus(1.0, 0.8, Color(0.5, 0.5, 0.5));
 
 					  torus->rotate(Vector3f(0.0, 1.0, 0.0), 60);
-					  torus->rotate(Vector3f(1.0, 0.0, 0.0), 40);
+					  torus->rotate(Vector3f(1.0, 0.0, 0.0), 20);
 					  torus->translate(-0.23, 0.0, 2.0);
 					  torus->setTexture(new Texture("textures/checker.bmp"));
-					  torus->getTexture()->setUVScale(2.0, 2.0);
+					  torus->getTexture()->setUVScale(5.0, 2.0);
 
-					 
 
-					  scene->addPrimitive(plane);
-					  scene->addPrimitive(sphere);
-					  scene->addPrimitive(torus);
+
+					  //scene->addPrimitive(plane);
+					  //scene->addPrimitive(sphere);
+					  //scene->addPrimitive(torus);
 					  scene->addPrimitive(mesh);
+
+					  /*  for (int i = 0; i <mesh->triangles.size(); i++){
+					  // mesh->triangles[i]->translate(0.0, -0.5, 0.0);
+					  scene->addPrimitive(mesh->triangles[i]);
+					  }*/
+
 					  pinhole->renderScene(*scene);
 
 					  InvalidateRect(hWnd, 0, true);

@@ -46,7 +46,7 @@ public:
 	const Vector3f &getViewDirection() const;
 
 
-	virtual void renderScene( Scene& scene) = 0;
+	virtual void renderScene(Scene& scene) = 0;
 
 protected:
 
@@ -92,7 +92,7 @@ public:
 
 	~Orthographic();
 
-	void renderScene( Scene& scene);
+	void renderScene(Scene& scene);
 
 };
 
@@ -123,7 +123,7 @@ public:
 	~Pinhole();
 
 	Vector3f &getViewDirection(float px, float py) const;
-	void renderScene( Scene& scene);
+	void renderScene(Scene& scene);
 
 private:
 

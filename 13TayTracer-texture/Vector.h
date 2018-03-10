@@ -29,6 +29,8 @@ public:
 	float &operator[](int index);
 	const float operator[](int index) const;
 
+	const float* getVec()const;
+
 private:
 
 	float vec[2];

@@ -22,9 +22,10 @@ public:
 
 	struct Node{
 
-		Node(std::vector<KD_Primitive *> triangles){
+		Node(std::vector<KD_Primitive *> triangles, KDTree *tree){
 			m_primitives = triangles;
 			m_isLeaf = true;
+			m_tree = tree;
 		}
 
 		Node(int splitAxis, float splitPosition){
@@ -33,18 +34,20 @@ public:
 			m_isLeaf = false;
 		}
 
-		
+
 		int m_splitAxis;
 		float m_splitPosition;
 		Node* left;
 		Node* right;
 		bool m_isLeaf;
 		std::vector<KD_Primitive*>	m_primitives;
-		bool leafIntersect(const Ray& ray, float min, float max, Hit &hit);
+		KDTree* m_tree;
+
+		bool leafIntersect(const Ray& ray, Hit &hit);
 		bool getNearFar(const Ray& ray, Node*& nea, Node*& fa);
 		float distanceToSplitPlane(const Ray& ray);
 
-		
+
 	};
 
 	struct Event{
@@ -74,8 +77,13 @@ public:
 	void buildTree(const std::vector<Triangle *>& list, const BBox &V, int maxDepth = 15);
 	bool intersectRec(const Ray& ray, Hit &hit);
 
+	//used for texturing the mesh
+	Primitive *m_primitive;
+
+
+
 private:
-	
+
 	Node* buildTree(BBox BBox, std::vector<KD_Primitive *> primitives, std::vector<Event *> events, int depth);
 	void createEvents(std::vector<Event *>& events, std::vector<KD_Primitive *>& primitives, std::vector<Triangle *> list);
 	void sortEvents(std::vector<Event*>& events);
@@ -103,6 +111,8 @@ private:
 
 	//the cost of traversing a node
 	int m_costOfTraversal;
+
+
 };
 
 

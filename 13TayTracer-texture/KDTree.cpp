@@ -39,7 +39,7 @@ KDTree::Node* KDTree::buildTree(BBox boundingBox, std::vector<KD_Primitive*> pri
 	if (primitives.size() == 0)
 	{
 		//create a empty leaf node
-		return new Node(primitives);
+		return new Node(primitives, this);
 	}
 
 	//second termination criteria: test if maxDepth has been reached
@@ -50,7 +50,7 @@ KDTree::Node* KDTree::buildTree(BBox boundingBox, std::vector<KD_Primitive*> pri
 		if (events[i]) delete events[i];
 
 		//create a leaf node with the primitives
-		return new Node(primitives);
+		return new Node(primitives, this);
 	}
 
 	//the values computed by the sah function
@@ -70,7 +70,7 @@ KDTree::Node* KDTree::buildTree(BBox boundingBox, std::vector<KD_Primitive*> pri
 		if (events[i]) delete events[i];
 
 		//create a leaf node with the primitives
-		return new Node(primitives);
+		return new Node(primitives, this);
 	}
 
 
@@ -154,8 +154,8 @@ void KDTree::createEvents(std::vector<Event *>& events, std::vector<KD_Primitive
 		for (int j = 0; j < 3; j++)
 		{
 			//look at the bounds in the given dimension
-			float min = primBounds.getPos()[j]  ;
-			float max = primBounds.getSize()[j] ;
+			float min = primBounds.getPos()[j];
+			float max = primBounds.getSize()[j];
 
 
 			//if they are the same, the primitive is perpendicular to that dimension
@@ -174,7 +174,7 @@ void KDTree::createEvents(std::vector<Event *>& events, std::vector<KD_Primitive
 		}
 	}
 
-	
+
 }
 
 void KDTree::sortEvents(std::vector<Event*>& events){
@@ -316,7 +316,7 @@ void KDTree::findSplitPlane(BBox boundingBox, int numberOfPrimitives, std::vecto
 }
 
 float KDTree::computeSAH(BBox boundingBox, unsigned int axis, float position, unsigned int numberOfLeftPrims, unsigned int numberOfPlanarPrims, unsigned int numberOfRightPrims, unsigned int &side){
-	
+
 	//we need the areas of the left and right side, so make two new boxes
 	BBox leftBox = boundingBox;
 	BBox rightBox = boundingBox;
@@ -435,18 +435,18 @@ void KDTree::generateNewEvents(std::vector<KD_Primitive*> &primitives, std::vect
 		if (primitives[i]->m_orientation == 1)
 		{
 			BBox left, right;
-			primitives[i]->m_primitive->clip(axis, position , left, right);
+			primitives[i]->m_primitive->clip(axis, position, left, right);
 
 			//for each dimension
 			for (int j = 0; j < 3; j++)
 			{
 
-				float minLeft = left.getPos()[j] ;
+				float minLeft = left.getPos()[j];
 				float maxLeft = left.getSize()[j];
 				float minRight = right.getPos()[j];
 				float maxRight = right.getSize()[j];
 
-				
+
 				//if they are the same, the primitive is perpendicular to that dimension
 				if (minLeft == maxLeft)
 				{
@@ -533,9 +533,9 @@ void KDTree::splitPrimitives(std::vector<KD_Primitive*>& leftPrimitives, std::ve
 bool KDTree::intersectRec(const Ray& ray, Hit &hit)
 {
 	// intersect the ray with the bounding box of the kdtree
-	
-	
-	
+
+
+
 	if (!m_boundingBox.intersect(ray)){
 		//hit.color = Color(1.0, 0.0, 0.0);
 		hit.hitObject = false;
@@ -551,18 +551,19 @@ bool KDTree::intersectRec(const Ray& ray, Hit &hit)
 
 
 bool KDTree::intersect(Node* node, const Ray& ray, float min, float max, Hit &hit){
-	
+
 	// don't do anything for null nodes
-	if (node == NULL){ 
-		
-		return false; }
+	if (node == NULL){
+
+		return false;
+	}
 
 	// if leaf node, then look for intersection with primitives
 	if (node->m_isLeaf)
 	{
-		
 
-		return node->leafIntersect(ray, min, max, hit);
+
+		return node->leafIntersect(ray, hit);
 	}
 
 	// get near and far child
@@ -592,7 +593,7 @@ bool KDTree::intersect(Node* node, const Ray& ray, float min, float max, Hit &hi
 
 		// first test near side
 		if (intersect(nea, ray, min, dist, hit)) return true;
-		
+
 		// then test the far side
 		return intersect(fa, ray, dist, max, hit);
 	}
@@ -602,44 +603,45 @@ bool KDTree::intersect(Node* node, const Ray& ray, float min, float max, Hit &hi
 
 
 
-bool KDTree::Node::leafIntersect(const Ray& ray, float min, float max, Hit &hit){
-	
+bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
+
 	float tmin = hit.t;
 	float tmin2 = hit.t;
 
-	
+
 	Hit tmp;
 
-		for (unsigned int i = 0; i < m_primitives.size(); i++){
-			m_primitives[i]->m_primitive->hit(ray, tmp);
+	for (unsigned int i = 0; i < m_primitives.size(); i++){
+		m_primitives[i]->m_primitive->hit(ray, tmp);
 
-			
-			if (tmp.hitObject && tmp.t < tmin2) {
-	
-				tmp.color = m_primitives[i]->m_primitive->m_color;
-				tmin2 = tmp.t;
-				
-			}
+
+		if (tmp.hitObject && tmp.t < tmin2) {
+
+			m_tree->m_primitive = m_primitives[i]->m_primitive;
+			tmp.color = m_primitives[i]->m_primitive->m_color;
+			tmin2 = tmp.t;
 
 		}
-		
-		// find closest triangle
-		if (tmin2 <= tmin){
 
-			//hit.color = Color(1.0,0.0,1.0);
-			hit.t = tmin2;
-			hit.hitObject = tmp.hitObject;
-		}
+	}
 
-		return tmp.hitObject;
+	// find closest triangle
+	if (tmin2 <= tmin){
 
-	
+		//hit.color = Color(1.0,0.0,1.0);
+		hit.t = tmin2;
+		hit.hitObject = tmp.hitObject;
+	}
 
-	
-	
-	
+	return tmp.hitObject;
 
-	
+
+
+
+
+
+
+
 }
 
 bool KDTree::Node::getNearFar(const Ray &r, KDTree::Node *&nea, KDTree::Node *&fa){

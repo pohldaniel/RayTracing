@@ -79,7 +79,7 @@ void Camera::updateView()
 	m_viewDir = -m_zAxis;
 
 
-	
+
 }
 
 void Camera::updateView(const Vector3f &eye, const Vector3f &target, const Vector3f &up){
@@ -102,15 +102,15 @@ void Camera::updateView(const Vector3f &eye, const Vector3f &target, const Vecto
 	// take care of the singularity by hardwiring in specific camera orientations
 
 	/*if (eye[0] == target[0] && eye[2] == target[2] && eye[1] > target[1]) { // camera looking vertically down
-		m_xAxis = Vector3f(0, 0, 1);
-		m_yAxis = Vector3f(1, 0, 0);
-		m_viewDir = Vector3f(0, 1, 0);
+	m_xAxis = Vector3f(0, 0, 1);
+	m_yAxis = Vector3f(1, 0, 0);
+	m_viewDir = Vector3f(0, 1, 0);
 	}
 
 	if (eye[0] == target[0] && eye[2] == target[2] && eye[1] < target[1]) { // camera looking vertically down
-		m_xAxis = Vector3f(0, 0, 1);
-		m_yAxis = Vector3f(1, 0, 0);
-		m_viewDir = Vector3f(0, -1, 0);
+	m_xAxis = Vector3f(0, 0, 1);
+	m_yAxis = Vector3f(1, 0, 0);
+	m_viewDir = Vector3f(0, -1, 0);
 	}*/
 
 }
@@ -158,7 +158,7 @@ Orthographic::Orthographic(const Vector3f &eye,
 	const float zoom,
 	Sampler  *sampler) : Camera(eye, xAxis, yAxis, zAxis, target, up, zoom, sampler){	}
 
-void Orthographic::renderScene( Scene& scene) {
+void Orthographic::renderScene(Scene& scene) {
 
 	ViewPlane	vp = scene.vp;
 
@@ -230,7 +230,7 @@ Vector3f & Pinhole::getViewDirection(float px, float py) const{
 
 }
 
-void Pinhole::renderScene( Scene& scene) {
+void Pinhole::renderScene(Scene& scene) {
 
 	ViewPlane	vp = scene.vp;
 
@@ -243,11 +243,11 @@ void Pinhole::renderScene( Scene& scene) {
 	Vector2f	sp;
 	float		px;
 	float		py;
-	
+
 	int red, green, blue;
 	vp.s /= m_zoom;
 	ray.origin = m_eye;
-	
+
 	for (int y = 0; y < vp.vres; y++){
 		for (int x = 0; x < vp.hres; x++){
 			color = Color(0, 0, 0);
@@ -257,11 +257,11 @@ void Pinhole::renderScene( Scene& scene) {
 				px = vp.s * (x - 0.5 * vp.hres + sp[0]);
 				py = vp.s * (y - 0.5 * vp.vres + sp[1]);
 
-			
+
 
 				ray.direction = getViewDirection(px, py);
 				color = color + scene.hitObjects(ray).color;
-				
+
 
 			}
 

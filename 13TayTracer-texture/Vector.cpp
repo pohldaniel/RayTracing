@@ -179,6 +179,11 @@ Vector2f Vector2f::operator*(float scalar) const
 	return Vector2f(vec[0] * scalar, vec[1] * scalar);
 }
 
+const float* Vector2f::getVec()const{
+
+	return vec;
+}
+
 //////////////////////////////////////////////////////////////////////
 
 Vector3f::Vector3f(){}

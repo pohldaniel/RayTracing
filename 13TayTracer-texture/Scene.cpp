@@ -15,7 +15,7 @@ Scene::Scene() {
 
 	}
 
-	
+
 }
 
 
@@ -87,7 +87,7 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 	float	 tmin = FLT_MAX;
 	Color	 color;
 	Ray		 ray;
-	
+
 	hit.color = Color(0.0, 0.0, 0.0);
 
 	for (int j = 0; j < primitives.size(); j++){
@@ -98,25 +98,25 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 			//Construct a Vector(_ray.origin.x, _ray.origin.y, _ray.origin.z, 1.0 )
 			ray = Ray((Vector4f(_ray.origin)    * primitives[j]->T),
 				(Vector4f(_ray.direction) * primitives[j]->T).normalize());
-			
+
 		}
 		else{
 
 			ray = Ray(_ray.origin, _ray.direction.normalize());
 
-			
+
 		}
-	
+
 		primitives[j]->hit(ray, hit);
-		
+
 		if (hit.hitObject && hit.t < tmin) {
-	
+
 			hit.color = primitives[j]->getColor(ray.origin + ray.direction*hit.t);
 
 			tmin = hit.t;
-			
+
 		}
-		
+
 	}//end for
 
 	return hit;

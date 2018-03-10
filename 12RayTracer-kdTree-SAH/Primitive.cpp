@@ -587,13 +587,13 @@ bool Mesh::loadObject(const char* filename, float scale){
 
 			if (std::count(coord[i]->begin(), coord[i]->end(), ' ') == 3){
 
-				sscanf(coord[i]->c_str(), "f %d//%d %d//%d %d//%d", &a, &b, &c, &b, &d, &b);
+				sscanf(coord[i]->c_str(), "f %d/%d %d/%d %d/%d", &a, &b, &c, &b, &d, &b);
 
 				vec.push_back({ { b, a, c, d, 0 } });
 			}
 			else{
 
-				sscanf(coord[i]->c_str(), "f %d//%d %d//%d %d//%d ", &a, &d, &b, &d, &c, &d);
+				sscanf(coord[i]->c_str(), "f %d/%d %d/%d %d/%d ", &a, &d, &b, &d, &c, &d);
 			
 				vec.push_back({ { a, b, c, d, 0 } });
 

@@ -423,11 +423,11 @@ bool Mesh::loadObject(const char* filename){
 
 			if (std::count(coord[i]->begin(), coord[i]->end(), ' ') == 3){
 
-				sscanf(coord[i]->c_str(), "f %d//%d %d//%d %d//%d", &a, &b, &c, &b, &d, &b);
+				sscanf(coord[i]->c_str(), "f %d/%d %d/%d %d/%d", &a, &b, &c, &b, &d, &b);
 				faces.push_back(new face(b, a, c, d));
 			}
 			else{
-				sscanf(coord[i]->c_str(), "f %d//%d %d//%d %d//%d %d//%d", &a, &b, &c, &b, &d, &b, &e, &b);
+				sscanf(coord[i]->c_str(), "f %d/%d %d/%d %d/%d %d/%d", &a, &b, &c, &b, &d, &b, &e, &b);
 				faces.push_back(new face(b, a, c, d, e));
 			}
 

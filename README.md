@@ -26,6 +26,9 @@ Output from 12RayTracer-kdTree-SAH.
 
 ![bsp2](https://user-images.githubusercontent.com/30089026/36678161-55425b66-1b10-11e8-8ec3-5ac000167036.jpg)
 
+Some interesting link I have used for the mapping by vt coordinates exported by 3ds.
+https://answers.unity.com/questions/383804/calculate-uv-coordinates-of-3d-point-on-plane-of-m.html
+
 Output from 13RayTracer-texture.
 
 ![bsp12](https://user-images.githubusercontent.com/30089026/37238017-449a9060-241d-11e8-94a0-8e87fb9c2617.jpg)

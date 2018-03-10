@@ -28,4 +28,5 @@ Output from 12RayTracer-kdTree-SAH.
 
 Output from 13RayTracer-texture.
 
-![bsp3](https://user-images.githubusercontent.com/30089026/36920509-32a1fac2-1e61-11e8-98c9-1c38016c6794.jpg)
+![bsp12](https://user-images.githubusercontent.com/30089026/37238017-449a9060-241d-11e8-94a0-8e87fb9c2617.jpg)
+

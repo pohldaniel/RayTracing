@@ -1,3 +1,4 @@
+
 # RayTracer for educational purposes only
 
 01RayTracer-basic, 02RayTracer-light, 03RayTracer-glsl
@@ -32,4 +33,9 @@ https://answers.unity.com/questions/383804/calculate-uv-coordinates-of-3d-point-
 Output from 13RayTracer-texture.
 
 ![bsp12](https://user-images.githubusercontent.com/30089026/37238017-449a9060-241d-11e8-94a0-8e87fb9c2617.jpg)
+
+Output from 14RayTracer-phong.
+
+![bsp13](https://user-images.githubusercontent.com/30089026/37695071-b0fb4e04-2ccc-11e8-8242-ae35388d3c3b.jpg)
+
 

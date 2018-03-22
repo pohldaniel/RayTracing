@@ -1,9 +1,6 @@
 #ifndef _VECTOR_H
 #define _VECTOR_H
 
-#if !defined(MATHLIB_H)
-#define MATHLIB_H
-
 #include <cfloat>
 #include <cmath>
 #include <algorithm>
@@ -134,14 +131,13 @@ public:
 	Matrix4f operator*(const Matrix4f &rhs) const;
 
 	void identity();
-	void rotate(const Vector3f &axis, float degrees);
+	void invRotate(const Vector3f &axis, float degrees);
 	void invTranslate(float dx, float dy, float dz);
 	void invScale(float a, float b, float c);
-	
+
 
 private:
 	float mtx[4][4];
 };
 
-#endif
 #endif

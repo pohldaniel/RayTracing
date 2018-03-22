@@ -122,22 +122,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					
 
 					  Torus *torus1 = new Torus(1.0, 0.3, Color(0.4, 0.4, 0.4));
-					  torus1->rotate(Vector3f(0.0, 0.0, 1.0), -90);
-					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), -30);
-					  torus1->rotate(Vector3f(0.0, 0.0, 0.0), 0);
-					  torus1->translate(-0.08, 0.03, 0.0);
-					  torus1->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
-					  //torus->setTexture(new Texture("textures/checker.bmp"));
-					  //torus->getTexture()->setUVScale(5.0, 2.0);
+					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), -20);
+					  torus1->rotate(Vector3f(0.0, 0.0, 1.0), 90);
+					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), 30);
 					  
-					 
+					  torus1->translate(-0.08, 0.04, 0.0);
+					  torus1->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
+					  //torus1->setTexture(new Texture("textures/marble.bmp"));
+					  //torus1->getTexture()->setUVScale(1.0, 2.0);
+
 					  Torus *torus2 = new Torus(1.0, 0.3, Color(1.0, 0.4, 0.4));
-					  torus2->rotate(Vector3f(0.0, 0.0, 1.0), -90);
-					  torus2->rotate(Vector3f(1.0, 0.0, 0.0), -80);
+					 
+					  torus2->rotate(Vector3f(0.0, 0.0, 1.0), 90);
+					  torus2->rotate(Vector3f(1.0, 0.0, 0.0), 130);
 					  torus2->rotate(Vector3f(0.0, 0.0, 0.0), 0);
 					  torus2->translate(0.1, 0.0, 0.0);
 					  torus2->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
-
+					  //torus2->setTexture(new Texture("textures/pinkwater.bmp"));
+					  //torus2->getTexture()->setUVScale(1.0, 2.0);
 
 					
 					  scene->addPrimitive(torus1);

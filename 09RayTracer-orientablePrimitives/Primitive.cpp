@@ -3,13 +3,13 @@
 Primitive::Primitive(){
 	orientable = false;
 	color = Color(1.0, 0.0, 0.0);
-	Primitive::T.identity();
+	Primitive::invT.identity();
 }
 
 Primitive::Primitive(const Color& color){
 	orientable = false;
 	Primitive::color = color;
-	Primitive::T.identity();
+	Primitive::invT.identity();
 }
 
 Primitive::~Primitive(){
@@ -24,38 +24,59 @@ Color Primitive::getColor(){
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
-OrientablePrimitives::OrientablePrimitives() :Primitive(){
+OrientablePrimitive::OrientablePrimitive() :Primitive(){
 	orientable = true;
 
 }
 
 
-OrientablePrimitives::OrientablePrimitives(const Color& color) : Primitive(color){
+OrientablePrimitive::OrientablePrimitive(const Color& color) : Primitive(color){
 	orientable = true;
 
 }
 
-OrientablePrimitives::~OrientablePrimitives(){
+OrientablePrimitive::~OrientablePrimitive(){
 
 
 }
 
-void OrientablePrimitives::rotate(const Vector3f &axis, float degrees){
+void OrientablePrimitive::rotate(const Vector3f &axis, float degrees){
 
 	Matrix4f rotMtx;
 	rotMtx.rotate(axis, degrees);
 
-	T = rotMtx *T;
+
+	Matrix4f invRotMtx = Matrix4f(rotMtx[0][0], rotMtx[1][0], rotMtx[2][0], rotMtx[3][0],
+		rotMtx[0][1], rotMtx[1][1], rotMtx[2][1], rotMtx[3][1],
+		rotMtx[0][2], rotMtx[1][2], rotMtx[2][2], rotMtx[3][2],
+		rotMtx[0][3], rotMtx[1][3], rotMtx[2][3], rotMtx[3][3]);
+
+	invT = invRotMtx * invT;
+
 
 
 }
 
-void OrientablePrimitives::translate(float dx, float dy, float dz){
+void OrientablePrimitive::translate(float dx, float dy, float dz){
 
-	Matrix4f transMtx;
-	transMtx.translate(dx, dy, dz);
-	T = transMtx *T;
-	//T *= transMtx;
+	//T^-1 = Translate^-1 * T^-1 
+	invT[3][0] = invT[3][0] - (dx*invT[0][0] + dy*invT[1][0] + dz*invT[2][0]);
+	invT[3][1] = invT[3][1] - (dx*invT[0][1] + dy*invT[1][1] + dz*invT[2][1]);
+	invT[3][2] = invT[3][2] - (dx*invT[0][2] + dy*invT[1][2] + dz*invT[2][2]);
+	invT[3][3] = invT[3][3] - (dx*invT[0][3] + dy*invT[1][3] + dz*invT[2][3]);
+}
+
+void OrientablePrimitive::scale(float a, float b, float c){
+
+	if (a == 0) a = 1.0;
+	if (b == 0) b = 1.0;
+	if (c == 0) c = 1.0;
+
+	invT[0][0] = invT[0][0] * (1.0 / a); invT[1][0] = invT[1][0] * (1.0 / b); invT[2][0] = invT[2][0] * (1.0 / c);
+	invT[0][1] = invT[0][1] * (1.0 / a); invT[1][1] = invT[1][1] * (1.0 / b); invT[2][1] = invT[2][1] * (1.0 / c);
+	invT[0][2] = invT[0][2] * (1.0 / a); invT[1][2] = invT[1][2] * (1.0 / b); invT[2][2] = invT[2][2] * (1.0 / c);
+	invT[0][3] = invT[0][3] * (1.0 / a); invT[1][3] = invT[1][3] * (1.0 / b); invT[2][3] = invT[2][3] * (1.0 / c);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -142,13 +163,13 @@ bool Plane::hit(const Ray &ray, Hit &hit){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Torus::Torus() :OrientablePrimitives(){
+Torus::Torus() :OrientablePrimitive(){
 
 	Torus::a = 1.0;
 	Torus::b = 0.5;
 }
 
-Torus::Torus(float a, float b, Color color) :OrientablePrimitives(color){
+Torus::Torus(float a, float b, Color color) :OrientablePrimitive(color){
 
 	Torus::a = a;
 	Torus::b = b;

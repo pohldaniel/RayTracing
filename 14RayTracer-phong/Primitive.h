@@ -71,16 +71,16 @@ public:
 	void setMaterial(Material* material);
 	Material* getMaterial();
 
+	Matrix4f T;
+	Matrix4f invT;
+
 protected:
 	bool bounds;
 	BBox box;
 	Color m_color;
 	Vector3f normal;	
 	bool  orientable;
-	Matrix4f T;
-	Matrix4f invT;
-	Matrix4f invRot;
-	Matrix4f transT;
+	
 	Texture* m_texture;
 	Material* m_material;
 };

@@ -124,8 +124,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  Torus *torus = new Torus(1.0, 0.5, Color(0.5, 0.5, 0.5));
 					
-					  torus->rotate(Vector3f(0.0, 1.0, 0.0), 77);
-					  torus->rotate(Vector3f(1.0, 0.0, 0.0), 20);
+					  torus->rotate(Vector3f(0.0, 1.0, 0.0), -77);
+					  torus->rotate(Vector3f(1.0, 0.0, 0.0), -20);
 					  torus->translate(1.5, 1.0, 0.0);
 					 
 					  scene->addPrimitive(torus);

@@ -104,8 +104,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				
 					  Torus *torus = new Torus(1.0, 0.5, Color(0.5, 0.5, 0.5));
 
-					  torus->rotate(Vector3f(0.0, 1.0, 0.0), 77);
-					  torus->rotate(Vector3f(1.0, 0.0, 0.0), 20);
+					  torus->rotate(Vector3f(0.0, 1.0, 0.0), -77);
+					  torus->rotate(Vector3f(1.0, 0.0, 0.0), -20);
 					  torus->translate(0.2, 0.0, 2.0);
 
 					  mesh->translate(0.0 , -0.5 , 0.0);

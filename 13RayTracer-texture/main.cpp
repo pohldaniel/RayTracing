@@ -120,13 +120,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  mesh1->loadObject("objs/face.obj", Vector3f(-9.0, 1.0, 0.0), 1.0);
 					  mesh1->setTexture(new Texture("textures/darkchecker.bmp"));
 					  mesh1->getTexture()->setUVScale(1.0, 0.4);
-					  mesh1->rotate(Vector3f(0.0, 1.0, 0.0), -40);
+					  mesh1->rotate(Vector3f(0.0, 1.0, 0.0), 40);
 
 					  Mesh* mesh2 = new Mesh();
 					  mesh2->loadObject("objs/face.obj", Vector3f(9.0, 1.0, 0.0), 1.0);
 					  mesh2->setTexture(new Texture("textures/pinkwater.bmp"));
 					  mesh2->getTexture()->setUVScale(1.0, 1.0);
-					  mesh2->rotate(Vector3f(0.0, 1.0, 0.0), 40);
+					  mesh2->rotate(Vector3f(0.0, 1.0, 0.0), -40);
 
 					  Plane *plane = new Plane(Vector3f(0.0, 1.0, 0.0), -8.0, Color(0, 0, 1.0));
 					  plane->setTexture(new Texture("textures/wood.bmp"));

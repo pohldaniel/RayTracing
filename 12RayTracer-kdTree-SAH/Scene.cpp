@@ -95,8 +95,8 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 
 
 			//Construct a Vector(_ray.origin.x, _ray.origin.y, _ray.origin.z, 1.0 )
-			ray = Ray((Vector4f(_ray.origin)    * primitives[j]->T),
-				(Vector4f(_ray.direction) * primitives[j]->T).normalize());
+			ray = Ray((Vector4f(_ray.origin)    * primitives[j]->invT),
+				(Vector4f(_ray.direction) * primitives[j]->invT).normalize());
 			
 		}
 		else{

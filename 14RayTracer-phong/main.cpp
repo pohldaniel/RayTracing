@@ -101,7 +101,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 	{
 
-					  Vector3f camPos(-2.0, 0.0, 4.0);
+					  Vector3f camPos(0.0, 0.0, 4.0);
 					  Vector3f xAxis(1, 0, 0);
 					  Vector3f yAxis(0, 1, 0);
 					  Vector3f zAxis(0, 0, 1);
@@ -115,31 +115,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  scene = new Scene(ViewPlane(width, height, 1.0), Color(0.2, 0.2, 0.2));
 
-					  
-					  scene->addLight(new Light(Vector3f(0, 200, 600), Color(0.5f, 0.5f, 0.5f)));
-					  scene->addLight(new Light(Vector3f(40, 0, 0), Color(0.5f, 0.5f, 0.5f)));
-					 
-					
+					  scene->addLight(new Light(Vector3f(100, 100, 100), Color(0.4f, 0.4f, 0.4f)));
+					  scene->addLight(new Light(Vector3f(-100, 100, 100), Color(0.4f, 0.4f, 0.4f)));
+
 
 					  Torus *torus1 = new Torus(1.0, 0.3, Color(0.4, 0.4, 0.4));
-					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), -20);
-					  torus1->rotate(Vector3f(0.0, 0.0, 1.0), 90);
-					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), 30);
-					  
-					  torus1->translate(-0.08, 0.04, 0.0);
+					 
+					  torus1->rotate(Vector3f(0.0, 0.0, 1.0), 80);
+					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), 25);
+					  torus1->translate(0.0, 0.05, 0.0);
 					  torus1->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
-					  //torus1->setTexture(new Texture("textures/marble.bmp"));
-					  //torus1->getTexture()->setUVScale(1.0, 2.0);
 
 					  Torus *torus2 = new Torus(1.0, 0.3, Color(1.0, 0.4, 0.4));
 					 
 					  torus2->rotate(Vector3f(0.0, 0.0, 1.0), 90);
-					  torus2->rotate(Vector3f(1.0, 0.0, 0.0), 130);
-					  torus2->rotate(Vector3f(0.0, 0.0, 0.0), 0);
-					  torus2->translate(0.1, 0.0, 0.0);
+					  torus2->rotate(Vector3f(1.0, 0.0, 0.0), 80);
+					  torus2->translate(0.15, 0.0, 0.0);
 					  torus2->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
-					  //torus2->setTexture(new Texture("textures/pinkwater.bmp"));
-					  //torus2->getTexture()->setUVScale(1.0, 2.0);
 
 					
 					  scene->addPrimitive(torus1);

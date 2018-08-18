@@ -10,13 +10,14 @@ const Matrix4f Matrix4f::IDENTITY(1.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 1.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 1.0f);
 
-void Matrix4f::rotate(const Vector3f &axis, float degrees)
-{
-	float rad = (degrees * PI) / 180.0f;
+void Matrix4f::rotate(const Vector3f &axis, float degrees){
 
-	float x = axis[0];
-	float y = axis[1];
-	float z = axis[2];
+	float rad = (degrees * PI) / 180.0f;
+	float magnitude = axis.magnitude();
+
+	float x = axis[0] * (1.0 / magnitude);
+	float y = axis[1] * (1.0 / magnitude);
+	float z = axis[2] * (1.0 / magnitude);
 	float c = cosf(rad);
 	float s = sinf(rad);
 
@@ -41,30 +42,113 @@ void Matrix4f::rotate(const Vector3f &axis, float degrees)
 	mtx[3][3] = 1.0f;
 }
 
+void Matrix4f::invRotate(const Vector3f &axis, float degrees)
+{
+	float rad = (degrees * PI) / 180.0f;
+	float magnitude = axis.magnitude();
+
+	float x = axis[0] * (1.0 / magnitude);
+	float y = axis[1] * (1.0 / magnitude);
+	float z = axis[2] * (1.0 / magnitude);
+	float c = cosf(rad);
+	float s = sinf(rad);
+
+	mtx[0][0] = (x * x) * (1.0f - c) + c;
+	mtx[1][0] = (x * y) * (1.0f - c) + (z * s);
+	mtx[2][0] = (x * z) * (1.0f - c) - (y * s);
+	mtx[3][0] = 0.0f;
+
+	mtx[0][1] = (y * x) * (1.0f - c) - (z * s);
+	mtx[1][1] = (y * y) * (1.0f - c) + c;
+	mtx[2][1] = (y * z) * (1.0f - c) + (x * s);
+	mtx[3][1] = 0.0f;
+
+	mtx[0][2] = (z * x) * (1.0f - c) + (y * s);
+	mtx[1][2] = (z * y) * (1.0f - c) - (x * s);
+	mtx[2][2] = (z * z) * (1.0f - c) + c;
+	mtx[3][2] = 0.0f;
+
+	mtx[0][3] = 0.0f;
+	mtx[1][3] = 0.0f;
+	mtx[2][3] = 0.0f;
+	mtx[3][3] = 1.0f;
+}
+
+
 void Matrix4f::translate(float dx, float dy, float dz){
 
 	mtx[0][0] = 1.0f;
 	mtx[0][1] = 0.0f;
 	mtx[0][2] = 0.0f;
-	mtx[0][3] = 0.0f;
+	mtx[0][3] = dx;
 
 	mtx[1][0] = 0.0f;
 	mtx[1][1] = 1.0f;
+	mtx[1][2] = 0.0f;
+	mtx[1][3] = dy;
+
+	mtx[2][0] = 0.0f;
+	mtx[2][1] = 0.0f;
+	mtx[2][2] = 1.0f;
+	mtx[2][3] = dz;
+
+	mtx[3][0] = 0.0f;
+	mtx[3][1] = 0.0f;
+	mtx[3][2] = 0.0f;
+	mtx[3][3] = 1.0f;
+}
+
+void Matrix4f::invTranslate(float dx, float dy, float dz){
+
+	mtx[0][0] = 1.0f;
+	mtx[0][1] = 0.0f;
+	mtx[0][2] = 0.0f;
+	mtx[0][3] = -dx;
+
+	mtx[1][0] = 0.0f;
+	mtx[1][1] = 1.0f;
+	mtx[1][2] = 0.0f;
+	mtx[1][3] = -dy;
+
+	mtx[2][0] = 0.0f;
+	mtx[2][1] = 0.0f;
+	mtx[2][2] = 1.0f;
+	mtx[2][3] = -dz;
+
+	mtx[3][0] = 0.0f;
+	mtx[3][1] = 0.0f;
+	mtx[3][2] = 0.0f;
+	mtx[3][3] = 1.0f;
+}
+
+void Matrix4f::scale(float a, float b, float c){
+
+	mtx[0][0] = a;
+	mtx[0][1] = 0.0f;
+	mtx[0][2] = 0.0f;
+	mtx[0][3] = 0.0f;
+
+	mtx[1][0] = 0.0f;
+	mtx[1][1] = b;
 	mtx[1][2] = 0.0f;
 	mtx[1][3] = 0.0f;
 
 	mtx[2][0] = 0.0f;
 	mtx[2][1] = 0.0f;
-	mtx[2][2] = 1.0f;
+	mtx[2][2] = c;
 	mtx[2][3] = 0.0f;
 
-	mtx[3][0] = -dx;
-	mtx[3][1] = -dy;
-	mtx[3][2] = -dz;
+	mtx[3][0] = 0.0f;
+	mtx[3][1] = 0.0f;
+	mtx[3][2] = 0.0f;
 	mtx[3][3] = 1.0f;
 }
 
-void Matrix4f::scale(float a, float b, float c){
+void Matrix4f::invScale(float a, float b, float c){
+
+	if (a == 0) a = 1.0;
+	if (b == 0) b = 1.0;
+	if (c == 0) c = 1.0;
 
 	mtx[0][0] = 1.0f / a;
 	mtx[0][1] = 0.0f;
@@ -177,6 +261,11 @@ const float Vector2f::operator[](int index) const{
 Vector2f Vector2f::operator*(float scalar) const
 {
 	return Vector2f(vec[0] * scalar, vec[1] * scalar);
+}
+
+const float* Vector2f::getVec()const{
+
+	return vec;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -339,4 +428,12 @@ Vector3f operator*(const Vector4f &lhs, const Matrix4f &rhs)
 	return Vector3f((lhs[0] * rhs.mtx[0][0]) + (lhs[1] * rhs.mtx[1][0]) + (lhs[2] * rhs.mtx[2][0]) + (lhs[3] * rhs.mtx[3][0]),
 		(lhs[0] * rhs.mtx[0][1]) + (lhs[1] * rhs.mtx[1][1]) + (lhs[2] * rhs.mtx[2][1]) + (lhs[3] * rhs.mtx[3][1]),
 		(lhs[0] * rhs.mtx[0][2]) + (lhs[1] * rhs.mtx[1][2]) + (lhs[2] * rhs.mtx[2][2]) + (lhs[3] * rhs.mtx[3][2]));
+}
+
+
+Vector3f operator*(const Matrix4f &rhs, const Vector4f &lhs)
+{
+	return Vector3f((lhs[0] * rhs.mtx[0][0]) + (lhs[1] * rhs.mtx[0][1]) + (lhs[2] * rhs.mtx[0][2]) + (lhs[3] * rhs.mtx[0][3]),
+		(lhs[0] * rhs.mtx[1][0]) + (lhs[1] * rhs.mtx[1][1]) + (lhs[2] * rhs.mtx[1][2]) + (lhs[3] * rhs.mtx[1][3]),
+		(lhs[0] * rhs.mtx[2][0]) + (lhs[1] * rhs.mtx[2][1]) + (lhs[2] * rhs.mtx[2][2]) + (lhs[3] * rhs.mtx[2][3]));
 }

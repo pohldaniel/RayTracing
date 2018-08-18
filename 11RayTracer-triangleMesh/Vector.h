@@ -1,15 +1,19 @@
 #ifndef _VECTOR_H
 #define _VECTOR_H
 
-#if !defined(MATHLIB_H)
-#define MATHLIB_H
-
+#include <cfloat>
 #include <cmath>
+#include <algorithm>
 
 //-----------------------------------------------------------------------------
 // Common math functions and constants.
 //-----------------------------------------------------------------------------
-const float PI = 3.1415926f;
+#define PI  3.1415926535897932384
+#define TWO_PI  6.2831853071795864769 
+#define PI_ON_180  0.0174532925199432957
+#define invPI  0.3183098861837906715
+#define	invTWO_PI  0.1591549430918953358
+
 
 class Vector2f{
 public:
@@ -21,6 +25,8 @@ public:
 
 	float &operator[](int index);
 	const float operator[](int index) const;
+
+	const float* getVec()const;
 
 private:
 
@@ -49,6 +55,9 @@ public:
 	static Vector3f cross(const Vector3f &p, const Vector3f &q);
 	static float dot(const Vector3f &p, const Vector3f &q);
 	static void normalize(Vector3f &p);
+
+	static Vector3f Min(const Vector3f &p, const Vector3f &q);
+	static Vector3f Max(const Vector3f &p, const Vector3f &q);
 
 	Vector3f normalize();
 	float magnitude() const;
@@ -100,6 +109,7 @@ private:
 class Matrix4f
 {
 	friend Vector3f operator*(const Vector4f &lhs, const Matrix4f &rhs);
+	friend Vector3f operator*(const Matrix4f &rhs, const Vector4f &lhs);
 	friend Vector3f operator*(const Vector3f &lhs, const Matrix4f &rhs);
 	friend Matrix4f operator*(float scalar, const Matrix4f &rhs);
 
@@ -122,12 +132,15 @@ public:
 
 	void identity();
 	void rotate(const Vector3f &axis, float degrees);
+	void invRotate(const Vector3f &axis, float degrees);
 	void translate(float dx, float dy, float dz);
+	void invTranslate(float dx, float dy, float dz);
 	void scale(float a, float b, float c);
+	void invScale(float a, float b, float c);
+
 
 private:
 	float mtx[4][4];
 };
 
-#endif
 #endif

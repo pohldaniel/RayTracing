@@ -73,7 +73,7 @@ protected:
 	Color m_color;
 	Vector3f normal;
 	bool  orientable;
-	Matrix4f T;
+	Matrix4f invT;
 	Texture* m_texture;
 };
 /////////////////////////////////////////////////////////////////////////////

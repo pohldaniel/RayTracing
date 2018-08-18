@@ -79,7 +79,6 @@ Primitive::Primitive() {
 	Primitive::bounds = false;
 	Primitive::T.identity();
 	Primitive::invT.identity();
-	Primitive::invRot.identity();
 	Primitive::box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
 	Primitive::m_texture = NULL;
 	Primitive::m_material = NULL;
@@ -93,7 +92,6 @@ Primitive::Primitive(const Color &color, const Vector3f &normal){
 	Primitive::bounds = false;
 	Primitive::T.identity();
 	Primitive::invT.identity();
-	Primitive::invRot.identity();
 	Primitive::box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
 	Primitive::m_texture = NULL;
 	Primitive::m_material = NULL;
@@ -167,44 +165,51 @@ OrientablePrimitive::~OrientablePrimitive(){
 void OrientablePrimitive::rotate(const Vector3f &axis, float degrees){
 
 	Matrix4f rotMtx;
-	rotMtx.invRotate(axis, degrees);
+	rotMtx.rotate(axis, degrees);
+
 
 	Matrix4f invRotMtx = Matrix4f(rotMtx[0][0], rotMtx[1][0], rotMtx[2][0], rotMtx[3][0],
 		rotMtx[0][1], rotMtx[1][1], rotMtx[2][1], rotMtx[3][1],
 		rotMtx[0][2], rotMtx[1][2], rotMtx[2][2], rotMtx[3][2],
 		rotMtx[0][3], rotMtx[1][3], rotMtx[2][3], rotMtx[3][3]);
 
+	T = T * rotMtx;
+	invT = invRotMtx * invT;
+	
 
-
-	T = rotMtx * T;
-	invT = invT * invRotMtx;
-	invRot = invRot * invRotMtx;
 
 }
 
 void OrientablePrimitive::translate(float dx, float dy, float dz){
 
-	T[3][0] = T[3][0] - (dx*T[0][0] + dy*T[1][0] + dz*T[2][0]);
-	T[3][1] = T[3][1] - (dx*T[0][1] + dy*T[1][1] + dz*T[2][1]);
-	T[3][2] = T[3][2] - (dx*T[0][2] + dy*T[1][2] + dz*T[2][2]);
+	//T = T * Translate
+	T[0][0] = T[0][0] - T[0][3] * dx; T[0][1] = T[0][1] - T[0][3] * dy; T[0][2] = T[0][2] - T[0][3] * dz;
+	T[1][0] = T[1][0] - T[1][3] * dx; T[1][1] = T[1][1] - T[1][3] * dy; T[1][2] = T[1][2] - T[1][3] * dz;
+	T[2][0] = T[2][0] - T[2][3] * dx; T[2][1] = T[2][1] - T[2][3] * dy; T[2][2] = T[2][2] - T[2][3] * dz;
+	T[3][0] = T[3][0] + T[3][3] * dx; T[3][1] = T[3][1] + T[3][3] * dy; T[3][2] = T[3][2] + T[3][3] * dz;
 
-	invT[0][0] = invT[0][0] + invT[0][3] * dx; invT[0][1] = invT[0][1] + invT[0][3] * dy; invT[0][2] = invT[0][2] + invT[0][3] * dz;
-	invT[1][0] = invT[1][0] + invT[1][3] * dx; invT[1][1] = invT[1][1] + invT[1][3] * dy; invT[1][2] = invT[1][2] + invT[1][3] * dz;
-	invT[2][0] = invT[2][0] + invT[2][3] * dx; invT[2][1] = invT[2][1] + invT[2][3] * dy; invT[2][2] = invT[2][2] + invT[2][3] * dz;
-	invT[3][0] = invT[3][0] + dx; invT[3][1] = invT[3][1] + dy; invT[3][2] = invT[3][2] + dz;
-
+	//T^-1 = Translate^-1 * T^-1 
+	invT[3][0] = invT[3][0] - (dx*invT[0][0] + dy*invT[1][0] + dz*invT[2][0]);
+	invT[3][1] = invT[3][1] - (dx*invT[0][1] + dy*invT[1][1] + dz*invT[2][1]);
+	invT[3][2] = invT[3][2] - (dx*invT[0][2] + dy*invT[1][2] + dz*invT[2][2]);
+	invT[3][3] = invT[3][3] - (dx*invT[0][3] + dy*invT[1][3] + dz*invT[2][3]);
 }
 
 void OrientablePrimitive::scale(float a, float b, float c){
 
-	T[0][0] = T[0][0] * (1.0 / a);
-	T[1][1] = T[1][1] * (1.0 / b);
-	T[2][2] = T[2][2] * (1.0 / c);
+	if (a == 0) a = 1.0;
+	if (b == 0) b = 1.0;
+	if (c == 0) c = 1.0;
 
+	T[0][0] = T[0][0] * a;  T[0][1] = T[0][1] * b; T[0][2] = T[0][2] * c;
+	T[1][0] = T[1][0] * a;  T[1][1] = T[1][1] * b; T[1][2] = T[1][2] * c;
+	T[2][0] = T[2][0] * a;  T[2][1] = T[2][1] * b; T[2][2] = T[2][2] * c;
+	T[3][0] = T[3][0] * a;  T[3][1] = T[3][1] * b; T[3][2] = T[3][2] * c;
 
-	invT[0][0] = invT[0][0] * a;
-	invT[1][1] = invT[1][1] * b;
-	invT[2][2] = invT[2][2] * c;
+	invT[0][0] = invT[0][0] * (1.0 / a); invT[1][0] = invT[1][0] * (1.0 / b); invT[2][0] = invT[2][0] * (1.0 / c);
+	invT[0][1] = invT[0][1] * (1.0 / a); invT[1][1] = invT[1][1] * (1.0 / b); invT[2][1] = invT[2][1] * (1.0 / c);
+	invT[0][2] = invT[0][2] * (1.0 / a); invT[1][2] = invT[1][2] * (1.0 / b); invT[2][2] = invT[2][2] * (1.0 / c);
+	invT[0][3] = invT[0][3] * (1.0 / a); invT[1][3] = invT[1][3] * (1.0 / b); invT[2][3] = invT[2][3] * (1.0 / c);
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -706,8 +711,8 @@ Vector3f Torus::getNormal(Vector3f& a_pos){
 	}
 
 	normal = a_pos - tmp;
-
-	normal = Vector4f(normal) * invRot;
+	
+	normal = Vector4f(normal) * T;
 	return normal.normalize();
 
 	// calculate the normal with the gradient df(x)/dx
@@ -717,11 +722,12 @@ Vector3f Torus::getNormal(Vector3f& a_pos){
 	float param_squared = a * a + b * b;
 	float sum_squared = a_pos[0] * a_pos[0] + a_pos[1] * a_pos[1] + a_pos[2] * a_pos[2];
 
-	normal[0] = a_pos[0] * (sum_squared - param_squared);
-	normal[1] = a_pos[1] * (sum_squared - param_squared);
-	normal[2] = a_pos[2] * (sum_squared - param_squared + a * a);
+	normal[0] =  a_pos[0] * (sum_squared - param_squared + a * a);
+	normal[1] =  a_pos[1] * (sum_squared - param_squared );
+	normal[2] =  a_pos[2] * (sum_squared - param_squared );
 
-	normal = Vector4f(normal) * invRot;
+	
+	normal = Vector4f(normal) * T;
 	return normal.normalize();*/
 
 }

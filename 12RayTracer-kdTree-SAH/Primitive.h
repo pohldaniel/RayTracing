@@ -67,7 +67,7 @@ protected:
 	Color color;
 	Vector3f normal;	
 	bool  orientable;
-	Matrix4f T;
+	Matrix4f invT;
 };
 /////////////////////////////////////////////////////////////////////////////
 class OrientablePrimitive : public Primitive {

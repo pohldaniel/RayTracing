@@ -33,21 +33,21 @@ public:
 protected:
 	bool  orientable;
 	Color color;
-	Matrix4f T;
+	Matrix4f invT;
 };
 ////////////////////////////////////////////////////////////////
-class OrientablePrimitives : public Primitive {
+class OrientablePrimitive : public Primitive {
 
 
 public:
 
-	OrientablePrimitives();
-	OrientablePrimitives(const Color& color);
-	~OrientablePrimitives();
+	OrientablePrimitive();
+	OrientablePrimitive(const Color& color);
+	~OrientablePrimitive();
 
 	void rotate(const Vector3f &axis, float degrees);
 	void translate(float dx, float dy, float dz);
-
+	void scale(float a, float b, float);
 
 };
 
@@ -109,7 +109,7 @@ private:
 
 
 /////////////////////////////////////////////////////////////////////
-class Torus : public OrientablePrimitives{
+class Torus : public OrientablePrimitive{
 
 public:
 

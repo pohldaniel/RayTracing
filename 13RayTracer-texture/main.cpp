@@ -120,13 +120,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  mesh1->loadObject("objs/face.obj", Vector3f(-9.0, 1.0, 0.0), 1.0);
 					  mesh1->setTexture(new Texture("textures/darkchecker.bmp"));
 					  mesh1->getTexture()->setUVScale(1.0, 0.4);
-					  mesh1->rotate(Vector3f(0.0, 1.0, 0.0), 40);
+					  mesh1->rotate(Vector3f(0.0, 1.0, 0.0), -40);
 
 					  Mesh* mesh2 = new Mesh();
 					  mesh2->loadObject("objs/face.obj", Vector3f(9.0, 1.0, 0.0), 1.0);
 					  mesh2->setTexture(new Texture("textures/pinkwater.bmp"));
 					  mesh2->getTexture()->setUVScale(1.0, 1.0);
-					  mesh2->rotate(Vector3f(0.0, 1.0, 0.0), -40);
+					  mesh2->rotate(Vector3f(0.0, 1.0, 0.0), 40);
 
 					  Plane *plane = new Plane(Vector3f(0.0, 1.0, 0.0), -8.0, Color(0, 0, 1.0));
 					  plane->setTexture(new Texture("textures/wood.bmp"));
@@ -138,9 +138,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  Torus *torus = new Torus(1.0, 0.4, Color(0.5, 0.5, 0.5));
 
-					  torus->rotate(Vector3f(0.0, 1.0, 0.0), 60);
-					  torus->rotate(Vector3f(1.0, 0.0, 0.0), -40);
-					  torus->translate(0.0, 0.3, 2.0);
+					  torus->rotate(Vector3f(0.0, 1.0, 0.0), -60);
+					  torus->rotate(Vector3f(1.0, 0.0, 0.0), -10);
+					  torus->translate(0.0, 2.0, 20.0);
 					  torus->setTexture(new Texture("textures/checker.bmp"));
 					  torus->getTexture()->setUVScale(5.0, 2.0);
 

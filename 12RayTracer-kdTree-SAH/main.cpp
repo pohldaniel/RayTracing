@@ -106,9 +106,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  torus->rotate(Vector3f(0.0, 1.0, 0.0), -77);
 					  torus->rotate(Vector3f(1.0, 0.0, 0.0), -20);
-					  torus->translate(0.2, 0.0, 2.0);
+					  torus->translate(2.0, 0.0, 10.0);
 
-					  mesh->translate(0.0 , -0.5 , 0.0);
+					  mesh->translate(0.0 , -10.0 , 0.0);
 					  Vector3f camPos( 0.0f, 0.0f, 20.0f );
 					  Vector3f xAxis( 1, 0, 0 );
 					  Vector3f yAxis( 0, 1, 0 );

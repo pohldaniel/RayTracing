@@ -133,7 +133,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  Torus *torus2 = new Torus(1.0, 0.3, Color(1.0, 0.4, 0.4));
 					  torus2->rotate(Vector3f(0.0, 0.0, 1.0), -90);
 					  torus2->rotate(Vector3f(1.0, 0.0, 0.0), -85);
-					  torus2->translate(0.2, 0.0, 0.0);
+					  torus2->translate(1.0, 0.0, 0.0);
 					  torus2->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
 					  //torus2->setTexture(new Texture("textures/pinkwater.bmp"));
 					  //torus2->getTexture()->setUVScale(1.0, 2.0);

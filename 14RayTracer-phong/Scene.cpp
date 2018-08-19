@@ -101,7 +101,7 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 		if (primitives[j]->orientable){
 
 			ray = Ray(primitives[j]->invT * (Vector4f(_ray.origin, 1.0) ),
-				(primitives[j]->invT * Vector4f(_ray.direction, 1.0)).normalize());
+				(primitives[j]->invT * Vector4f(_ray.direction, 0.0)).normalize());
 			
 		}else{
 

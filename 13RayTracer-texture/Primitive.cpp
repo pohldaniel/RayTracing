@@ -159,7 +159,7 @@ void OrientablePrimitive::rotate(const Vector3f &axis, float degrees){
 		rotMtx[0][2], rotMtx[1][2], rotMtx[2][2], rotMtx[3][2],
 		rotMtx[0][3], rotMtx[1][3], rotMtx[2][3], rotMtx[3][3]);
 
-	invT = invRotMtx * invT;
+	invT = invT * invRotMtx;
 
 
 
@@ -167,11 +167,14 @@ void OrientablePrimitive::rotate(const Vector3f &axis, float degrees){
 
 void OrientablePrimitive::translate(float dx, float dy, float dz){
 
-	//T^-1 = Translate^-1 * T^-1 
-	invT[3][0] = invT[3][0] - (dx*invT[0][0] + dy*invT[1][0] + dz*invT[2][0]);
-	invT[3][1] = invT[3][1] - (dx*invT[0][1] + dy*invT[1][1] + dz*invT[2][1]);
-	invT[3][2] = invT[3][2] - (dx*invT[0][2] + dy*invT[1][2] + dz*invT[2][2]);
-	invT[3][3] = invT[3][3] - (dx*invT[0][3] + dy*invT[1][3] + dz*invT[2][3]);
+	//T^-1 = T^-1 * Translate^-1 
+	invT[0][3] = invT[0][3] - (dx*invT[0][0] + dy*invT[0][1] + dz*invT[0][2]);
+	invT[1][3] = invT[1][3] - (dx*invT[1][0] + dy*invT[1][1] + dz*invT[1][2]);
+	invT[2][3] = invT[2][3] - (dx*invT[2][0] + dy*invT[2][1] + dz*invT[2][2]);
+	invT[3][3] = invT[3][3] - (dx*invT[3][0] + dy*invT[3][1] + dz*invT[3][2]);
+
+
+
 }
 
 void OrientablePrimitive::scale(float a, float b, float c){
@@ -180,10 +183,10 @@ void OrientablePrimitive::scale(float a, float b, float c){
 	if (b == 0) b = 1.0;
 	if (c == 0) c = 1.0;
 
-	invT[0][0] = invT[0][0] * (1.0 / a); invT[1][0] = invT[1][0] * (1.0 / b); invT[2][0] = invT[2][0] * (1.0 / c);
-	invT[0][1] = invT[0][1] * (1.0 / a); invT[1][1] = invT[1][1] * (1.0 / b); invT[2][1] = invT[2][1] * (1.0 / c);
-	invT[0][2] = invT[0][2] * (1.0 / a); invT[1][2] = invT[1][2] * (1.0 / b); invT[2][2] = invT[2][2] * (1.0 / c);
-	invT[0][3] = invT[0][3] * (1.0 / a); invT[1][3] = invT[1][3] * (1.0 / b); invT[2][3] = invT[2][3] * (1.0 / c);
+	invT[0][0] = invT[0][0] * (1.0 / a); invT[0][1] = invT[0][1] * (1.0 / b); invT[0][2] = invT[0][2] * (1.0 / c);
+	invT[1][0] = invT[1][0] * (1.0 / a); invT[1][1] = invT[1][1] * (1.0 / b); invT[1][2] = invT[1][2] * (1.0 / c);
+	invT[2][0] = invT[2][0] * (1.0 / a); invT[2][1] = invT[2][1] * (1.0 / b); invT[2][2] = invT[2][2] * (1.0 / c);
+	invT[3][0] = invT[3][0] * (1.0 / a); invT[3][1] = invT[3][1] * (1.0 / b); invT[3][2] = invT[3][2] * (1.0 / c);
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////

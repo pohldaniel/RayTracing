@@ -89,7 +89,7 @@ class Vector4f{
 public:
 	Vector4f();
 	Vector4f(float x_, float y_, float z_, float w_);
-	Vector4f(const Vector3f &rhs);
+	Vector4f(const Vector3f &rhs, float w_);
 	~Vector4f();
 
 	float &operator[](int index);
@@ -111,6 +111,7 @@ class Matrix4f
 	friend Vector3f operator*(const Vector4f &lhs, const Matrix4f &rhs);
 	friend Vector3f operator*(const Matrix4f &rhs, const Vector4f &lhs);
 	friend Vector3f operator*(const Vector3f &lhs, const Matrix4f &rhs);
+	friend Vector3f operator*(const Matrix4f &rhs, const Vector3f &lhs);
 	friend Matrix4f operator*(float scalar, const Matrix4f &rhs);
 
 public:
@@ -131,6 +132,7 @@ public:
 	Matrix4f operator*(const Matrix4f &rhs) const;
 
 	void identity();
+	void transpose();
 	void rotate(const Vector3f &axis, float degrees);
 	void invRotate(const Vector3f &axis, float degrees);
 	void translate(float dx, float dy, float dz);

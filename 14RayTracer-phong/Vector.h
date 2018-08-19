@@ -111,6 +111,7 @@ class Matrix4f
 	friend Vector3f operator*(const Vector4f &lhs, const Matrix4f &rhs);
 	friend Vector3f operator*(const Matrix4f &rhs, const Vector4f &lhs);
 	friend Vector3f operator*(const Vector3f &lhs, const Matrix4f &rhs);
+	friend Vector3f operator*(const Matrix4f &rhs, const Vector3f &lhs);
 	friend Matrix4f operator*(float scalar, const Matrix4f &rhs);
 
 public:

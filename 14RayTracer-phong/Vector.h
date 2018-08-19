@@ -89,7 +89,7 @@ class Vector4f{
 public:
 	Vector4f();
 	Vector4f(float x_, float y_, float z_, float w_);
-	Vector4f(const Vector3f &rhs);
+	Vector4f(const Vector3f &rhs, float w_);
 	~Vector4f();
 
 	float &operator[](int index);

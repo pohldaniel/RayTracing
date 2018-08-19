@@ -53,7 +53,7 @@ class Primitive {
 public:
 	Primitive();
 
-	Primitive(const Color &color, const Vector3f &normal);
+	Primitive(const Color &color);
 	~Primitive();
 
 	virtual void hit(const Ray& ray, Hit &hit) = 0;
@@ -78,7 +78,7 @@ protected:
 	bool bounds;
 	BBox box;
 	Color m_color;
-	Vector3f normal;	
+	//Vector3f normal;	
 	bool  orientable;
 	
 	Texture* m_texture;
@@ -91,7 +91,7 @@ class OrientablePrimitive : public Primitive {
 public:
 
 	OrientablePrimitive();
-	OrientablePrimitive(const Color& color, const Vector3f &normal);
+	OrientablePrimitive(const Color& color);
 	~OrientablePrimitive();
 
 	void rotate(const Vector3f &axis, float degrees);
@@ -109,7 +109,7 @@ public:
 	Triangle();
 
 	//Triangle(Vector3f &a_V1, Vector3f &a_V2, Vector3f &a_V3, Vector3f &normal);
-	Triangle(Vector3f &a_V1, Vector3f &a_V2, Vector3f &a_V3, Color &color, Vector3f &normal);
+	Triangle(Vector3f &a_V1, Vector3f &a_V2, Vector3f &a_V3, Color &color);
 	~Triangle();
 
 	
@@ -128,7 +128,13 @@ public:
 		v3 = a_v3;
 	}
 
-	
+	void setNormal(Vector3f &n1, Vector3f &n2, Vector3f &n3){
+
+		m_n1 = n1;
+		m_n2 = n2;
+		m_n3 = n3;
+		m_hasnormal = true;
+	}
 
 private:
 	
@@ -136,8 +142,13 @@ private:
 	Vector3f m_b;
 	Vector3f m_c;
 
-	float u1, u2, u3, v1, v2, v3;
+	Vector3f m_n1;
+	Vector3f m_n2;
+	Vector3f m_n3;
 
+	float u1, u2, u3, v1, v2, v3;
+	float abc;
+	bool m_hasnormal;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,9 +187,8 @@ public:
 private:
 
 	float distance;
-
-	//texture mapping stuff
-	Vector3f m_UAxis, m_VAxis;
+	Vector3f normal;
+	Vector3f m_u, m_v;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class Torus : public OrientablePrimitive{
@@ -206,6 +216,7 @@ class Mesh :public OrientablePrimitive {
 
 public:
 	Mesh();
+	Mesh(Color color);
 	~Mesh();
 
 	std::vector<Triangle*>	triangles;
@@ -215,7 +226,7 @@ public:
 	Vector3f getNormal(Vector3f& a_Pos);
 
 	bool loadObject(const char* filename);
-	bool Mesh::loadObject(const char* filename, Vector3f& translate, float scale);
+	bool Mesh::loadObject(const char* filename, Vector3f &rotate, float degree, Vector3f &translate, float scale);
 
 	KDTree* m_KDTree;
 
@@ -229,6 +240,8 @@ private:
 	float	ymax;
 	float	zmin;
 	float	zmax;
+
+	bool m_hasnormal;
 	
 };
 

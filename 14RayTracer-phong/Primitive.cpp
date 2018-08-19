@@ -74,7 +74,7 @@ bool BBox::intersect(const Ray& ray) {
 Primitive::Primitive() {
 
 	Primitive::m_color = Color(0.0, 1.0, 0.0);
-	Primitive::normal = Vector3f(0.0, 1.0, 0.0);
+
 	Primitive::orientable = false;
 	Primitive::bounds = false;
 	Primitive::T.identity();
@@ -84,10 +84,9 @@ Primitive::Primitive() {
 	Primitive::m_material = NULL;
 }
 
-Primitive::Primitive(const Color &color, const Vector3f &normal){
+Primitive::Primitive(const Color &color){
 
 	Primitive::m_color = color;
-	Primitive::normal = normal;
 	Primitive::orientable = false;
 	Primitive::bounds = false;
 	Primitive::T.identity();
@@ -152,7 +151,7 @@ OrientablePrimitive::OrientablePrimitive() :Primitive(){
 }
 
 
-OrientablePrimitive::OrientablePrimitive(const Color& color, const Vector3f &normal) : Primitive(color, normal){
+OrientablePrimitive::OrientablePrimitive(const Color& color) : Primitive(color){
 	orientable = true;
 
 }
@@ -220,14 +219,14 @@ Triangle::Triangle() {
 Triangle::Triangle(Vector3f &a_V1,
 	Vector3f &a_V2,
 	Vector3f &a_V3,
-	Color	&color,
-	Vector3f &normal) : OrientablePrimitive(color, normal)
+	Color	&color) : OrientablePrimitive(color)
 {
 	m_a = a_V1;
 	m_b = a_V2;
 	m_c = a_V3;
-	Triangle::normal.normalize();
+	abc = Vector3f::cross(m_a - m_b, m_a - m_c).magnitude();
 
+	m_hasnormal = false;
 }
 
 
@@ -310,7 +309,7 @@ Color Triangle::getColor(Vector3f& pos){
 
 		//calculate areas 
 		// main triangle
-		float abc = Vector3f::cross(m_a - m_b, m_a - m_c).magnitude();
+		
 
 		//first triangle
 		float d1 = Vector3f::cross(bpos, cpos).magnitude() / abc;
@@ -341,7 +340,35 @@ Color Triangle::getColor(Vector3f& pos){
 
 Vector3f Triangle::getNormal(Vector3f& pos){
 
-	return Vector3f(1.0, 0.0, 0.0);
+
+	if (m_hasnormal){
+
+		Vector3f apos = Triangle::m_a - pos;
+		Vector3f bpos = Triangle::m_b - pos;
+		Vector3f cpos = Triangle::m_c - pos;
+
+		//calculate areas 
+		// main triangle
+
+
+		//first triangle
+		float d1 = Vector3f::cross(bpos, cpos).magnitude() / abc;
+
+		//second triangle
+		float d2 = Vector3f::cross(cpos, apos).magnitude() / abc;
+
+		//third triangle
+		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
+		//////////////////
+
+		return  (m_n1 * d1 + m_n2 * d2 + m_n3 * d3).normalize();
+
+	}else{
+
+
+		return Vector3f(1.0, 0.0, 0.0);
+	}
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -349,8 +376,8 @@ Sphere::Sphere(){
 
 }
 
-Sphere::Sphere(Vector3f& a_Centre, double a_Radius, Color color) :Primitive(color, Vector3f(0.0, 1.0, 0.0))
-{
+Sphere::Sphere(Vector3f& a_Centre, double a_Radius, Color color) :Primitive(color){
+
 	m_Centre = a_Centre;
 	m_SqRadius = a_Radius * a_Radius;
 	m_Radius = a_Radius;
@@ -440,18 +467,18 @@ Vector3f Sphere::getNormal(Vector3f& a_Pos){
 //////////////////////////////////////////////////////////////////////////////////////////////////
 Plane::Plane() :Primitive(){
 
-	Plane::normal = Vector3f(0.0, 1.0, 0.0);
 	Plane::distance = -1.0;
 
 }
 
-Plane::Plane(Vector3f normal, float distance, Color color) :Primitive(color, normal){
+Plane::Plane(Vector3f normal, float distance, Color color) :Primitive(color){
 
 	Plane::distance = distance;
+	Plane::normal = normal;
 
 	//rotate normal 90 degree arround z-axis
-	m_UAxis = Vector3f(normal[1], -normal[0], -normal[2]);
-	m_VAxis = Vector3f::cross(normal, m_UAxis);
+	m_u = Vector3f(normal[1], -normal[0], -normal[2]);
+	m_v = Vector3f::cross(normal, m_u);
 
 }
 
@@ -480,8 +507,8 @@ Color Plane::getColor(Vector3f& a_Pos)
 {
 	if (m_texture){
 
-		float u = Vector3f::dot(a_Pos, m_UAxis);
-		float v = Vector3f::dot(a_Pos, m_VAxis);
+		float u = Vector3f::dot(a_Pos, m_u);
+		float v = Vector3f::dot(a_Pos, m_v);
 
 		Color color = m_texture->getTexel(u, v) * Color(0.2f, 0.2f, 0.2f);
 
@@ -506,7 +533,7 @@ Torus::Torus() :OrientablePrimitive(){
 	Torus::b = 0.5;
 }
 
-Torus::Torus(float a, float b, Color color) :OrientablePrimitive(color, Vector3f(0.0, 1.0, 0.0)){
+Torus::Torus(float a, float b, Color color) :OrientablePrimitive(color){
 
 	Torus::a = a;
 	Torus::b = b;
@@ -712,7 +739,7 @@ Vector3f Torus::getNormal(Vector3f& a_pos){
 
 	normal = a_pos - tmp;
 	
-	normal = Vector4f(normal) * T;
+	normal = T * Vector4f(normal, 0.0);
 	return normal.normalize();
 
 	// calculate the normal with the gradient df(x)/dx
@@ -727,24 +754,38 @@ Vector3f Torus::getNormal(Vector3f& a_pos){
 	normal[2] =  a_pos[2] * (sum_squared - param_squared );
 
 	
-	normal = Vector4f(normal) * T;
+	normal = T * Vector4f(normal. 0.0) ;
 	return normal.normalize();*/
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-Mesh::Mesh() {
-	Mesh::m_triangle;
 
 
-	Mesh::m_color = Color(1.0, 1.0, 0.0);
-	Mesh::xmin = FLT_MAX;
-	Mesh::ymin = FLT_MAX;
-	Mesh::zmin = FLT_MAX;
-	Mesh::xmax = -FLT_MAX;
-	Mesh::ymax = -FLT_MAX;
-	Mesh::zmax = -FLT_MAX;
+Mesh::Mesh() :OrientablePrimitive() {
+
+
+	m_hasnormal = false;
+	m_color = Color(1.0, 1.0, 0.0);
+	xmin = FLT_MAX;
+	ymin = FLT_MAX;
+	zmin = FLT_MAX;
+	xmax = -FLT_MAX;
+	ymax = -FLT_MAX;
+	zmax = -FLT_MAX;
 }
 
+Mesh::Mesh(Color color) :OrientablePrimitive(color) {
+
+
+	m_hasnormal = false;
+	m_color = color;
+	xmin = FLT_MAX;
+	ymin = FLT_MAX;
+	zmin = FLT_MAX;
+	xmax = -FLT_MAX;
+	ymax = -FLT_MAX;
+	zmax = -FLT_MAX;
+}
 
 
 
@@ -763,7 +804,7 @@ void Mesh::hit(const Ray& a_Ray, Hit &hit){
 
 bool Mesh::loadObject(const char* filename){
 
-	return loadObject(filename, Vector3f(0.0, 0.0, 0.0), 1.0);
+	return loadObject(filename, Vector3f(1.0, 0.0, 0.0), 1.0, Vector3f(0.0, 0.0, 0.0), 1.0);
 }
 
 void Mesh::calcBounds(){
@@ -791,16 +832,29 @@ Color Mesh::getColor(Vector3f& a_Pos){
 
 Vector3f  Mesh::getNormal(Vector3f& a_Pos){
 
-	return Vector3f(1.0, 0.0, 0.0);
+	if (m_hasnormal){
+
+		Vector3f normal;
+
+		normal = m_KDTree->m_primitive->getNormal(a_Pos);
+		normal = T * Vector4f(normal, 0.0);
+
+		return normal.normalize();
+
+	}else{
+
+		return Vector3f(1.0, 0.0, 0.0);
+	}
 }
 
-bool Mesh::loadObject(const char* filename, Vector3f &translate, float scale){
+bool Mesh::loadObject(const char* filename, Vector3f &axis, float degree, Vector3f &translate, float scale){
 
 	std::vector<std::string*>coord;
-	std::vector<Vector3f*> vertex;
 	std::vector<std::array<int, 9>> face;
-	std::vector<Vector3f*> normals;
-	std::vector<Vector2f*> texture;
+
+	std::vector<Vector3f*> positionCoords;
+	std::vector<Vector3f*> normalCoords;
+	std::vector<Vector2f*> textureCoords;
 	std::ifstream in(filename);
 
 	if (!in.is_open()){
@@ -824,35 +878,65 @@ bool Mesh::loadObject(const char* filename, Vector3f &translate, float scale){
 
 			float tmpx, tmpy, tmpz;
 			sscanf(coord[i]->c_str(), "v %f %f %f", &tmpx, &tmpy, &tmpz);
-			vertex.push_back(new Vector3f(tmpx*scale, tmpy * scale, tmpz * scale));
+
+			Vector3f position =  Vector3f(tmpx, tmpy, tmpz);
+			Matrix4f rotMtx;
+			rotMtx.rotate(axis, degree);
+			position = position * rotMtx;
+
+			positionCoords.push_back(new Vector3f(position[0] * scale, position[1] * scale, position[2] * scale) );
 		}
 		else if ((*coord[i])[0] == 'v' && (*coord[i])[1] == 't'){
 
 			float tmpu, tmpv;
 			sscanf(coord[i]->c_str(), "vt %f %f", &tmpu, &tmpv);
-			texture.push_back(new Vector2f(tmpu, tmpv));
+			textureCoords.push_back(new Vector2f(tmpu, tmpv));
 		}
 		else if ((*coord[i])[0] == 'v' && (*coord[i])[1] == 'n'){
 			float tmpx, tmpy, tmpz;
+
 			sscanf(coord[i]->c_str(), "vn %f %f %f", &tmpx, &tmpy, &tmpz);
-			normals.push_back(new Vector3f(tmpx, tmpy, tmpz));
+
+			Vector3f normal = Vector3f(tmpx, tmpy, tmpz);
+			Matrix4f rotMtx;
+			rotMtx.rotate(axis, degree);
+			normal = normal * rotMtx;
+
+
+			normalCoords.push_back(new Vector3f(normal[0], normal[1], normal[2]));
 		}
 		else if ((*coord[i])[0] == 'f'){
 
 			int a, b, c, n1, n2, n3, t1, t2, t3;
 
 
-			if (texture.size()>0){
+			if (!textureCoords.empty() && !normalCoords.empty()){
 				sscanf(coord[i]->c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d ", &a, &t1, &n1, &b, &t2, &n2, &c, &t3, &n3);
 
-				face.push_back({ { a, b, c, n1, n2, n3, t1, t2, t3 } });
+				face.push_back({ { a, b, c, t1, t2, t3, n1, n2, n3} });
 
 			}
-			else{
+			else if (!normalCoords.empty()){
 
-				sscanf(coord[i]->c_str(), "f %d/%d %d/%d %d/%d", &a, &n1, &b, &n2, &c, &n3);
+				sscanf(coord[i]->c_str(), "f %d//%d %d//%d %d//%d", &a, &n1, &b, &n2, &c, &n3);
 
-				face.push_back({ { a, b, c, n1, n2, n2, 0, 0, 0 } });
+				face.push_back({ { a, b, c, 0, 0, 0, n1, n2, n3} });
+
+
+			}
+			else if (!textureCoords.empty()){
+
+				sscanf(coord[i]->c_str(), "f %d/%d %d/%d %d/%d", &a, &t1, &b, &t2, &c, &t3);
+
+				face.push_back({ { a, b, c, t1, t2, t3, 0, 0, 0 } });
+
+
+			}
+			else {
+
+				sscanf(coord[i]->c_str(), "f %d %d %d", &a, &b, &c);
+
+				face.push_back({ { a, b, c, 0, 0, 0, 0, 0, 0 } });
 			}
 
 
@@ -867,13 +951,13 @@ bool Mesh::loadObject(const char* filename, Vector3f &translate, float scale){
 
 	for (int i = 0; i < face.size(); i++){
 
-		a = vertex[(face[i])[0] - 1];
-		b = vertex[(face[i])[1] - 1];
-		c = vertex[(face[i])[2] - 1];
+		a = positionCoords[(face[i])[0] - 1];
+		b = positionCoords[(face[i])[1] - 1];
+		c = positionCoords[(face[i])[2] - 1];
 
 
 
-		normal = normals[(face[i])[3] - 1];
+		normal = normalCoords[(face[i])[3] - 1];
 
 		xmin = min(a->getVec()[0] + translate.getVec()[0], min(b->getVec()[0] + translate.getVec()[0], min(c->getVec()[0] + translate.getVec()[0], xmin)));
 		ymin = min(a->getVec()[1] + translate.getVec()[1], min(b->getVec()[1] + translate.getVec()[1], min(c->getVec()[1] + translate.getVec()[1], ymin)));
@@ -883,17 +967,24 @@ bool Mesh::loadObject(const char* filename, Vector3f &translate, float scale){
 		ymax = max(a->getVec()[1] + translate.getVec()[1], max(b->getVec()[1] + translate.getVec()[1], max(c->getVec()[1] + translate.getVec()[1], ymax)));
 		zmax = max(a->getVec()[2] + translate.getVec()[2], max(b->getVec()[2] + translate.getVec()[2], max(c->getVec()[2] + translate.getVec()[2], zmax)));
 
-		triangle = new Triangle(*a + translate, *b + translate, *c + translate, Color(1.0, 0.0, 1.0), Vector3f(0.0, 0.0, 1.0));
+		triangle = new Triangle(*a + translate, *b + translate, *c + translate, Color(1.0, 0.0, 1.0));
 
-		if (texture.size() > 0){
+		if (textureCoords.size() > 0){
 
-			triangle->setUV(texture[(face[i])[6] - 1]->getVec()[0],
-				texture[(face[i])[7] - 1]->getVec()[0],
-				texture[(face[i])[8] - 1]->getVec()[0],
-				texture[(face[i])[6] - 1]->getVec()[1],
-				texture[(face[i])[7] - 1]->getVec()[1],
-				texture[(face[i])[8] - 1]->getVec()[1]);
+			triangle->setUV(textureCoords[(face[i])[3] - 1]->getVec()[0],
+				textureCoords[(face[i])[4] - 1]->getVec()[0],
+				textureCoords[(face[i])[5] - 1]->getVec()[0],
+				textureCoords[(face[i])[3] - 1]->getVec()[1],
+				textureCoords[(face[i])[4] - 1]->getVec()[1],
+				textureCoords[(face[i])[5] - 1]->getVec()[1]);
 
+		}
+
+
+		if (normalCoords.size() > 0){
+
+			m_hasnormal = true;
+			triangle->setNormal(*normalCoords[(face[i])[6] - 1], *normalCoords[(face[i])[7] - 1], *normalCoords[(face[i])[8] - 1]);
 		}
 
 		triangles.push_back(triangle);
@@ -912,11 +1003,11 @@ bool Mesh::loadObject(const char* filename, Vector3f &translate, float scale){
 
 	}
 
-	for (int i = 0; i < normals.size(); i++){
-		delete normals[i];
+	for (int i = 0; i < normalCoords.size(); i++){
+		delete normalCoords[i];
 	}
-	for (int i = 0; i < vertex.size(); i++){
-		delete vertex[i];
+	for (int i = 0; i < positionCoords.size(); i++){
+		delete positionCoords[i];
 	}
 
 	return true;

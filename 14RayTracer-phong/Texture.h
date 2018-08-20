@@ -5,6 +5,7 @@ class Texture
 {
 public:
 	
+
 	Texture(char* path);
 	~Texture();
 

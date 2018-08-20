@@ -607,7 +607,7 @@ bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 	float tmin = hit.t;
 	float tmin2 = hit.t;
 
-	
+
 	Hit tmp;
 
 		for (unsigned int i = 0; i < m_primitives.size(); i++){
@@ -617,6 +617,8 @@ bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 			if (tmp.hitObject && tmp.t < tmin2) {
 
 				m_tree->m_primitive = m_primitives[i]->m_primitive;
+				
+
 				tmp.color = m_primitives[i]->m_primitive->m_color;
 				tmin2 = tmp.t;
 				

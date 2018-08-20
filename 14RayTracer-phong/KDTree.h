@@ -79,7 +79,7 @@ public:
 	
 	//used for texturing the mesh
 	Primitive *m_primitive;
-
+	Triangle *m_triangle;
 	
 
 private:

@@ -107,49 +107,65 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 
 			ray = Ray(_ray.origin, _ray.direction.normalize());
 		}
-	
+		
 		primitives[j]->hit(ray, hit);
 		
 		if (hit.hitObject && hit.t < tmin) {
 
 			hitPoint = ray.origin + ray.direction*hit.t;
-
+			
 			
 			if (primitives[j]->getMaterial()){
-				light = Color(0.0, 0.0, 0.0);
 			
 				Color ambiente(0.0, 0.0, 0.0), diffuse(0.0, 0.0, 0.0), specular(0.0, 0.0, 0.0);
 				
 
 				for (int i = 0; i < lights.size(); i++){
 
-					if (primitives[j]->getMaterial()->getAmbiente() > 0){
+					if (lights[i]->m_ambient){
 						// I_in * k_ambiente
-						ambiente = primitives[j]->getColor(hitPoint)*
-						primitives[j]->getMaterial()->getAmbiente();
+						ambiente = ambiente + *lights[i]->m_ambient;
+
 					}
 
-					if (primitives[j]->getMaterial()->getDiffuse() > 0){
+					if (lights[i]->m_diffuse){
 						// I_in * k_diffuse * (L * N)
-						diffuse = lights[i]->getColor() * primitives[j]->getColor(hitPoint)*
-						primitives[j]->getMaterial()->getDiffuse()*
-						lights[i]->calcDiffuse(hitPoint, primitives[j]->getNormal(hitPoint));
+						diffuse = diffuse + (*lights[i]->m_diffuse * lights[i]->calcDiffuse(hitPoint, primitives[j]->getNormal(hitPoint)));
+
 					}
 
-					if (primitives[j]->getMaterial()->getSpecular() > 0){
+					if (lights[i]->m_specular && primitives[j]->getMaterial()->m_shinies > 0){
 						// I_in * k_specular * (R * V)^20
-						specular = lights[i]->getColor() *
-						primitives[j]->getMaterial()->getSpecular()*
-						lights[i]->calcSpecular(hitPoint, primitives[j]->getNormal(hitPoint), ray.direction,
-						primitives[j]->getMaterial()->getSurfaceProperty());		
+						specular = specular + (*lights[i]->m_diffuse * lights[i]->calcSpecular(hitPoint, primitives[j]->getNormal(hitPoint), ray.direction,
+							primitives[j]->getMaterial()->m_shinies));
+
+					}
+				}
+
+					if (primitives[j]->getMaterial()->m_ambient2){
+						
+						ambiente = ambiente * *primitives[j]->getMaterial()->m_ambient2;
 					}
 
-					light = light + ambiente + diffuse +  specular;
-				}
+					if (primitives[j]->getMaterial()->m_diffuse2){
+						
+						diffuse = diffuse * *primitives[j]->getMaterial()->m_diffuse2;
+					}
+
+					if (primitives[j]->getMaterial()->m_specular2){
+						
+						specular = specular * *primitives[j]->getMaterial()->m_specular2;
+					}
+					
+					
+
+					light = primitives[j]->getColor(hitPoint) *( ambiente + diffuse + specular);
+				
 
 				hit.color =  light;
 
 			}else {
+				
 				
 				hit.color = primitives[j]->getColor(hitPoint);
 

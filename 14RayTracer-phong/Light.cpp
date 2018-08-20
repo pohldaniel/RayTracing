@@ -1,16 +1,19 @@
 #include <iostream>
 #include "Light.h"
 
-Light::Light(Vector3f position, Color color){
-	Light::position = position;
-	Light::color = color;
+
+
+Light::Light(Vector3f a_position, Color *ambiente, Color *diffuse, Color *specular){
+	Light::position = a_position;
+	
+	m_ambient = ambiente;
+	m_diffuse = diffuse;
+	m_specular = specular;
+
 }
 
 Light::~Light(){}
 
-const Color &Light::getColor() const{
-	return color;
-}
 
 float Light::calcDiffuse(Vector3f& a_Pos, Vector3f& a_Normal){
 

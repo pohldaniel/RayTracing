@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <vector> 
 #include <iostream>
+
 #include "Primitive.h"
+#include "Model.h"
 #include "Bitmap.h"
 
 #include "scene.h"
@@ -100,9 +102,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_CREATE:
 	{
-
-					 
-					 
 					  Vector3f camPos(-2.0, 0.0, 4.0);
 					  Vector3f xAxis(1, 0, 0);
 					  Vector3f yAxis(0, 1, 0);
@@ -113,21 +112,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  Regular *regular = new Regular(16, 1);
 
+
 					  Projection *projection = new Projection(camPos, xAxis, yAxis, zAxis, target, up, 45, regular);
 
 					  scene = new Scene(ViewPlane(width, height, 1.0), Color(0.2, 0.2, 0.2));
 
+					  Color *color = new Color(1.0, 1.0, 1.0);
 
-					  scene->addLight(new Light(Vector3f(0, 200, 600), Color(0.5f, 0.5f, 0.5f)));
-					  scene->addLight(new Light(Vector3f(40, 0, 0), Color(0.5f, 0.5f, 0.5f)));
+					  scene->addLight(new Light(Vector3f(0, 200, 600), color, color, color));
+					  scene->addLight(new Light(Vector3f(40, 0, 0), color, color, color));
 					  
 					 
 					  Torus *torus1 = new Torus(1.0, 0.3, Color(0.4, 0.4, 0.4));
 					  torus1->rotate(Vector3f(0.0, 0.0, 1.0), 90);
 					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), 30);
 					  //torus1->scale(2.0, 3.0 ,1.0);
-					  torus1->translate(0.0, 0.04, 0.0);
-					  torus1->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
+					 // torus1->translate(0.0, 0.04, 0.0);
+					  torus1->m_material = new Material();
+					  torus1->m_material->m_ambient2 = new Color(0.1, 0.1, 0.1);
+					  torus1->m_material->m_diffuse2 = new Color(0.8, 0.8, 0.8);
+					  torus1->m_material->m_specular2 = new Color(0.6, 0.6, 0.6);
+					  torus1->m_material->m_shinies = 50;
 					  //torus1->setTexture(new Texture("textures/marble.bmp"));
 					  //torus1->getTexture()->setUVScale(1.0, 2.0);
 
@@ -135,26 +140,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  torus2->rotate(Vector3f(0.0, 0.0, 1.0), 90);
 					  torus2->rotate(Vector3f(1.0, 0.0, 0.0), 85);
 					  torus2->translate(1.0, 0.0, 0.0);
-					  torus2->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
+					  torus2->m_material = new Material();
+					  torus2->m_material->m_ambient2 = new Color(0.1, 0.1, 0.1);
+					  torus2->m_material->m_diffuse2 = new Color(0.8, 0.8, 0.8);
+					  torus2->m_material->m_specular2 = new Color(1.0, 1.0, 1.0);
+					  torus2->m_material->m_shinies = 50;
 					  //torus2->setTexture(new Texture("textures/pinkwater.bmp"));
 					  //torus2->getTexture()->setUVScale(1.0, 2.0);
 
 					 
-					  Mesh* mesh = new Mesh(Color(0.1, 0.7, 0.1));
+					  Model* model = new Model(Color(0.1, 0.7, 0.1));
 					  //mesh->loadObject("objs/face.obj", Vector3f(0.0, 1.0, 0.0), -50, Vector3f(-5.0, 4.0, -30.0), 2.0);
-					  mesh->loadObject("objs/face.obj");
-					  mesh->rotate(Vector3f(0.0, 1.0, 0.0), 50.0);
-					  mesh->scale(2.0, 2.0, 2.0);
-					  mesh->translate(-5.0, 4.0, -30.0);
+					  model->loadObject("objs/face.obj");
+					  model->rotate(Vector3f(0.0, 1.0, 0.0), 50.0);
+					  model->scale(2.0, 2.0, 2.0);
+					  model->translate(-5.0, 2.0, -30.0);
+					  model->m_material = new Material();
+					  model->m_material->m_ambient2 = new Color(0.1, 0.1, 0.1);
+					  model->m_material->m_diffuse2 = new Color(0.8, 0.8, 0.8);
+					  model->m_material->m_specular2 = new Color(0.6, 0.6, 0.6);
+					  model->m_material->m_shinies = 50;
+					  model->setTexture(new Texture("textures/pinkwater.bmp"));
 					 
-
-					  mesh->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
-					  mesh->setTexture(new Texture("textures/pinkwater.bmp"));
-					  mesh->getTexture()->setUVScale(1.0, 1.0);
-
 					  scene->addPrimitive(torus1);
 					  scene->addPrimitive(torus2);
-					  scene->addPrimitive(mesh);
+					  scene->addPrimitive(model);
+
+					  /*Model* model = new Model();
+					  model->loadObject("objs/faceTN/face.obj", Vector3f(1.0, 0.0, 0.0), 0, Vector3f(0.0, 0.0, 0.0), 2.0);
+
+					  scene->addPrimitive(model);*/
 
 					  projection->renderScene(*scene);
 

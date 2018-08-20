@@ -21,14 +21,14 @@ public:
 	Vector3f& getPos() { return m_Pos; }
 	Vector3f& getSize() { return m_Size; }
 
-	inline void extend(Vector3f a)
-	{
+	inline void extend(Vector3f a){
+
 		m_Pos = Vector3f::Min(a, m_Pos);
 		m_Size = Vector3f::Max(a, m_Size);
 	}
 
-	inline float getSurfaceArea()
-	{
+	inline float getSurfaceArea(){
+
 		float xDim = m_Size[0] - m_Pos[0];
 		float yDim = m_Size[1] - m_Pos[1];
 		float zDim = m_Size[2] - m_Pos[2];
@@ -43,13 +43,14 @@ public:
 	float m_tmin, m_tmax;
 };
 
-
+class Mesh;
 /////////////////////////////////////////////////////////////////////////////
 
 class Primitive {
 
 	friend class Scene;
 	friend class KDTree;
+
 public:
 	Primitive();
 
@@ -69,21 +70,22 @@ public:
 	Texture* getTexture();
 
 	void setMaterial(Material* material);
-	Material* getMaterial();
+	virtual Material* getMaterial();
 
 	Matrix4f T;
 	Matrix4f invT;
+	BBox box;
 
-
+	Mesh *m_mesh;
+	Material* m_material;
 protected:
 	bool bounds;
-	BBox box;
-	Color m_color;
-	//Vector3f normal;	
+	
+	Color m_color;	
 	bool  orientable;
 	
 	Texture* m_texture;
-	Material* m_material;
+	
 };
 /////////////////////////////////////////////////////////////////////////////
 class OrientablePrimitive : public Primitive {
@@ -103,13 +105,10 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 
-class Triangle :public OrientablePrimitive
-{
+class Triangle :public OrientablePrimitive{
+
 public:
 	
-	Triangle();
-
-	//Triangle(Vector3f &a_V1, Vector3f &a_V2, Vector3f &a_V3, Vector3f &normal);
 	Triangle(Vector3f &a_V1, Vector3f &a_V2, Vector3f &a_V3, Color &color);
 	~Triangle();
 
@@ -137,6 +136,8 @@ public:
 		m_hasnormal = true;
 	}
 
+	
+
 private:
 	
 	Vector3f m_a;
@@ -156,7 +157,7 @@ private:
 
 class Sphere : public Primitive{
 public:
-	Sphere();
+
 	Sphere(Vector3f& a_Centre, double a_Radius, Color color);
 	~Sphere();
 
@@ -211,40 +212,6 @@ private:
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-class KDTree;
-class Mesh :public OrientablePrimitive {
-
-
-public:
-	Mesh();
-	Mesh(Color color);
-	~Mesh();
-
-	std::vector<Triangle*>	triangles;
-	void hit(const Ray& a_Ray, Hit &hit);
-	void calcBounds();
-	Color getColor(Vector3f& a_Pos);
-	Vector3f getNormal(Vector3f& a_Pos);
-
-	bool loadObject(const char* filename);
-	bool Mesh::loadObject(const char* filename, Vector3f &rotate, float degree, Vector3f &translate, float scale);
-
-	KDTree* m_KDTree;
-
-private:
-	Triangle *m_triangle;
-
-
-	float	xmin;
-	float	xmax;
-	float	ymin;
-	float	ymax;
-	float	zmin;
-	float	zmax;
-
-	bool m_hasnormal;
-	
-};
 
 
 

@@ -74,6 +74,7 @@ public:
 	Matrix4f T;
 	Matrix4f invT;
 
+
 protected:
 	bool bounds;
 	BBox box;
@@ -183,11 +184,11 @@ public:
 	void calcBounds();
 	Color getColor(Vector3f& a_Pos);
 	Vector3f getNormal(Vector3f& a_Pos);
-
+	Vector3f m_normal;
 private:
 
 	float distance;
-	Vector3f normal;
+	
 	Vector3f m_u, m_v;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////

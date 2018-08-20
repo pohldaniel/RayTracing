@@ -164,7 +164,7 @@ OrientablePrimitive::~OrientablePrimitive(){
 void OrientablePrimitive::rotate(const Vector3f &axis, float degrees){
 
 	Matrix4f rotMtx;
-	rotMtx.rotate(axis, degrees);
+	rotMtx.invRotate(axis, degrees);
 
 
 	Matrix4f invRotMtx = Matrix4f(rotMtx[0][0], rotMtx[1][0], rotMtx[2][0], rotMtx[3][0],
@@ -172,11 +172,9 @@ void OrientablePrimitive::rotate(const Vector3f &axis, float degrees){
 							      rotMtx[0][2], rotMtx[1][2], rotMtx[2][2], rotMtx[3][2],
 								  rotMtx[0][3], rotMtx[1][3], rotMtx[2][3], rotMtx[3][3]);
 
-	T =  rotMtx * T;
+	T = rotMtx * T;
 	invT = invT * invRotMtx;
 	
-
-
 }
 
 void OrientablePrimitive::translate(float dx, float dy, float dz){
@@ -195,7 +193,6 @@ void OrientablePrimitive::translate(float dx, float dy, float dz){
 	invT[3][3] = invT[3][3] - (dx*invT[3][0] + dy*invT[3][1] + dz*invT[3][2]);
 
 	
-	
 }
 
 void OrientablePrimitive::scale(float a, float b, float c){
@@ -213,6 +210,7 @@ void OrientablePrimitive::scale(float a, float b, float c){
 	invT[1][0] = invT[1][0] * (1.0 / a); invT[1][1] = invT[1][1] * (1.0 / b); invT[1][2] = invT[1][2] * (1.0 / c);
 	invT[2][0] = invT[2][0] * (1.0 / a); invT[2][1] = invT[2][1] * (1.0 / b); invT[2][2] = invT[2][2] * (1.0 / c);
 	invT[3][0] = invT[3][0] * (1.0 / a); invT[3][1] = invT[3][1] * (1.0 / b); invT[3][2] = invT[3][2] * (1.0 / c);
+
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -478,7 +476,7 @@ Plane::Plane() :Primitive(){
 Plane::Plane(Vector3f normal, float distance, Color color) :Primitive(color){
 
 	Plane::distance = distance;
-	Plane::normal = normal;
+	Plane::m_normal = normal;
 
 	//rotate normal 90 degree arround z-axis
 	m_u = Vector3f(normal[1], -normal[0], -normal[2]);
@@ -490,7 +488,7 @@ void Plane::hit(const Ray &ray, Hit &hit){
 
 	float result = -1;
 
-	result = (distance - Vector3f::dot(normal, ray.origin)) / Vector3f::dot(normal, ray.direction);
+	result = (distance - Vector3f::dot(m_normal, ray.origin)) / Vector3f::dot(m_normal, ray.direction);
 
 	if (result > 0.0){
 		hit.t = result;
@@ -527,7 +525,7 @@ Color Plane::getColor(Vector3f& a_Pos)
 
 Vector3f Plane::getNormal(Vector3f& a_Pos){
 
-	return Vector3f(1.0, 0.0, 0.0);
+	return  m_normal;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -728,9 +726,9 @@ Vector3f Torus::getNormal(Vector3f& a_pos){
 	float dist = sqrtf(a_pos[1] * a_pos[1] + a_pos[2] * a_pos[2]);
 
 	if (dist > 0.0001){
-
-		tmp[1] = a *a_pos[1] / dist;
+		
 		tmp[0] = 0.0;
+		tmp[1] = a *a_pos[1] / dist;
 		tmp[2] = a *a_pos[2] / dist;
 
 	}
@@ -743,8 +741,10 @@ Vector3f Torus::getNormal(Vector3f& a_pos){
 
 	normal = a_pos - tmp;
 	
-	normal = T * Vector4f(normal, 0.0);
-	return normal.normalize();
+	//calculate the transpose of invT with the normal
+	return (invT * normal).normalize();
+
+	//return (invT.transpose() * Vector4f(normal, 0.0)).normalize();
 
 	// calculate the normal with the gradient df(x)/dx
 
@@ -757,9 +757,8 @@ Vector3f Torus::getNormal(Vector3f& a_pos){
 	normal[1] =  a_pos[1] * (sum_squared - param_squared );
 	normal[2] =  a_pos[2] * (sum_squared - param_squared );
 
-	
-	normal = T * Vector4f(normal. 0.0) ;
-	return normal.normalize();*/
+	//calculate the transpose of invT with the normal
+	return (invT * normal).normalize();*/
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -841,9 +840,12 @@ Vector3f  Mesh::getNormal(Vector3f& a_Pos){
 		Vector3f normal;
 
 		normal = m_KDTree->m_primitive->getNormal(a_Pos);
-		normal = T * Vector4f(normal, 0.0);
 
-		return normal.normalize();
+		
+		//calculate the transpose of invT with the normal
+		return (invT * normal).normalize();
+
+		//return (invT.transpose() * Vector4f(normal, 0.0)).normalize();
 
 	}else{
 
@@ -907,9 +909,7 @@ bool Mesh::loadObject(const char* filename, Vector3f &axis, float degree, Vector
 			Matrix4f rotMtx;
 			rotMtx.rotate(axis, degree);
 			normal = rotMtx * normal;
-
-
-			normalCoords.push_back(new Vector3f(normal[0], normal[1], normal[2]));
+			normalCoords.push_back(new Vector3f(normal[0] , normal[1], normal[2]));
 		}
 		else if ((*coord[i])[0] == 'f'){
 

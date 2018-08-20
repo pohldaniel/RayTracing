@@ -32,7 +32,7 @@ float Light::calcDiffuse(Vector3f& a_Pos, Vector3f& a_Normal){
 float Light::calcSpecular(Vector3f& a_Pos, Vector3f& a_Normal, Vector3f& a_viewDirection, int a_n){
 
 	Vector3f L = (position - a_Pos).normalize();
-	Vector3f V = (L - a_Normal  * 2.0f *Vector3f::dot(L, a_Normal));
+	Vector3f V = L - (a_Normal  * 2.0f *Vector3f::dot(L, a_Normal)) ;
 
 	
 

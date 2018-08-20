@@ -4,6 +4,7 @@
 #include <cfloat>
 #include <cmath>
 #include <algorithm>
+
 //-----------------------------------------------------------------------------
 // Common math functions and constants.
 //-----------------------------------------------------------------------------
@@ -33,27 +34,37 @@ private:
 
 };
 
+
+
+//-----------------------------------------------------------------------------
+// A 3-component vector class that represents a row vector.
+//-----------------------------------------------------------------------------
+
 class Vector3f
 {
 
-    friend Vector3f operator-(const Vector3f &v);
+	friend Vector3f operator-(const Vector3f &v);
 
 public:
-    
-    Vector3f() ;
-    Vector3f(float x_, float y_, float z_);
-    ~Vector3f();
+
+	Vector3f();
+	Vector3f(float x_, float y_, float z_);
+	~Vector3f();
+
 
 	static Vector3f cross(const Vector3f &p, const Vector3f &q);
-    static float dot(const Vector3f &p, const Vector3f &q);
+	static float dot(const Vector3f &p, const Vector3f &q);
 	static void normalize(Vector3f &p);
+
 	static Vector3f Min(const Vector3f &p, const Vector3f &q);
 	static Vector3f Max(const Vector3f &p, const Vector3f &q);
 
 	Vector3f normalize();
 	float magnitude() const;
-	
-    void set(float x_, float y_, float z_); 
+
+	void set(float x_, float y_, float z_);
+
+
 
 	float &operator[](int index);
 	const float *operator[](int index) const;
@@ -64,7 +75,7 @@ public:
 	Vector3f &operator-=(const Vector3f &rhs);
 
 	Vector3f &operator+(const Vector3f &rhs) const;
-	Vector3f operator-(const Vector3f &rhs) const;
+	Vector3f &operator-(const Vector3f &rhs) const;
 
 	Vector3f operator*(float scalar) const;
 	Vector3f operator/(float scalar) const;
@@ -73,12 +84,12 @@ private:
 	float vec[3];
 };
 
-class Vector4f{
 
+class Vector4f{
 public:
 	Vector4f();
 	Vector4f(float x_, float y_, float z_, float w_);
-	Vector4f(const Vector3f &rhs);
+	Vector4f(const Vector3f &rhs, float w_);
 	~Vector4f();
 
 	float &operator[](int index);
@@ -89,12 +100,18 @@ private:
 	float vec[4];
 };
 
+//-----------------------------------------------------------------------------
+// A homogeneous row-major 4x4 matrix class.
+//
+// Multiplies Vector3s to the left of the matrix.
+//-----------------------------------------------------------------------------
 
 class Matrix4f
 {
 	friend Vector3f operator*(const Vector4f &lhs, const Matrix4f &rhs);
 	friend Vector3f operator*(const Matrix4f &rhs, const Vector4f &lhs);
 	friend Vector3f operator*(const Vector3f &lhs, const Matrix4f &rhs);
+	friend Vector3f operator*(const Matrix4f &rhs, const Vector3f &lhs);
 	friend Matrix4f operator*(float scalar, const Matrix4f &rhs);
 
 public:
@@ -114,7 +131,10 @@ public:
 	Matrix4f &operator*=(const Matrix4f &rhs);
 	Matrix4f operator*(const Matrix4f &rhs) const;
 
+	static void transpose(Matrix4f &p);
+
 	void identity();
+	Matrix4f transpose();
 	void rotate(const Vector3f &axis, float degrees);
 	void invRotate(const Vector3f &axis, float degrees);
 	void translate(float dx, float dy, float dz);
@@ -128,5 +148,3 @@ private:
 };
 
 #endif
-
-

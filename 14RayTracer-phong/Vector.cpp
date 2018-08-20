@@ -200,16 +200,24 @@ void Matrix4f::identity()
 	mtx[3][0] = 0.0f, mtx[3][1] = 0.0f, mtx[3][2] = 0.0f, mtx[3][3] = 1.0f;
 }
 
-void Matrix4f::transpose(){
+Matrix4f Matrix4f::transpose(){
 
-	float tmp = mtx[0][1]; mtx[0][1] = mtx[1][0]; mtx[1][0] = tmp;
-		  tmp = mtx[0][2]; mtx[0][2] = mtx[2][0]; mtx[2][0] = tmp;
-		  tmp = mtx[0][3]; mtx[0][3] = mtx[3][0]; mtx[3][0] = tmp;
+ return Matrix4f(mtx[0][0], mtx[1][0], mtx[2][0], mtx[3][0],
+				 mtx[0][1], mtx[1][1], mtx[2][1], mtx[3][1],
+				 mtx[0][2], mtx[1][2], mtx[2][2], mtx[3][2],
+				 mtx[0][3], mtx[1][3], mtx[2][3], mtx[3][3]);
+}
 
-		  tmp = mtx[2][1]; mtx[2][1] = mtx[1][2]; mtx[1][2] = tmp;
-		  tmp = mtx[3][1]; mtx[3][1] = mtx[1][3]; mtx[1][3] = tmp;
+void Matrix4f::transpose(Matrix4f &m){
 
-		  tmp = mtx[2][3]; mtx[2][3] = mtx[3][2]; mtx[3][2] = tmp;
+	float tmp = m[0][1]; m[0][1] = m[1][0]; m[1][0] = tmp;
+		  tmp = m[0][2]; m[0][2] = m[2][0]; m[2][0] = tmp;
+		  tmp = m[0][3]; m[0][3] = m[3][0]; m[3][0] = tmp;
+
+		  tmp = m[2][1]; m[2][1] = m[1][2]; m[1][2] = tmp;
+		  tmp = m[3][1]; m[3][1] = m[1][3]; m[1][3] = tmp;
+
+		  tmp = m[2][3]; m[2][3] = m[3][2]; m[3][2] = tmp;
 }
 
 Matrix4f &Matrix4f::operator*=(const Matrix4f &rhs)
@@ -405,9 +413,9 @@ Vector3f operator*(const Vector3f &lhs, const Matrix4f &rhs)
 
 Vector3f operator*(const Matrix4f &rhs, const Vector3f &lhs )
 {
-	return Vector3f((lhs[0] * rhs.mtx[0][0]) + (lhs[1] * rhs.mtx[0][1]) + (lhs[2] * rhs.mtx[0][2]),
-		(lhs[0] * rhs.mtx[1][0]) + (lhs[1] * rhs.mtx[1][1]) + (lhs[2] * rhs.mtx[1][2]),
-		(lhs[0] * rhs.mtx[2][0]) + (lhs[1] * rhs.mtx[2][1]) + (lhs[2] * rhs.mtx[2][2]));
+	return Vector3f((lhs[0] * rhs.mtx[0][0]) + (lhs[1] * rhs.mtx[1][0]) + (lhs[2] * rhs.mtx[2][0]),
+		(lhs[0] * rhs.mtx[0][1]) + (lhs[1] * rhs.mtx[1][1]) + (lhs[2] * rhs.mtx[2][1]),
+		(lhs[0] * rhs.mtx[0][2]) + (lhs[1] * rhs.mtx[1][2]) + (lhs[2] * rhs.mtx[2][2]));
 }
 
 const float* Vector3f::getVec()const{

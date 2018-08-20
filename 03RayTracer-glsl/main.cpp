@@ -544,7 +544,7 @@ void ProcessInput(HWND hWnd)
 			// Rotate camera
 			if (X || Y)
 			{
-				camera->rotate(X, Y);
+				camera->rotate(X, Y, 0.0f);
 				//
 
 			} // End if any rotation

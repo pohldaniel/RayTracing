@@ -123,16 +123,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 					  Torus *torus1 = new Torus(1.0, 0.3, Color(0.4, 0.4, 0.4));
-					  torus1->rotate(Vector3f(0.0, 0.0, 1.0), -90);
-					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), -30);
+					  torus1->rotate(Vector3f(0.0, 0.0, 1.0), 90);
+					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), 30);
 					  torus1->translate(0.0, 0.04, 0.0);
 					  torus1->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
 					  //torus1->setTexture(new Texture("textures/marble.bmp"));
 					  //torus1->getTexture()->setUVScale(1.0, 2.0);
 
 					  Torus *torus2 = new Torus(1.0, 0.3, Color(1.0, 0.4, 0.4));
-					  torus2->rotate(Vector3f(0.0, 0.0, 1.0), -90);
-					  torus2->rotate(Vector3f(1.0, 0.0, 0.0), -85);
+					  torus2->rotate(Vector3f(0.0, 0.0, 1.0), 90);
+					  torus2->rotate(Vector3f(1.0, 0.0, 0.0), 85);
 					  torus2->translate(1.0, 0.0, 0.0);
 					  torus2->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
 					  //torus2->setTexture(new Texture("textures/pinkwater.bmp"));
@@ -140,7 +140,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 									 
 					  Mesh* mesh = new Mesh(Color(0.1, 0.7, 0.1));
-					  mesh->loadObject("objs/face.obj", Vector3f(0.0, 1.0, 0.0), -50, Vector3f(-5.0, 4.0, -30.0), 2.0);
+					  mesh->loadObject("objs/face.obj", Vector3f(0.0, 1.0, 0.0), 50, Vector3f(-5.0, 4.0, -30.0), 2.0);
 					  mesh->setMaterial(new Material(0.1, 2.0, 0.6, 50.0));
 					  mesh->setTexture(new Texture("textures/pinkwater.bmp"));
 					  mesh->getTexture()->setUVScale(1.0, 1.0);

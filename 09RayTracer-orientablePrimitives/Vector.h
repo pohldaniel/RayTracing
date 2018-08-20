@@ -131,8 +131,10 @@ public:
 	Matrix4f &operator*=(const Matrix4f &rhs);
 	Matrix4f operator*(const Matrix4f &rhs) const;
 
+	static void transpose(Matrix4f &p);
+
 	void identity();
-	void transpose();
+	Matrix4f transpose();
 	void rotate(const Vector3f &axis, float degrees);
 	void invRotate(const Vector3f &axis, float degrees);
 	void translate(float dx, float dy, float dz);

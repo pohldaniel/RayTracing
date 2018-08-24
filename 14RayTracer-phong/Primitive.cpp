@@ -1,5 +1,5 @@
 #include <array>
-#include "Primitive.h"
+#include "Model.h"
 
 
 bool BBox::intersect(const Ray& ray) {
@@ -82,7 +82,7 @@ Primitive::Primitive() {
 	Primitive::box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
 	Primitive::m_texture = NULL;
 	Primitive::m_material = NULL;
-	Primitive::m_mesh = NULL;
+
 }
 
 Primitive::Primitive(const Color &color){
@@ -95,7 +95,7 @@ Primitive::Primitive(const Color &color){
 	Primitive::box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
 	Primitive::m_texture = NULL;
 	Primitive::m_material = NULL;
-	Primitive::m_mesh = NULL;
+	
 }
 
 Primitive::~Primitive(){
@@ -266,7 +266,10 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 	Vector3f P = Vector3f::cross(ray.direction, v0v2);
 	float det = Vector3f::dot(P, v0v1);
 
-	if (fabs(det) < 0.000001) return;
+	
+	if (fabs(det) <0.000001 ) return;
+	
+
 
 	float inv_det = 1.0 / det;
 
@@ -299,7 +302,7 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 }
 
 Color Triangle::getColor(Vector3f& pos){
-
+	
 	if (m_texture){
 
 
@@ -322,7 +325,7 @@ Color Triangle::getColor(Vector3f& pos){
 		double v = v1*d1 + v2*d2 + v3*d3;
 
 
-		Color color = m_texture->getTexel(u, v) * Color(0.2f, 0.2f, 0.2f);
+		Color color = m_texture->getTexel(u, v) * Color(0.2, 0.2, 0.2);
 
 		return  color;
 
@@ -335,8 +338,8 @@ Color Triangle::getColor(Vector3f& pos){
 }
 
 Vector3f Triangle::getNormal(Vector3f& pos){
-
-
+	
+	
 	if (m_hasnormal){
 
 		Vector3f apos = Triangle::m_a - pos;
@@ -352,8 +355,10 @@ Vector3f Triangle::getNormal(Vector3f& pos){
 		//third triangle
 		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
 
+		Vector3f normal =  (m_n1 * d1 + m_n2 * d2 + m_n3 * d3).normalize();
 
-		return  (m_n1 * d1 + m_n2 * d2 + m_n3 * d3).normalize();
+
+		return  normal;
 
 	}else{
 
@@ -499,8 +504,8 @@ Color Plane::getColor(Vector3f& a_Pos){
 
 	if (m_texture){
 
-		float u = Vector3f::dot(a_Pos, m_u);
-		float v = Vector3f::dot(a_Pos, m_v);
+		float u = abs(Vector3f::dot(a_Pos, m_u));
+		float v = abs(Vector3f::dot(a_Pos, m_v));
 
 		Color color = m_texture->getTexel(u, v) * Color(0.2f, 0.2f, 0.2f);
 

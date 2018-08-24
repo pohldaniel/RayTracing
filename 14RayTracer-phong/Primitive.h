@@ -76,15 +76,17 @@ public:
 	Matrix4f invT;
 	BBox box;
 
-	Mesh *m_mesh;
+
 	Material* m_material;
+	Texture* m_texture;
+	Color m_color;
 protected:
 	bool bounds;
 	
-	Color m_color;	
+		
 	bool  orientable;
 	
-	Texture* m_texture;
+	
 	
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -148,9 +150,11 @@ private:
 	Vector3f m_n2;
 	Vector3f m_n3;
 
+	
 	float u1, u2, u3, v1, v2, v3;
 	float abc;
 	bool m_hasnormal;
+	
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////

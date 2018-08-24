@@ -92,7 +92,7 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 	
 	Color light;
 	Vector3f hitPoint;
-	Vector3f hitPoint2;
+
 
 	hit.color = background;
 
@@ -110,10 +110,14 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 		
 		primitives[j]->hit(ray, hit);
 		
-		if (hit.hitObject && hit.t < tmin) {
 
-			hitPoint = ray.origin + ray.direction*hit.t;
+		
+
+
+		if (hit.hitObject && hit.t < tmin) {
 			
+			hitPoint = ray.origin + ray.direction*hit.t;
+			Vector3f normal = primitives[j]->getNormal(hitPoint);
 			
 			if (primitives[j]->getMaterial()){
 			
@@ -130,13 +134,13 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 
 					if (lights[i]->m_diffuse){
 						// I_in * k_diffuse * (L * N)
-						diffuse = diffuse + (*lights[i]->m_diffuse * lights[i]->calcDiffuse(hitPoint, primitives[j]->getNormal(hitPoint)));
-
+						diffuse = diffuse + (*lights[i]->m_diffuse * lights[i]->calcDiffuse(hitPoint, normal));
+						
 					}
 
 					if (lights[i]->m_specular && primitives[j]->getMaterial()->m_shinies > 0){
 						// I_in * k_specular * (R * V)^20
-						specular = specular + (*lights[i]->m_diffuse * lights[i]->calcSpecular(hitPoint, primitives[j]->getNormal(hitPoint), ray.direction,
+						specular = specular + (*lights[i]->m_specular * lights[i]->calcSpecular(hitPoint, normal, ray.direction,
 							primitives[j]->getMaterial()->m_shinies));
 
 					}
@@ -159,17 +163,13 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 					
 					
 
-					light = primitives[j]->getColor(hitPoint) *( ambiente + diffuse + specular);
-				
-
-				hit.color =  light;
-
-			}else {
 				
 				
-				hit.color = primitives[j]->getColor(hitPoint);
 
-			}
+					hit.color = primitives[j]->getColor(hitPoint) * (ambiente + diffuse + specular);
+				
+					
+ 			}
 				tmin = hit.t;
 			
 		}

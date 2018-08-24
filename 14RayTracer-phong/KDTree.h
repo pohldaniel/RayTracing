@@ -77,10 +77,8 @@ public:
 	void buildTree(const std::vector<Triangle *>& list, const BBox &V, int maxDepth = 15);
 	bool intersectRec(const Ray& ray, Hit &hit);
 	
-	//used for texturing the mesh
+	// used to get the right material at the render function in the class scene
 	Primitive *m_primitive;
-	Triangle *m_triangle;
-	
 
 private:
 	

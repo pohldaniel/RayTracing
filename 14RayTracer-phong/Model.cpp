@@ -39,10 +39,12 @@ Model::~Model(){
 }
 
 
-void Model::hit(const Ray& a_Ray, Hit &hit){
+void Model::hit(const Ray& a_ray, Hit &hit){
+
+	
 
 	// find the nearest intersection
-	m_KDTree->intersectRec(a_Ray, hit);
+	m_KDTree->intersectRec(a_ray, hit);
 
 }
 
@@ -60,51 +62,48 @@ void Model::calcBounds(){
 	Model::bounds = true;
 }
 
-Color Model::getColor(Vector3f& a_Pos){
+Color Model::getColor(Vector3f& a_pos){
 
-	if (m_KDTree->m_primitive->m_mesh->m_texture){
 
-		m_KDTree->m_primitive->setTexture(m_KDTree->m_primitive->m_mesh->m_texture);
+	if (m_KDTree->m_primitive->m_texture){
 
-		return m_KDTree->m_primitive->getColor(a_Pos);
+		return m_KDTree->m_primitive->getColor(a_pos);
+		
 
-	}
-	else if (m_texture){
-
+	}else if (m_texture){
 		m_KDTree->m_primitive->setTexture(m_texture);
 
-		return m_KDTree->m_primitive->getColor(a_Pos);
+		return m_KDTree->m_primitive->getColor(a_pos);
 
 	}else {
 
-		return m_color;
+		return m_KDTree->m_primitive->m_color;
 	}
+
+	
+
+	
 }
 
-Vector3f  Model::getNormal(Vector3f& a_Pos){
-
+Vector3f  Model::getNormal(Vector3f& a_pos){
+	
 	if (m_hasnormal){
 
 		Vector3f normal;
 
-		normal = m_KDTree->m_primitive->getNormal(a_Pos);
+		normal = m_KDTree->m_primitive->getNormal(a_pos);
 
-
-		//calculate the transpose of invT with the normal
 		return (invT * normal).normalize();
-
-		//return (invT.transpose() * Vector4f(normal, 0.0)).normalize();
-		return (T * Vector4f(normal, 0.0)).normalize();
 	}
-	else{
-
-		return Vector3f(1.0, 0.0, 0.0);
-	}
+	
+	
+	return Vector3f(1.0, 0.0, 0.0);
+	
 }
 
 Material* Model::getMaterial(){
 
-	return m_KDTree->m_primitive->m_mesh->m_material;
+	return m_KDTree->m_primitive->m_material;
 }
 
 bool compare(const std::array<int, 10> &i_lhs, const std::array<int, 10> &i_rhs){
@@ -307,10 +306,31 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 	dup.clear();
 	name.clear();
 
-	int start = 0;
-	int end = meshes[0]->m_numberTriangles;
+	for (int j = 0; j < m_numberOfMeshes; j++){
+	
+		meshes[j]->m_material = new Material();
+		if (meshes[j]->readMaterial((m_modelDirectory + "/" + m_mltPath).c_str())){
+
+			meshes[j]->m_texture = new Texture(&(m_modelDirectory + "/" + meshes[j]->m_material->colorMapPath)[0]);
+
+		}else{
+
+			meshes[j]->m_color = Color(1.0 / (j + 1), 1.0 / (j + 1), 1.0 / (j + 1));
+			meshes[j]->m_material->m_ambient2 = new Color(0.1, 0.1, 0.1);
+			meshes[j]->m_material->m_diffuse2 = new Color(0.7, 0.7, 0.7);
+			meshes[j]->m_material->m_specular2 = new Color(0.4, 0.4, 0.4);
+			meshes[j]->m_material->m_shinies = 20;
+
+
+		}
+
+	}
+	
+
 
 	
+	int start = 0;
+	int end = meshes[0]->m_numberTriangles;
 
 	for (int j = 0; j < m_numberOfMeshes; j++){
 
@@ -342,8 +362,10 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 			meshes[j]->m_ymax = max(a->getVec()[1] + translate.getVec()[1], max(b->getVec()[1] + translate.getVec()[1], max(c->getVec()[1] + translate.getVec()[1], meshes[j]->m_ymax)));
 			meshes[j]->m_zmax = max(a->getVec()[2] + translate.getVec()[2], max(b->getVec()[2] + translate.getVec()[2], max(c->getVec()[2] + translate.getVec()[2], meshes[j]->m_zmax)));
 
-			triangle = new Triangle(*a + translate, *b + translate, *c + translate, Color(1.0, 0.0, 1.0));
-			triangle->m_mesh = meshes[j];
+			triangle = new Triangle(*a + translate, *b + translate, *c + translate, Color(0.6, 1.0, 1.0));
+			triangle->m_texture = meshes[j]->m_texture;
+			triangle->m_material = meshes[j]->m_material;
+			triangle->m_color = meshes[j]->m_color;
 
 			if (textureCoords.size() > 0){
 
@@ -354,6 +376,7 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 					textureCoords[(face[i])[4] - 1]->getVec()[1],
 					textureCoords[(face[i])[5] - 1]->getVec()[1]);
 
+				
 			}
 
 
@@ -366,25 +389,6 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 			triangles.push_back(triangle);
 		}
 
-
-		meshes[j]->m_material = new Material();
-		if (meshes[j]->readMaterial((m_modelDirectory + "/" + m_mltPath).c_str())){
-
-			meshes[j]->m_texture = new Texture(&(m_modelDirectory + "/" + meshes[j]->m_material->colorMapPath)[0]);
-
-		}else{
-			
-
-			meshes[j]->m_color = Color(1.0 / (j + 1), 1.0 / (j + 1), 1.0 / (j + 1));
-			meshes[j]->m_material->m_ambient2 = new Color(0.1, 0.1, 0.1);
-			meshes[j]->m_material->m_diffuse2 = new Color(0.7, 0.7, 0.7);
-			meshes[j]->m_material->m_specular2 = new Color(0.4, 0.4, 0.4);
-			meshes[j]->m_material->m_shinies = 20;
-
-		
-		}
-
-		
 		xmin = min(meshes[j]->m_xmin, xmin);
 		ymin = min(meshes[j]->m_ymin, ymin);
 		zmin = min(meshes[j]->m_zmin, zmin);
@@ -393,10 +397,11 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 		ymax = max(meshes[j]->m_ymax, ymax);
 		zmax = max(meshes[j]->m_zmax, zmax);
 		
+		
 	}
 
-
 	
+
 	std::cout << "Number of faces: " << triangles.size() << std::endl;
 	calcBounds();
 	std::cout << "Build KDTree!" << std::endl;

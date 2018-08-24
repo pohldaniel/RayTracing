@@ -6,9 +6,9 @@
 #include <array>
 #include <map>
 
-
-#include "Vector.h"
 #include "Primitive.h"
+#include "Vector.h"
+
 
 class Mesh;
 class KDTree;

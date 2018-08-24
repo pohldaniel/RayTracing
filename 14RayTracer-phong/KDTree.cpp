@@ -605,36 +605,44 @@ bool KDTree::intersect(Node* node, const Ray& ray, float min, float max, Hit &hi
 bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 	
 	float tmin = hit.t;
-	float tmin2 = hit.t;
-
-
-	Hit tmp;
+	float tminTree = hit.t;
+	Hit hitTree;
+	//Primitive *primitive;
+	Vector3f hitPoint;
 
 		for (unsigned int i = 0; i < m_primitives.size(); i++){
-			m_primitives[i]->m_primitive->hit(ray, tmp);
+			m_primitives[i]->m_primitive->hit(ray, hitTree);
 
 			
-			if (tmp.hitObject && tmp.t < tmin2) {
+			if (hitTree.hitObject && hitTree.t < tminTree) {
 
-				m_tree->m_primitive = m_primitives[i]->m_primitive;
+			
+
+				m_tree ->m_primitive = m_primitives[i]->m_primitive;
+				
 				
 
-				tmp.color = m_primitives[i]->m_primitive->m_color;
-				tmin2 = tmp.t;
+				
+				tminTree = hitTree.t;
 				
 			}
 
 		}
 		
 		// find closest triangle
-		if (tmin2 <= tmin){
+		if (tminTree <= tmin){
+			
+			/*hitPoint = ray.origin + ray.direction*tminTree;
+			hit.color = m_tree->m_primitive->getColor(hitPoint);*/
+			
 
-			//hit.color = Color(1.0,0.0,1.0);
-			hit.t = tmin2;
-			hit.hitObject = tmp.hitObject;
+			
+
+			hit.t = tminTree;
+			hit.hitObject = hitTree.hitObject;
 		}
 
-		return tmp.hitObject;
+		return hitTree.hitObject;
 
 	
 

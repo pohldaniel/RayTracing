@@ -228,7 +228,7 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 	Vector3f P = Vector3f::cross(ray.direction, v0v2);
 	float det = Vector3f::dot(P, v0v1);
 
-	if (det < 0.0001) return;
+	if (fabs(det) < 0.000001) return;
 	
 	float inv_det = 1.0 / det;
 

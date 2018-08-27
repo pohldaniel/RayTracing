@@ -7,8 +7,7 @@ const Vector3f Camera::WORLD_XAXIS(1.0f, 0.0f, 0.0f);
 const Vector3f Camera::WORLD_YAXIS(0.0f, 1.0f, 0.0f);
 const Vector3f Camera::WORLD_ZAXIS(0.0f, 0.0f, 1.0f);
 
-Camera::Camera()
-{
+Camera::Camera(){
 
 	m_eye.set(0.0f, 0.0f, 0.0f);
 	m_xAxis.set(1.0f, 0.0f, 0.0f);
@@ -16,7 +15,7 @@ Camera::Camera()
 	m_zAxis.set(0.0f, 0.0f, 1.0f);
 	m_viewDir.set(0.0f, 0.0f, -1.0f);
 	m_zoom = 1.0;
-	m_sampler = new Regular();
+	m_sampler = std::unique_ptr<Sampler>(new Regular());
 
 }
 
@@ -28,7 +27,7 @@ Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis
 	m_xAxis = xAxis;
 	m_yAxis = yAxis;
 	m_zAxis = zAxis;
-	m_sampler = sampler;
+	m_sampler = std::unique_ptr<Sampler>(sampler);
 	m_zoom = zoom;
 
 	updateView();
@@ -42,26 +41,16 @@ Camera::Camera(const Vector3f &eye, const Vector3f &xAxis, const Vector3f &yAxis
 	m_xAxis = xAxis;
 	m_yAxis = yAxis;
 	m_zAxis = zAxis;
-	m_sampler = sampler;
+	m_sampler = std::unique_ptr<Sampler>(sampler);
 	m_zoom = zoom;
 
 	updateView(eye, target, up);
 }
 
-Camera::Camera(const Camera& c){
-
-	m_eye = c.m_eye;
-	m_xAxis = c.m_xAxis;
-	m_yAxis = c.m_yAxis;
-	m_zAxis = c.m_zAxis;
-	m_viewDir = c.m_viewDir;
-}
 
 
 
-Camera::~Camera()
-{
-}
+Camera::~Camera(){}
 
 
 void Camera::updateView()
@@ -158,9 +147,9 @@ Orthographic::Orthographic(const Vector3f &eye,
 	const float zoom,
 	Sampler  *sampler) : Camera(eye, xAxis, yAxis, zAxis, target, up, zoom, sampler){	}
 
-void Orthographic::renderScene( Scene& scene) {
+void Orthographic::renderScene(const Scene& scene) {
 
-	ViewPlane	vp = scene.vp;
+	ViewPlane	vp = scene.m_vp;
 
 	int n = (int)sqrt((float)m_sampler->getNumSamples());
 	int numSamples = n*n;
@@ -168,9 +157,8 @@ void Orthographic::renderScene( Scene& scene) {
 	Color		color;
 	Ray			ray;
 	Vector2f	sp;
-	float		px;
-	float		py;
-	int red, green, blue;
+	
+
 	vp.s /= m_zoom;
 	ray.direction = Vector3f(0.0, 0.0, -1.0);
 
@@ -180,7 +168,7 @@ void Orthographic::renderScene( Scene& scene) {
 
 			for (int i = 0; i < numSamples; i++){
 				sp = m_sampler->sampleUnitSquare();
-				ray.origin = Vector3f(x - 0.5 * vp.hres + sp[0], y - 0.5 * vp.vres + sp[0], getPosition()[2])*vp.s;
+				ray.origin = Vector3f((float)(x - 0.5 * vp.hres + sp[0]),(float)( y - 0.5 * vp.vres + sp[0]), getPosition()[2])*vp.s;
 				color = color + scene.hitObjects(ray).color;
 			}
 
@@ -202,7 +190,7 @@ Projection::Projection(const Vector3f &eye,
 	float fovy,
 	Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, 1.0, sampler){
 
-	Projection::fovy = fovy;
+	m_fovy = fovy;
 }
 
 Projection::Projection(const Vector3f &eye,
@@ -214,14 +202,14 @@ Projection::Projection(const Vector3f &eye,
 	const float fovy,
 	Sampler  *sampler) :Camera(eye, xAxis, yAxis, zAxis, target, up, 1.0, sampler){
 
-	Projection::fovy = fovy;
+	m_fovy = fovy;
 }
 
 
 
-void Projection::renderScene(Scene& scene){
+void Projection::renderScene(const Scene& scene){
 
-	ViewPlane	vp = scene.vp;
+	ViewPlane	vp = scene.m_vp;
 
 	Color		color;
 	Ray			ray;
@@ -231,7 +219,7 @@ void Projection::renderScene(Scene& scene){
 	float		py;
 
 	float aspectRatio = (float)vp.hres / vp.vres;
-	float scale = tan((PI / 360) * fovy);
+	float scale =(float) tan((PI / 360) * m_fovy);
 	int width = vp.hres;
 	int height = vp.vres;
 
@@ -263,8 +251,9 @@ void Projection::renderScene(Scene& scene){
 }
 
 ///////////////////////////////////////////////////////////////////////
-Pinhole::Pinhole() :Camera()
-{
+Pinhole::~Pinhole(){}
+
+Pinhole::Pinhole() :Camera(){
 
 	m_d = 500;
 }
@@ -293,16 +282,16 @@ Pinhole::Pinhole(const Vector3f &eye,
 
 }
 
-Vector3f & Pinhole::getViewDirection(float px, float py) const{
+Vector3f  Pinhole::getViewDirection(float px, float py) const{
 	Vector3f dir = (m_xAxis *px + m_yAxis*py + m_viewDir * m_d).normalize();
 
 	return(dir);
 
 }
 
-void Pinhole::renderScene( Scene& scene) {
+void Pinhole::renderScene(const Scene &scene) {
 
-	ViewPlane	vp = scene.vp;
+	ViewPlane	vp = scene.m_vp;
 
 	int n = (int)sqrt((float)m_sampler->getNumSamples());
 	int numSamples = n*n;
@@ -313,7 +302,7 @@ void Pinhole::renderScene( Scene& scene) {
 	float		px;
 	float		py;
 	
-	int red, green, blue;
+
 	vp.s /= m_zoom;
 	ray.origin = m_eye;
 	
@@ -323,8 +312,8 @@ void Pinhole::renderScene( Scene& scene) {
 
 			for (int i = 0; i < numSamples; i++){
 				sp = m_sampler->sampleUnitSquare();
-				px = vp.s * (x - 0.5 * vp.hres + sp[0]);
-				py = vp.s * (y - 0.5 * vp.vres + sp[1]);
+				px = vp.s * (x - 0.5f * vp.hres + sp[0]);
+				py = vp.s * (y - 0.5f * vp.vres + sp[1]);
 
 				ray.direction = getViewDirection(px, py);
 				color = color + scene.hitObjects(ray).color;

@@ -12,11 +12,7 @@ public:
 public:
 
 	ViewPlane();   								// default Constructor
-	ViewPlane(int hres,
-			  int vres,
-			  float s);
-
-	
+	ViewPlane(int hres, int vres, float s);
 
 	~ViewPlane();   							// destructor
 

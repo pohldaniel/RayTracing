@@ -3,8 +3,8 @@
 #include <iostream>
 #include "Texture.h"
 
-Texture::Texture(char* path){
-	bitmap = new Bitmap();
+Texture::Texture(const char* path){
+	bitmap = std::unique_ptr<Bitmap>(new Bitmap());
 	bitmap->loadBitmap24(path);
 	width = bitmap->width;
 	height = bitmap->height;
@@ -16,15 +16,14 @@ Texture::Texture(char* path){
 
 Texture::~Texture(){
 
-	delete bitmap;
 }
 
-void Texture::setUVScale(float uscale, float vscale){
-	Texture::uscale = uscale;
-	Texture::vscale = vscale;
+void Texture::setUVScale(const float a_uscale, const float a_vscale){
+	uscale = a_uscale;
+	vscale = a_vscale;
 }
 
-Color Texture::getTexel(float a_u, float a_v){
+Color Texture::getTexel(const float a_u, const float a_v){
 
 	int u = (((int)(a_u*uscale*(width - 1)))  ) % width;
 	int v = (((int)(a_v*vscale*(height - 1))) ) % height;
@@ -40,7 +39,7 @@ Color Texture::getTexel(float a_u, float a_v){
 	
 	//std::cout << r << "  " << g << "  " << b << std::endl;
 
-	return Color(r / 255.0, g / 255.0, b / 255.0) * 4;
+	return Color(r / 255.0, g / 255.0, b / 255.0) ;
 
 	//return Color(1, 0, 0);
 }

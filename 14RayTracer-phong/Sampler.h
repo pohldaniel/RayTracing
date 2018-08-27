@@ -11,7 +11,7 @@ public:
 
 	Sampler();
 	Sampler(const int numSamples, const int numSets);
-	~Sampler();
+	virtual ~Sampler();
 	int getNumSamples();
 
 	virtual void generateSamples() = 0;		// generate sample patterns in a unit square

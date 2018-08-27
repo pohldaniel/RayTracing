@@ -4,16 +4,16 @@
 class Color{
 public:
 	Color();
-	Color(float r, float g, float b);
-	Color(const Color &c);
+	Color(const float r, const float g, const float b);
+	
 
 	~Color();
 
 	float operator[](int index) const;
 	float& operator[](int index);
 
-	Color &operator*(const Color &rhs) const;
-	Color &operator+(const Color &rhs) const;
+	Color operator*(const Color &rhs) const;
+	Color operator+(const Color &rhs) const;
 	Color operator*(float scalar) const;
 	Color operator/(float scalar) const;
 

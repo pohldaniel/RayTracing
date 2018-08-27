@@ -4,11 +4,12 @@
 
 
 Scene::Scene() {
-	vp = ViewPlane();
-	bitmap = NULL;
+	m_vp = ViewPlane();
+	m_bitmap = NULL;
+
 	try {
 
-		bitmap = new Bitmap(vp.vres, vp.hres, 24);
+		m_bitmap = std::unique_ptr<Bitmap>( new Bitmap(m_vp.vres, m_vp.hres, 24));
 	}
 	catch (const char* e) {
 		MessageBox(NULL, e, "Error", MB_OK);
@@ -19,54 +20,33 @@ Scene::Scene() {
 }
 
 
-Scene::Scene(const ViewPlane vp, const Color &background){
+Scene::Scene(const ViewPlane &vp, const Color &background){
 
-	Scene::vp = vp;
-	Scene::background = background;
-	Scene::bitmap = NULL;
+	m_vp = vp;
+	m_background = background;
+	m_bitmap = NULL;
 
 	try {
 
-		bitmap = new Bitmap(vp.vres, vp.hres, 24);
-	}
-	catch (const char* e) {
-		MessageBox(NULL, e, "Error", MB_OK);
+		m_bitmap = std::unique_ptr<Bitmap>( new Bitmap(vp.vres, vp.hres, 24));
+
+	}catch (const char* e) {
+		std::cout << "Could not load Scene bitmap!" << std::endl;
 
 	}
 
 
 }
 
-Scene::~Scene()
-{
 
-	if (Scene::bitmap)
-	{
-
-		delete Scene::bitmap;
-		Scene::bitmap = NULL;
-	}
-
-
-
-	for (int j = 0; j < primitives.size(); j++){
-
-		delete primitives[j];
-		primitives[j] = NULL;
-	}
-
-
-
-
-}
 
 
 void Scene::addPrimitive(Primitive* primitive) {
-	primitives.push_back(primitive);
+	m_primitives.push_back(std::shared_ptr<Primitive>(primitive));
 }
 
 void Scene::addLight(Light* light) {
-	lights.push_back(light);
+	m_lights.push_back(std::unique_ptr<Light>(light));
 }
 
 
@@ -78,7 +58,7 @@ void Scene::setPixel(const int x, const int y, Color& color)const {
 
 	//std::cout << r << "   " << g << "   " << b << std::endl;
 
-	bitmap->setPixel24(x, y, r, g, b);
+	m_bitmap->setPixel24(x, y, r, g, b);
 }
 
 
@@ -94,84 +74,56 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 	Vector3f hitPoint;
 
 
-	hit.color = background;
+	hit.color = m_background;
 
-	for (int j = 0; j < primitives.size() ; j++){
+	for (unsigned int j = 0; j < m_primitives.size(); j++){
 
-		if (primitives[j]->orientable){
+		if (m_primitives[j]->orientable){
 
-			ray = Ray(primitives[j]->invT * (Vector4f(_ray.origin, 1.0) ),
-				(primitives[j]->invT * Vector4f(_ray.direction, 0.0)).normalize());
+			ray = Ray(m_primitives[j]->invT * (Vector4f(_ray.origin, 1.0)),
+				(m_primitives[j]->invT * Vector4f(_ray.direction, 0.0)).normalize());
 			
 		}else{
 
 			ray = Ray(_ray.origin, _ray.direction.normalize());
 		}
 		
-		primitives[j]->hit(ray, hit);
+		m_primitives[j]->hit(ray, hit);
 		
-
-		
-
-
 		if (hit.hitObject && hit.t < tmin) {
-			
+			tmin = hit.t;
 			hitPoint = ray.origin + ray.direction*hit.t;
-			Vector3f normal = primitives[j]->getNormal(hitPoint);
+			Vector3f normal = m_primitives[j]->getNormal(hitPoint);
 			
-			if (primitives[j]->getMaterial()){
+			if (m_primitives[j]->getMaterial()){
 			
 				Color ambiente(0.0, 0.0, 0.0), diffuse(0.0, 0.0, 0.0), specular(0.0, 0.0, 0.0);
 				
 
-				for (int i = 0; i < lights.size(); i++){
+				for (unsigned int i = 0; i < m_lights.size(); i++){
 
-					if (lights[i]->m_ambient){
+					
 						// I_in * k_ambiente
-						ambiente = ambiente + *lights[i]->m_ambient;
+						ambiente = ambiente + m_lights[i]->m_ambient;
 
-					}
-
-					if (lights[i]->m_diffuse){
 						// I_in * k_diffuse * (L * N)
-						diffuse = diffuse + (*lights[i]->m_diffuse * lights[i]->calcDiffuse(hitPoint, normal));
+						diffuse = diffuse + (m_lights[i]->m_diffuse * m_lights[i]->calcDiffuse(hitPoint, normal));
 						
-					}
-
-					if (lights[i]->m_specular && primitives[j]->getMaterial()->m_shinies > 0){
 						// I_in * k_specular * (R * V)^20
-						specular = specular + (*lights[i]->m_specular * lights[i]->calcSpecular(hitPoint, normal, ray.direction,
-							primitives[j]->getMaterial()->m_shinies));
+						specular = specular + (m_lights[i]->m_specular * m_lights[i]->calcSpecular(hitPoint, normal, ray.direction,
+							m_primitives[j]->getMaterial()->m_shinies));
 
-					}
+					
 				}
 
-					if (primitives[j]->getMaterial()->m_ambient2){
-						
-						ambiente = ambiente * *primitives[j]->getMaterial()->m_ambient2;
-					}
-
-					if (primitives[j]->getMaterial()->m_diffuse2){
-						
-						diffuse = diffuse * *primitives[j]->getMaterial()->m_diffuse2;
-					}
-
-					if (primitives[j]->getMaterial()->m_specular2){
-						
-						specular = specular * *primitives[j]->getMaterial()->m_specular2;
-					}
+				ambiente = ambiente * m_primitives[j]->getMaterial()->m_ambient;
+				diffuse = diffuse * m_primitives[j]->getMaterial()->m_diffuse;
+				specular = specular * m_primitives[j]->getMaterial()->m_specular;
 					
-					
-
-				
-				
-
-					hit.color = primitives[j]->getColor(hitPoint) * (ambiente + diffuse + specular);
-				
-					
+				hit.color = m_primitives[j]->getColor(hitPoint) * (ambiente + diffuse + specular);
+				//hit.color = m_primitives[j]->getColor(hitPoint) * (ambiente + diffuse) + specular;
  			}
-				tmin = hit.t;
-			
+
 		}
 		
 	}//end for

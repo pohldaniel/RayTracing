@@ -5,6 +5,7 @@
 #include <string>
 #include <array>
 #include <map>
+#include <memory>
 
 #include "Primitive.h"
 #include "Vector.h"
@@ -18,38 +19,32 @@ class Model :public OrientablePrimitive {
 	
 public:
 	Model();
-	Model(Color color);
+	Model(const Color &color);
 	~Model();
 
-	std::vector<Triangle*>	triangles;
+	std::vector<std::shared_ptr<Triangle>>	triangles;
 	void hit(const Ray& a_Ray, Hit &hit);
 	void calcBounds();
-	Color getColor(Vector3f& a_Pos);
-	Vector3f getNormal(Vector3f& a_Pos);
+	Color getColor(const Vector3f& a_Pos);
+	Vector3f getNormal(const Vector3f& a_Pos);
 
-	bool loadObject(const char* filename);
-	bool loadObject(const char* filename, Vector3f &rotate, float degree, Vector3f &translate, float scale);
+	bool loadObject(const char* filename, bool cull);
+	bool loadObject(const char* filename, Vector3f &rotate, float degree, Vector3f &translate, float scale, bool cull);
 
-	KDTree* m_KDTree;
+	std::unique_ptr<KDTree> m_KDTree;
 
 	bool m_hasMaterial;
 	std::string m_mltPath;
 	std::string m_modelDirectory;
 	int m_numberOfMeshes;
-	std::vector<Mesh*> meshes;
-	Material* getMaterial();
+	std::vector<std::shared_ptr<Mesh>> meshes;
+	std::shared_ptr<Material>  getMaterial();
 
-
-	std::vector<Mesh*> getMesches();
-	std::string getMltPath();
-	std::string getModelDirectory();
-	int numberOfMeshes();
-	bool hasMaterial() const;
+	
+	
 
 private:
-	Triangle *m_triangle;
-
-
+	
 	float	xmin;
 	float	xmax;
 	float	ymin;
@@ -76,8 +71,8 @@ public:
 	bool m_hasNormals;
 	bool m_hasTangents;
 
-	Texture* m_texture;
-	Material* m_material;
+	std::shared_ptr<Texture> m_texture;
+	std::shared_ptr<Material>  m_material;
 
 	bool readMaterial(const char* filename);
 
@@ -85,7 +80,7 @@ public:
 
 private:
 
-	bool mltCompare(std::string* mltName);
+	
 
 	Color m_color;
 	int m_numberTriangles;

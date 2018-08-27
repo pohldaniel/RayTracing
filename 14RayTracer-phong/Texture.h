@@ -1,3 +1,5 @@
+#include <memory>
+
 #include "Bitmap.h"
 #include "Color.h"
 
@@ -6,11 +8,11 @@ class Texture
 public:
 	
 
-	Texture(char* path);
+	Texture(const char* path);
 	~Texture();
 
-	Color getTexel(float u, float v);
-	void setUVScale(float uscale, float vscale);
+	Color getTexel(const float u, const float v);
+	void setUVScale(const float uscale, const float vscale);
 
 
 
@@ -18,8 +20,8 @@ public:
 private:
 
 	int width, height, padWidth;
-	Bitmap* bitmap;
+	std::unique_ptr<Bitmap> bitmap;
 	float uscale, vscale;
-
+	
 };
 

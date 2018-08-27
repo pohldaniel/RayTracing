@@ -1,11 +1,17 @@
 #include <iostream>
 #include "Light.h"
 
+Light::Light(){
 
+	m_position = Vector3f(0.0, 0.0, 30);
+	m_ambient = Color(0.5, 0.5, 0.5);
+	m_diffuse = Color(0.5, 0.5, 0.5);
+	m_specular = Color(0.5, 0.5, 0.5);
+}
 
-Light::Light(Vector3f a_position, Color *ambiente, Color *diffuse, Color *specular){
-	Light::position = a_position;
+Light::Light(const Vector3f &a_position, const Color &ambiente, const Color &diffuse, const Color &specular){
 	
+	m_position = a_position;
 	m_ambient = ambiente;
 	m_diffuse = diffuse;
 	m_specular = specular;
@@ -15,9 +21,9 @@ Light::Light(Vector3f a_position, Color *ambiente, Color *diffuse, Color *specul
 Light::~Light(){}
 
 
-float Light::calcDiffuse(Vector3f& a_Pos, Vector3f& a_Normal){
+float Light::calcDiffuse(const Vector3f& a_Pos, const Vector3f& a_Normal){
 
-	Vector3f L = (position - a_Pos).normalize();
+	Vector3f L = (m_position - a_Pos).normalize();
 	float diff = Vector3f::dot(L, a_Normal) ;
 	
 	if (diff > 0){
@@ -32,9 +38,9 @@ float Light::calcDiffuse(Vector3f& a_Pos, Vector3f& a_Normal){
 
 }
 
-float Light::calcSpecular(Vector3f& a_Pos, Vector3f& a_Normal, Vector3f& a_viewDirection, int a_n){
+float Light::calcSpecular(const Vector3f& a_Pos, const Vector3f& a_Normal, const Vector3f& a_viewDirection, const int a_n){
 
-	Vector3f L = (position - a_Pos).normalize();
+	Vector3f L = (m_position - a_Pos).normalize();
 	Vector3f V = L - (a_Normal  * 2.0f *Vector3f::dot(L, a_Normal)) ;
 
 	

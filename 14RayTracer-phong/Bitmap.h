@@ -20,9 +20,9 @@ public:
 	Bitmap(int height, int width, int bpp);
 	~Bitmap();
 
-	bool loadBitmap24(char *filename);
-	bool loadBitmap24B(char *filename);
-	bool readMonochrome(char *filename);
+	bool loadBitmap24(const char *filename);
+	bool loadBitmap24B(const char *filename);
+	bool readMonochrome(const char *filename);
 	bool writeBitmap24(COLORREF *(*RGBMatrix), int height, int width);
 	void setPixel24(int x, int y, Color &color);
 	void setPixel24(int x, int y, int r, int g, int b);

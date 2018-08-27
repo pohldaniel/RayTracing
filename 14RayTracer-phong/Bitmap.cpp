@@ -94,7 +94,7 @@ Bitmap::~Bitmap()
 // desc: Returns a pointer to the bitmap image of the bitmap specified
 //       by filename. Also returns the bitmap header information.
 //		 No support for 8-bit bitmaps.
-bool Bitmap::loadBitmap24(char *filename)
+bool Bitmap::loadBitmap24(const char *filename)
 {
 	FILE 				*filePtr;				// the file pointer
 	unsigned char		tempRGB;				// swap variable
@@ -180,7 +180,7 @@ bool Bitmap::loadBitmap24(char *filename)
 
 
 
-bool Bitmap::readMonochrome(char *filename)
+bool Bitmap::readMonochrome(const char *filename)
 {
 	FILE *filePtr = fopen(filename, "rb");
 
@@ -234,7 +234,7 @@ bool Bitmap::readMonochrome(char *filename)
 }
 
 
-bool Bitmap::loadBitmap24B(char *filename)
+bool Bitmap::loadBitmap24B(const char *filename)
 {
 	FILE *filePtr;								// the file pointer
 	int					padWidth;				// widht of a padded row

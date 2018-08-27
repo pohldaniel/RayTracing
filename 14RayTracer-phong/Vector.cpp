@@ -323,13 +323,13 @@ Vector3f &Vector3f::operator+=(const Vector3f &rhs)
 }
 
 
-Vector3f &Vector3f::operator+(const Vector3f &rhs) const{
+Vector3f Vector3f::operator+(const Vector3f &rhs) const{
 	Vector3f tmp(*this);
 	tmp += rhs;
 	return tmp;
 }
 
-Vector3f &Vector3f::operator-(const Vector3f &rhs) const
+Vector3f Vector3f::operator-(const Vector3f &rhs) const
 {
 	Vector3f tmp(*this);
 	tmp -= rhs;

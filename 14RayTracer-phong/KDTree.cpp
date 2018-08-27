@@ -7,20 +7,20 @@ KDTree::KDTree(){
 	m_costOfTraversal = 1;
 }
 
-//the destructor
 KDTree::~KDTree(){
 
 }
 
+
 //the method that is called from extern to built the tree
-void KDTree::buildTree(const std::vector<Triangle *> &list, const BBox &bbox, int maxDepth){
+void KDTree::buildTree(const std::vector<std::shared_ptr<Triangle>> &list, const BBox &bbox, int maxDepth){
 	//setting the needed information
 	m_boundingBox = bbox;
 	m_maximumDepth = maxDepth;
 
 	//the data-structures for the sah heuristic
-	std::vector<KD_Primitive*>	primitives;
-	std::vector<Event*>			events;
+	std::vector<std::shared_ptr<KD_Primitive>>	primitives;
+	std::vector<std::shared_ptr<Event>>			events;
 
 	//building the list of events and setting the additional information to the primitives
 	createEvents(events, primitives, list);
@@ -33,24 +33,24 @@ void KDTree::buildTree(const std::vector<Triangle *> &list, const BBox &bbox, in
 }
 
 
-KDTree::Node* KDTree::buildTree(BBox boundingBox, std::vector<KD_Primitive*> primitives, std::vector<Event*> events, int depth){
+std::shared_ptr<KDTree::Node> KDTree::buildTree(BBox boundingBox, std::vector<std::shared_ptr<KD_Primitive>> primitives, std::vector<std::shared_ptr<Event>> events, int depth){
 
 	//first termination criteria: have we got some primitives to insert?
 	if (primitives.size() == 0)
 	{
 		//create a empty leaf node
-		return new Node(primitives, this);
+		return std::shared_ptr<KDTree::Node>(new Node(primitives, this));
 	}
 
 	//second termination criteria: test if maxDepth has been reached
 	if (depth == m_maximumDepth)
 	{
 		//we have to clean up a bit
-		for (int i = 0; i < events.size(); i++)
-		if (events[i]) delete events[i];
+		for (unsigned int i = 0; i < events.size(); i++)
+		if (events[i])  events[i].reset();
 
 		//create a leaf node with the primitives
-		return new Node(primitives, this);
+		return std::shared_ptr<KDTree::Node>(new Node(primitives, this));
 	}
 
 	//the values computed by the sah function
@@ -66,11 +66,11 @@ KDTree::Node* KDTree::buildTree(BBox boundingBox, std::vector<KD_Primitive*> pri
 	if (SAHValue >= m_costOfIntersection*primitives.size())
 	{
 		//clean up
-		for (int i = 0; i < events.size(); i++)
-		if (events[i]) delete events[i];
+		for (unsigned int i = 0; i < events.size(); i++)
+		if (events[i])  events[i].reset();
 
 		//create a leaf node with the primitives
-		return new Node(primitives, this);
+		return std::shared_ptr<KDTree::Node>(new Node(primitives, this));
 	}
 
 
@@ -81,10 +81,10 @@ KDTree::Node* KDTree::buildTree(BBox boundingBox, std::vector<KD_Primitive*> pri
 
 
 	//the vectors for step 2 and 3
-	std::vector<Event*> leftOnlyEvents;
-	std::vector<Event*> rightOnlyEvents;
-	std::vector<Event*> leftBothEvents;
-	std::vector<Event*> rightBothEvents;
+	std::vector<std::shared_ptr<Event>> leftOnlyEvents;
+	std::vector<std::shared_ptr<Event>> rightOnlyEvents;
+	std::vector<std::shared_ptr<Event>> leftBothEvents;
+	std::vector<std::shared_ptr<Event>> rightBothEvents;
 
 
 	//step 2: splicing the events
@@ -96,21 +96,21 @@ KDTree::Node* KDTree::buildTree(BBox boundingBox, std::vector<KD_Primitive*> pri
 	sortEvents(leftBothEvents);
 	sortEvents(rightBothEvents);
 
-	std::vector<Event*> leftFinalEvents;
-	std::vector<Event*> rightFinalEvents;
+	std::vector<std::shared_ptr<Event>> leftFinalEvents;
+	std::vector<std::shared_ptr<Event>> rightFinalEvents;
 
 	//step 4: merging
 	mergeEvents(leftFinalEvents, leftBothEvents, leftOnlyEvents);
 	mergeEvents(rightFinalEvents, rightBothEvents, rightOnlyEvents);
 
 
-	std::vector<KD_Primitive*> leftPrimitives;
-	std::vector<KD_Primitive*> rightPrimitives;
+	std::vector<std::shared_ptr<KD_Primitive>> leftPrimitives;
+	std::vector<std::shared_ptr<KD_Primitive>> rightPrimitives;
 
 	//step 5: split primitives
 	splitPrimitives(leftPrimitives, rightPrimitives, primitives);
 
-	Node* node = new Node(splitAxis, splitPosition);
+	std::shared_ptr<Node> node = std::shared_ptr<Node>(new Node(splitAxis, splitPosition));
 
 	BBox leftBoundingBox = boundingBox;
 	BBox rightBoundingBox = boundingBox;
@@ -132,17 +132,17 @@ KDTree::Node* KDTree::buildTree(BBox boundingBox, std::vector<KD_Primitive*> pri
 	return node;
 }
 
-void KDTree::createEvents(std::vector<Event *>& events, std::vector<KD_Primitive *>& primitives, std::vector<Triangle *> list){
+void KDTree::createEvents(std::vector<std::shared_ptr<Event>>& events, std::vector<std::shared_ptr<KD_Primitive>>& primitives, std::vector<std::shared_ptr<Triangle>> list){
 
-	Primitive* primitive = NULL;
+	std::shared_ptr<Triangle> primitive;
 
-	for (int i = 0; i < list.size(); i++){
+	for (unsigned int i = 0; i < list.size(); i++){
 
 		//take the next one
 		primitive = list[i];
 
 		//and make it a kdprimitive
-		KD_Primitive* kdPrimitive = new KD_Primitive(primitive);
+		std::shared_ptr<KD_Primitive> kdPrimitive = std::shared_ptr<KD_Primitive>(new KD_Primitive(primitive));
 
 		//and store it
 		primitives.push_back(kdPrimitive);
@@ -161,13 +161,13 @@ void KDTree::createEvents(std::vector<Event *>& events, std::vector<KD_Primitive
 			//if they are the same, the primitive is perpendicular to that dimension
 			if (min == max)
 			{
-				Event* planarEvent = new Event(j, min, 1, kdPrimitive);
+				std::shared_ptr<Event> planarEvent = std::shared_ptr<Event>(new Event(j, min, 1, kdPrimitive));
 				events.push_back(planarEvent);
 			}
 			else
 			{
-				Event* endEvent = new Event(j, max, 0, kdPrimitive);
-				Event* startEvent = new Event(j, min, 2, kdPrimitive);
+				std::shared_ptr<Event> endEvent = std::shared_ptr<Event>(new Event(j, max, 0, kdPrimitive));
+				std::shared_ptr<Event> startEvent = std::shared_ptr<Event>(new Event(j, min, 2, kdPrimitive));
 				events.push_back(endEvent);
 				events.push_back(startEvent);
 			}
@@ -177,13 +177,13 @@ void KDTree::createEvents(std::vector<Event *>& events, std::vector<KD_Primitive
 	
 }
 
-void KDTree::sortEvents(std::vector<Event*>& events){
+void KDTree::sortEvents(std::vector<std::shared_ptr<Event>>& events){
 
 	quickSort(events, 0, (int)events.size() - 1);
 }
 
 
-void KDTree::quickSort(std::vector<Event*>& events, unsigned int leftBorder, unsigned int rightBorder){
+void KDTree::quickSort(std::vector<std::shared_ptr<Event>>& events, unsigned int leftBorder, unsigned int rightBorder){
 	std::stack<std::pair<int, int> > indices;
 
 	indices.push(std::make_pair((int)leftBorder, (int)rightBorder));
@@ -203,8 +203,8 @@ void KDTree::quickSort(std::vector<Event*>& events, unsigned int leftBorder, uns
 			newRightBorder = currentBorders.second;
 			int index = newLeftBorder;
 
-			Event* helpEvent;
-			Event* pivot = events[currentBorders.first];
+			std::shared_ptr<Event> helpEvent;
+			std::shared_ptr<Event> pivot = std::shared_ptr<Event>(events[currentBorders.first]);
 
 			while (index <= newRightBorder)
 			{
@@ -229,7 +229,7 @@ void KDTree::quickSort(std::vector<Event*>& events, unsigned int leftBorder, uns
 	}
 }
 
-void KDTree::findSplitPlane(BBox boundingBox, int numberOfPrimitives, std::vector<Event*>& events, int& bestAxis, float& bestPosition, float& bestSAHValue, int& side){
+void KDTree::findSplitPlane(BBox boundingBox, int numberOfPrimitives, std::vector<std::shared_ptr<Event>>& events, int& bestAxis, float& bestPosition, float& bestSAHValue, int& side){
 	//we need to count the number of primitives on the left, on the plane itself and on the right side, and this for each dimension
 	//these values are stored here
 	int leftCount[3];
@@ -249,7 +249,7 @@ void KDTree::findSplitPlane(BBox boundingBox, int numberOfPrimitives, std::vecto
 	//trying to find better values, so start with the maximum
 	bestSAHValue = FLT_MAX;
 
-	int index = 0;
+	unsigned index = 0;
 
 	//testing for each eventposition if we found a better sah value
 	while (index < events.size())
@@ -370,16 +370,16 @@ float KDTree::computeSAH(BBox boundingBox, unsigned int axis, float position, un
 }
 
 
-void KDTree::classifyPrimitives(std::vector<Event*>& events, std::vector<KD_Primitive*>& primitives, int axis, float position, int side)
+void KDTree::classifyPrimitives(std::vector<std::shared_ptr<Event>>& events, std::vector<std::shared_ptr<KD_Primitive>>& primitives, int axis, float position, int side)
 {
 	//first set each primitive to both sides
-	for (int i = 0; i < primitives.size(); i++)
+	for (unsigned int i = 0; i < primitives.size(); i++)
 	{
 		primitives[i]->m_orientation = 1;
 	}
 
 	//then look at each event and set the primitives
-	for (int i = 0; i < events.size(); i++)
+	for (unsigned int i = 0; i < events.size(); i++)
 	{
 		//first test if the primitive of the event lies entirely on the left
 		//this happens if the location of the event lies on the left and the event is end
@@ -411,16 +411,16 @@ void KDTree::classifyPrimitives(std::vector<Event*>& events, std::vector<KD_Prim
 	}
 }
 
-void KDTree::spliceEvents(std::vector<Event*> &events, std::vector<Event*> &leftOnlyEvents, std::vector<Event*> &rightOnlyEvents)
+void KDTree::spliceEvents(std::vector<std::shared_ptr<Event>> &events, std::vector<std::shared_ptr<Event>> &leftOnlyEvents, std::vector<std::shared_ptr<Event>> &rightOnlyEvents)
 {
 	//run over the events and put them into the corresponding list
-	for (int i = 0; i < events.size(); i++)
+	for (unsigned int i = 0; i < events.size(); i++)
 	{
 		switch (events[i]->m_primitive->m_orientation)
 		{
 		case 0:			leftOnlyEvents.push_back(events[i]);
 			break;
-		case 1:			delete events[i];
+		case 1:			events[i].reset();
 			break;
 		case 2:			rightOnlyEvents.push_back(events[i]);
 			break;
@@ -428,9 +428,9 @@ void KDTree::spliceEvents(std::vector<Event*> &events, std::vector<Event*> &left
 	}
 }
 
-void KDTree::generateNewEvents(std::vector<KD_Primitive*> &primitives, std::vector<Event*> &leftBothEvents, std::vector<Event*> &rightBothEvents, int axis, float position)
+void KDTree::generateNewEvents(std::vector<std::shared_ptr<KD_Primitive>> &primitives, std::vector<std::shared_ptr<Event>> &leftBothEvents, std::vector<std::shared_ptr<Event>> &rightBothEvents, int axis, float position)
 {
-	for (int i = 0; i < primitives.size(); i++)
+	for (unsigned int i = 0; i < primitives.size(); i++)
 	{
 		if (primitives[i]->m_orientation == 1)
 		{
@@ -450,26 +450,26 @@ void KDTree::generateNewEvents(std::vector<KD_Primitive*> &primitives, std::vect
 				//if they are the same, the primitive is perpendicular to that dimension
 				if (minLeft == maxLeft)
 				{
-					Event* planarEvent = new Event(j, minLeft, 1, primitives[i]);
+					std::shared_ptr<Event> planarEvent = std::shared_ptr<Event>(new Event(j, minLeft, 1, primitives[i]));
 					leftBothEvents.push_back(planarEvent);
 				}
 				else
 				{
-					Event* endEvent = new Event(j, maxLeft, 0, primitives[i]);
-					Event* startEvent = new Event(j, minLeft, 2, primitives[i]);
+					std::shared_ptr<Event> endEvent = std::shared_ptr<Event>( new Event(j, maxLeft, 0, primitives[i]));
+					std::shared_ptr<Event> startEvent = std::shared_ptr<Event>( new Event(j, minLeft, 2, primitives[i]));
 					leftBothEvents.push_back(endEvent);
 					leftBothEvents.push_back(startEvent);
 				}
 
 				if (minRight == maxRight)
 				{
-					Event* planarEvent = new Event(j, minRight, 1, primitives[i]);
+					std::shared_ptr<Event> planarEvent = std::shared_ptr<Event>( new Event(j, minRight, 1, primitives[i]));
 					rightBothEvents.push_back(planarEvent);
 				}
 				else
 				{
-					Event* endEvent = new Event(j, maxRight, 0, primitives[i]);
-					Event* startEvent = new Event(j, minRight, 2, primitives[i]);
+					std::shared_ptr<Event> endEvent = std::shared_ptr<Event>( new Event(j, maxRight, 0, primitives[i]));
+					std::shared_ptr<Event> startEvent = std::shared_ptr<Event>(new Event(j, minRight, 2, primitives[i]));
 					rightBothEvents.push_back(endEvent);
 					rightBothEvents.push_back(startEvent);
 				}
@@ -478,9 +478,9 @@ void KDTree::generateNewEvents(std::vector<KD_Primitive*> &primitives, std::vect
 	}
 }
 
-void KDTree::mergeEvents(std::vector<Event*> &finalEvents, std::vector<Event*> &primaryEvents, std::vector<Event*> &secondaryEvents)
+void KDTree::mergeEvents(std::vector<std::shared_ptr<Event>> &finalEvents, std::vector<std::shared_ptr<Event>> &primaryEvents, std::vector<std::shared_ptr<Event>> &secondaryEvents)
 {
-	int k = 0, l = 0;
+	unsigned k = 0, l = 0;
 
 	//run over the primitives until one list has been processed
 	while (k < primaryEvents.size() && l < secondaryEvents.size())
@@ -510,10 +510,10 @@ void KDTree::mergeEvents(std::vector<Event*> &finalEvents, std::vector<Event*> &
 }
 
 
-void KDTree::splitPrimitives(std::vector<KD_Primitive*>& leftPrimitives, std::vector<KD_Primitive*>& rightPrimitives, std::vector<KD_Primitive*>& primitives)
+void KDTree::splitPrimitives(std::vector<std::shared_ptr<KD_Primitive>>& leftPrimitives, std::vector<std::shared_ptr<KD_Primitive>>& rightPrimitives, std::vector<std::shared_ptr<KD_Primitive>>& primitives)
 {
 	//running over the primitives and put them into the corresponding lists
-	for (int i = 0; i < primitives.size(); i++)
+	for (unsigned int i = 0; i < primitives.size(); i++)
 	{
 		switch (primitives[i]->m_orientation)
 		{
@@ -550,7 +550,7 @@ bool KDTree::intersectRec(const Ray& ray, Hit &hit)
 }
 
 
-bool KDTree::intersect(Node* node, const Ray& ray, float min, float max, Hit &hit){
+bool KDTree::intersect(std::shared_ptr<Node> node, const Ray& ray, float min, float max, Hit &hit){
 	
 	// don't do anything for null nodes
 	if (node == NULL){ 
@@ -566,8 +566,8 @@ bool KDTree::intersect(Node* node, const Ray& ray, float min, float max, Hit &hi
 	}
 
 	// get near and far child
-	Node* nea = NULL;
-	Node* fa = NULL;
+	std::shared_ptr<Node> nea;
+	std::shared_ptr<Node> fa;
 	node->getNearFar(ray, nea, fa);
 
 	// compute distance to the split plane
@@ -607,23 +607,21 @@ bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 	float tmin = hit.t;
 	float tminTree = hit.t;
 	Hit hitTree;
-	//Primitive *primitive;
 	Vector3f hitPoint;
 
 		for (unsigned int i = 0; i < m_primitives.size(); i++){
 			m_primitives[i]->m_primitive->hit(ray, hitTree);
-
+			
 			
 			if (hitTree.hitObject && hitTree.t < tminTree) {
-
-			
-
-				m_tree ->m_primitive = m_primitives[i]->m_primitive;
-				
 				
 
+				m_tree->m_primitive = m_primitives[i]->m_primitive;
+
 				
-				tminTree = hitTree.t;
+
+					//m_tree->m_primitive = m_primitives[i]->m_primitive;
+				tminTree = (float)hitTree.t;
 				
 			}
 
@@ -637,23 +635,16 @@ bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 			
 
 			
-
 			hit.t = tminTree;
 			hit.hitObject = hitTree.hitObject;
 		}
 
+		
 		return hitTree.hitObject;
-
-	
-
-	
-	
-	
-
 	
 }
 
-bool KDTree::Node::getNearFar(const Ray &r, KDTree::Node *&nea, KDTree::Node *&fa){
+bool KDTree::Node::getNearFar(const Ray &r, std::shared_ptr<KDTree::Node>&nea, std::shared_ptr<KDTree::Node>&fa){
 	if (m_splitPosition >= r.origin[m_splitAxis])
 	{
 		nea = left;

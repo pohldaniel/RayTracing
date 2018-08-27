@@ -10,22 +10,23 @@ class Material
 {
 public:
 	Material();
-	
+	Material(const Color &ambient, const Color &diffuse, const Color &specular, const int shinies);
+
+
+
 	~Material();
 
 	
 
+	Color m_ambient;
+	Color m_diffuse;
+	Color m_specular;
+	int m_shinies;			
+	
 	std::string colorMapPath;
 	std::string bumpMapPath;
-
 	
-
-
-
-	Color *m_ambient2;
-	Color *m_diffuse2;
-	Color *m_specular2;
-	int m_shinies;			// neede at the function getSpecular() to determine the surface property
+	// neede at the function getSpecular() to determine the surface property
 
 private:
 

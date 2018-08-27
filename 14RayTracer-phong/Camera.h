@@ -9,8 +9,7 @@
 
 
 class Scene;
-class Camera
-{
+class Camera{
 
 
 public:
@@ -32,12 +31,7 @@ public:
 		const float zoom,
 		Sampler  *sampler);
 
-	Camera(const Camera& camera);	// copy constructor
-
-	~Camera();
-
-
-
+	virtual ~Camera();
 
 	const Vector3f &getPosition() const;
 	const Vector3f &getCamX() const;
@@ -46,7 +40,7 @@ public:
 	const Vector3f &getViewDirection() const;
 
 
-	virtual void renderScene( Scene& scene) = 0;
+	virtual void renderScene(const Scene &scene) = 0;
 
 protected:
 
@@ -66,8 +60,8 @@ protected:
 	Vector3f		m_viewDir;		// 
 	float			m_zoom;			// zoom factor
 
-	Sampler	*m_sampler;
-
+	std::unique_ptr<Sampler> m_sampler;
+	
 };
 
 class Orthographic : public Camera{
@@ -92,11 +86,11 @@ public:
 
 	~Orthographic();
 
-	void renderScene( Scene& scene);
+	void renderScene(const Scene &scene);
 
 };
 
-class Projection : Camera {
+class Projection : public Camera {
 public:
 	Projection();
 	~Projection();
@@ -118,11 +112,11 @@ public:
 		float fovy,
 		Sampler *sampler);
 
-	void renderScene(Scene& scene);
+	void renderScene(const Scene &scene);
 
 private:
 	
-	float fovy;
+	float m_fovy;
 };
 
 class Pinhole : public Camera{
@@ -151,8 +145,8 @@ public:
 
 	~Pinhole();
 
-	Vector3f &getViewDirection(float px, float py) const;
-	void renderScene( Scene& scene);
+	Vector3f getViewDirection(float px, float py) const;
+	void renderScene(const Scene &scene);
 
 private:
 

@@ -3,41 +3,37 @@
 Color::~Color(){}
 
 Color::Color(){
-	Color::r = 1.0;
-	Color::g = 1.0;
-	Color::b = 1.0;
+	r = 1.0;
+	g = 1.0;
+	b = 1.0;
 }
 
 
 
-Color::Color(float r, float g, float b){
+Color::Color(const float a_r, const float a_g, const float a_b){
 
-	Color::r = r;
-	Color::g = g;
-	Color::b = b;
+	r = a_r;
+	g = a_g;
+	b = a_b;
 
 }
 
-Color::Color(const Color &c){
 
-	r = c.r;
-	g = c.g;
-	b = c.b;
-}
 
 void Color::clamp(){
-	r = (r > 1.0) ? 1.0 : (r < 0) ? 0 : r;
-	g = (g > 1.0) ? 1.0 : (g < 0) ? 0 : g;
-	b = (b > 1.0) ? 1.0 : (b < 0) ? 0 : b;
+	r = (r > 1.0f) ? 1.0f : (r < 0.0f) ? 0.0f : r;
+	g = (g > 1.0f) ? 1.0f : (g < 0.0f) ? 0.0f : g;
+	b = (b > 1.0f) ? 1.0f : (b < 0.0f) ? 0.0f : b;
 }
 
 
-Color &Color::operator+(const Color &rhs)const {
+Color Color::operator+(const Color &rhs)const {
+
 
 	return Color(this->r + rhs.r, this->g + rhs.g, this->b + rhs.b);
 }
 
-Color &Color::operator*(const Color &rhs)const {
+Color Color::operator*(const Color &rhs)const {
 
 	return Color(this->r * rhs.r, this->g * rhs.g, this->b * rhs.b);
 }

@@ -2,41 +2,41 @@
 #include "Model.h"
 
 
-bool BBox::intersect(const Ray& ray) {
-	double ox = ray.origin[0]; double oy = ray.origin[1]; double oz = ray.origin[2];
-	double dx = ray.direction[0]; double dy = ray.direction[1]; double dz = ray.direction[2];
+bool BBox::intersect(const Ray& a_ray) {
+	double ox = a_ray.origin[0]; double oy = a_ray.origin[1]; double oz = a_ray.origin[2];
+	double dx = a_ray.direction[0]; double dy = a_ray.direction[1]; double dz = a_ray.direction[2];
 
 	double tx_min, ty_min, tz_min;
 	double tx_max, ty_max, tz_max;
 
 	double a = 1.0 / dx;
 	if (a >= 0) {
-		tx_min = (m_Pos[0] - ox) * a;
-		tx_max = (m_Size[0] + m_Pos[0] - ox) * a;
+		tx_min = (m_pos[0] - ox) * a;
+		tx_max = (m_size[0] + m_pos[0] - ox) * a;
 	}
 	else {
-		tx_min = (m_Size[0] + m_Pos[0] - ox) * a;
-		tx_max = (m_Pos[0] - ox) * a;
+		tx_min = (m_size[0] + m_pos[0] - ox) * a;
+		tx_max = (m_pos[0] - ox) * a;
 	}
 
 	double b = 1.0 / dy;
 	if (b >= 0) {
-		ty_min = (m_Pos[1] - oy) * b;
-		ty_max = (m_Size[1] + m_Pos[1] - oy) * b;
+		ty_min = (m_pos[1] - oy) * b;
+		ty_max = (m_size[1] + m_pos[1] - oy) * b;
 	}
 	else {
-		ty_min = (m_Size[1] + m_Pos[1] - oy) * b;
-		ty_max = (m_Pos[1] - oy) * b;
+		ty_min = (m_size[1] + m_pos[1] - oy) * b;
+		ty_max = (m_pos[1] - oy) * b;
 	}
 
 	double c = 1.0 / dz;
 	if (c >= 0) {
-		tz_min = (m_Pos[2] - oz) * c;
-		tz_max = (m_Size[2] + m_Pos[2] - oz) * c;
+		tz_min = (m_pos[2] - oz) * c;
+		tz_max = (m_size[2] + m_pos[2] - oz) * c;
 	}
 	else {
-		tz_min = (m_Size[2] + m_Pos[2] - oz) * c;
-		tz_max = (m_Pos[2] - oz) * c;
+		tz_min = (m_size[2] + m_pos[2] - oz) * c;
+		tz_max = (m_pos[2] - oz) * c;
 	}
 
 	double t0, t1;
@@ -73,39 +73,32 @@ bool BBox::intersect(const Ray& ray) {
 
 Primitive::Primitive() {
 
-	Primitive::m_color = Color(0.0, 1.0, 0.0);
+	m_color = Color(0.0, 1.0, 0.0);
 
-	Primitive::orientable = false;
-	Primitive::bounds = false;
-	Primitive::T.identity();
-	Primitive::invT.identity();
-	Primitive::box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
-	Primitive::m_texture = NULL;
-	Primitive::m_material = NULL;
+	orientable = false;
+	bounds = false;
+	T.identity();
+	invT.identity();
+	box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
+	m_texture = NULL;
+	m_material = NULL;
 
 }
 
-Primitive::Primitive(const Color &color){
+Primitive::Primitive(const Color &a_color){
 
-	Primitive::m_color = color;
-	Primitive::orientable = false;
-	Primitive::bounds = false;
-	Primitive::T.identity();
-	Primitive::invT.identity();
-	Primitive::box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
-	Primitive::m_texture = NULL;
-	Primitive::m_material = NULL;
+	m_color = a_color;
+	orientable = false;
+	bounds = false;
+	T.identity();
+	invT.identity();
+	box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
+	m_texture = NULL;
+	m_material = NULL;
 	
 }
 
-Primitive::~Primitive(){
-	if (m_texture){
-
-		delete m_texture;
-		m_texture = NULL;
-	}
-
-}
+Primitive::~Primitive(){}
 
 BBox &Primitive::getBounds(){
 
@@ -129,19 +122,19 @@ void Primitive::clip(int axis, float position, BBox& leftBoundingBox, BBox& righ
 
 void Primitive::setTexture(Texture* texture){
 
-	Primitive::m_texture = texture;
+	m_texture = std::shared_ptr<Texture>(texture);
 }
 
-Texture* Primitive::getTexture(){
+std::shared_ptr<Texture> Primitive::getTexture(){
 	return m_texture;
 }
 
 void Primitive::setMaterial(Material* material){
 
-	Primitive::m_material = material;
+	Primitive::m_material = std::shared_ptr<Material> ( material);
 }
 
-Material* Primitive::getMaterial(){
+std::shared_ptr<Material> Primitive::getMaterial(){
 	return m_material;
 }
 
@@ -216,17 +209,19 @@ void OrientablePrimitive::scale(float a, float b, float c){
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
-Triangle::Triangle(Vector3f &a_V1,
-	Vector3f &a_V2,
-	Vector3f &a_V3,
-	Color	&color) : OrientablePrimitive(color){
+Triangle::Triangle(const Vector3f &a_V1,
+	const Vector3f &a_V2,
+	const Vector3f &a_V3,
+	const Color	&a_color,
+	const bool cull) : OrientablePrimitive(a_color){
 
 	m_a = a_V1;
 	m_b = a_V2;
 	m_c = a_V3;
+	m_cull = cull;
+	m_hasnormal = false;
 	abc = Vector3f::cross(m_a - m_b, m_a - m_c).magnitude();
 	calcBounds();
-	m_hasnormal = false;
 	
 }
 
@@ -241,13 +236,13 @@ Triangle::~Triangle(){
 void Triangle::calcBounds(){
 
 	float delta = 0.000001;
-	box.m_Pos[0] = min(min(m_a[0], m_b[0]), m_c[0]) - delta;
-	box.m_Pos[1] = min(min(m_a[1], m_b[1]), m_c[1]) - delta;
-	box.m_Pos[2] = min(min(m_a[2], m_b[2]), m_c[2]) - delta;
+	box.m_pos[0] = min(min(m_a[0], m_b[0]), m_c[0]) - delta;
+	box.m_pos[1] = min(min(m_a[1], m_b[1]), m_c[1]) - delta;
+	box.m_pos[2] = min(min(m_a[2], m_b[2]), m_c[2]) - delta;
 
-	box.m_Size[0] = max(max(m_a[0], m_b[0]), m_c[0]) + delta;
-	box.m_Size[1] = max(max(m_a[1], m_b[1]), m_c[1]) + delta;
-	box.m_Size[2] = max(max(m_a[2], m_b[2]), m_c[2]) + delta;
+	box.m_size[0] = max(max(m_a[0], m_b[0]), m_c[0]) + delta;
+	box.m_size[1] = max(max(m_a[1], m_b[1]), m_c[1]) + delta;
+	box.m_size[2] = max(max(m_a[2], m_b[2]), m_c[2]) + delta;
 
 	Triangle::bounds = true;
 }
@@ -259,16 +254,21 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 
 
 	//determinat of the triangle
-	Vector3f v0v1 = Triangle::m_b - Triangle::m_a;
-	Vector3f v0v2 = Triangle::m_c - Triangle::m_a;
+	Vector3f edge1 = Triangle::m_b - Triangle::m_a;
+	Vector3f edge2 = Triangle::m_c - Triangle::m_a;
 
 
-	Vector3f P = Vector3f::cross(ray.direction, v0v2);
-	float det = Vector3f::dot(P, v0v1);
+	Vector3f P = Vector3f::cross(ray.direction, edge2);
+	float det = Vector3f::dot(P, edge1);
 
-	
-	if (fabs(det) <0.000001 ) return;
-	
+	if (m_cull){
+
+		if (fabs(det) < 0.0001) return;
+
+	}else{
+
+		if (det < 0.0001) return;
+	}
 
 
 	float inv_det = 1.0 / det;
@@ -283,14 +283,14 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 	if (u < 0.0 || u > 1.0) return;
 
 	// prepare to test v parameter
-	Vector3f Q = Vector3f::cross(T, v0v1);
+	Vector3f Q = Vector3f::cross(T, edge1);
 
 	// the intersection is outside the triangle
 	float v = Vector3f::dot(ray.direction, Q) * inv_det;
 	if (v < 0 || u + v > 1) return;
 
 	float result = -1.0;
-	result = Vector3f::dot(v0v2, Q) * inv_det;
+	result = Vector3f::dot(edge2, Q) * inv_det;
 
 	if (result > 0.0){
 
@@ -301,7 +301,7 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 
 }
 
-Color Triangle::getColor(Vector3f& pos){
+Color Triangle::getColor(const Vector3f& pos){
 	
 	if (m_texture){
 
@@ -325,7 +325,7 @@ Color Triangle::getColor(Vector3f& pos){
 		double v = v1*d1 + v2*d2 + v3*d3;
 
 
-		Color color = m_texture->getTexel(u, v) * Color(0.2, 0.2, 0.2);
+		Color color = m_texture->getTexel(u, v);
 
 		return  color;
 
@@ -337,7 +337,7 @@ Color Triangle::getColor(Vector3f& pos){
 	}
 }
 
-Vector3f Triangle::getNormal(Vector3f& pos){
+Vector3f Triangle::getNormal(const Vector3f& pos){
 	
 	
 	if (m_hasnormal){
@@ -370,12 +370,12 @@ Vector3f Triangle::getNormal(Vector3f& pos){
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-Sphere::Sphere(Vector3f& a_Centre, double a_Radius, Color color) :Primitive(color){
+Sphere::Sphere(const Vector3f& a_centre, double a_radius, const  Color &a_color) :Primitive(a_color){
 
-	m_Centre = a_Centre;
-	m_SqRadius = a_Radius * a_Radius;
-	m_Radius = a_Radius;
-	m_RRadius = 1.0f / a_Radius;
+	m_centre = a_centre;
+	m_sqRadius = a_radius * a_radius;
+	m_radius = a_radius;
+	m_rRadius = 1.0 / a_radius;
 	calcBounds();
 }
 
@@ -386,11 +386,11 @@ Sphere::~Sphere(){
 void Sphere::hit(const Ray &ray, Hit &hit) {
 
 	//Use position - origin to get a negative b
-	Vector3f L = m_Centre - ray.origin;
+	Vector3f L = m_centre - ray.origin;
 
 
 	float b = Vector3f::dot(L, ray.direction);
-	float c = Vector3f::dot(L, L) - m_SqRadius;
+	float c = Vector3f::dot(L, L) - m_sqRadius;
 
 	float d = b*b - c;
 	if (d < 0.00001) {
@@ -422,16 +422,16 @@ void Sphere::hit(const Ray &ray, Hit &hit) {
 void Sphere::calcBounds(){
 	float delta = 0.00001;
 
-	box.extend(m_Centre - Vector3f(m_Radius + delta, m_Radius + delta, m_Radius + delta));
-	box.extend(m_Centre + Vector3f(m_Radius * 2 + delta, m_Radius * 2 + delta, m_Radius * 2 + delta));
+	box.extend(m_centre - Vector3f(m_radius + delta, m_radius + delta, m_radius + delta));
+	box.extend(m_centre + Vector3f(m_radius * 2 + delta, m_radius * 2 + delta, m_radius * 2 + delta));
 	Sphere::bounds = true;
 }
 
-Color Sphere::getColor(Vector3f& pos){
+Color Sphere::getColor(const Vector3f& pos){
 
 	if (m_texture){
 
-		Vector3f vp = (pos - m_Centre) * m_RRadius;
+		Vector3f vp = (pos - m_centre) * m_rRadius;
 
 		float theta = acos(vp[1]);
 
@@ -445,7 +445,7 @@ Color Sphere::getColor(Vector3f& pos){
 		float v = (1.0 - theta * invPI);
 
 
-		Color color = m_texture->getTexel(u, v) * Color(0.2f, 0.2f, 0.2f);
+		Color color = m_texture->getTexel(u, v);
 
 		return color;
 
@@ -456,9 +456,9 @@ Color Sphere::getColor(Vector3f& pos){
 	}
 }
 
-Vector3f Sphere::getNormal(Vector3f& a_Pos){
+Vector3f Sphere::getNormal(const Vector3f& a_Pos){
 
-	return ((a_Pos - m_Centre) * m_RRadius).normalize();
+	return ((a_Pos - m_centre) * m_rRadius).normalize();
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 Plane::Plane() :Primitive(){
@@ -477,6 +477,9 @@ Plane::Plane(Vector3f normal, float distance, Color color) :Primitive(color){
 	m_v = Vector3f::cross(normal, m_u);
 	calcBounds();
 }
+
+Plane::~Plane() {}
+
 
 void Plane::hit(const Ray &ray, Hit &hit){
 
@@ -500,14 +503,14 @@ void Plane::calcBounds(){
 
 }
 
-Color Plane::getColor(Vector3f& a_Pos){
+Color Plane::getColor(const Vector3f& a_Pos){
 
 	if (m_texture){
 
 		float u = abs(Vector3f::dot(a_Pos, m_u));
 		float v = abs(Vector3f::dot(a_Pos, m_v));
 
-		Color color = m_texture->getTexel(u, v) * Color(0.2f, 0.2f, 0.2f);
+		Color color = m_texture->getTexel(u, v);
 
 		return color;
 
@@ -518,7 +521,7 @@ Color Plane::getColor(Vector3f& a_Pos){
 	}
 }
 
-Vector3f Plane::getNormal(Vector3f& a_Pos){
+Vector3f Plane::getNormal(const Vector3f& a_Pos){
 
 	return  m_normal;
 }
@@ -692,19 +695,19 @@ void Torus::calcBounds(){
 
 	float delta = 0.00001;
 
-	box.m_Pos[0] = -(b + delta);
-	box.m_Pos[1] = -(a + b + delta);
-	box.m_Pos[2] = -(a + b + delta);
+	box.m_pos[0] = -(b + delta);
+	box.m_pos[1] = -(a + b + delta);
+	box.m_pos[2] = -(a + b + delta);
 
-	box.m_Size[0] = 2 * b + delta;
-	box.m_Size[1] = 2 * (a + b) + delta;
-	box.m_Size[2] = 2 * (a + b) + delta;
+	box.m_size[0] = 2 * b + delta;
+	box.m_size[1] = 2 * (a + b) + delta;
+	box.m_size[2] = 2 * (a + b) + delta;
 
 	Torus::bounds = true;
 	
 }
 
-Color Torus::getColor(Vector3f& a_pos){
+Color Torus::getColor(const Vector3f& a_pos){
 
 	if (m_texture){
 
@@ -718,7 +721,7 @@ Color Torus::getColor(Vector3f& a_pos){
 		float x = len - a;
 		float v = ((atan2(a_pos[0], x) + PI) / TWO_PI);
 
-		Color color = m_texture->getTexel(u, v) * Color(0.2f, 0.2f, 0.2f);
+		Color color = m_texture->getTexel(u, v);
 
 		return color;
 
@@ -730,7 +733,7 @@ Color Torus::getColor(Vector3f& a_pos){
 
 }
 
-Vector3f Torus::getNormal(Vector3f& a_pos){
+Vector3f Torus::getNormal(const Vector3f& a_pos){
 
 	// calculate the normal like http://cosinekitty.com/raytrace/chapter13_torus.html
 
@@ -779,7 +782,7 @@ Vector3f Torus::getNormal(Vector3f& a_pos){
 	//return (T * Vector4f(normal, 0.0)).normalize();*/
 
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 

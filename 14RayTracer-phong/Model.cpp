@@ -5,8 +5,9 @@ Model::Model() :OrientablePrimitive() {
 
 	m_hasMaterial = false;
 	m_hasnormal = false;
-	m_texture = NULL;
 	m_color = Color(1.0, 1.0, 0.0);
+	m_texture = NULL;
+	m_material = NULL;
 
 	xmin = FLT_MAX;
 	ymin = FLT_MAX;
@@ -16,12 +17,13 @@ Model::Model() :OrientablePrimitive() {
 	zmax = -FLT_MAX;
 }
 
-Model::Model(Color color) :OrientablePrimitive(color) {
+Model::Model(const Color &color) :OrientablePrimitive(color) {
 
 	m_hasMaterial = false;
 	m_hasnormal = false;
-	m_texture = NULL;
 	m_color = color;
+	m_texture = NULL;
+	m_material = NULL;
 
 	xmin = FLT_MAX;
 	ymin = FLT_MAX;
@@ -35,7 +37,7 @@ Model::Model(Color color) :OrientablePrimitive(color) {
 
 Model::~Model(){
 
-
+	
 }
 
 
@@ -48,9 +50,9 @@ void Model::hit(const Ray& a_ray, Hit &hit){
 
 }
 
-bool Model::loadObject(const char* filename){
+bool Model::loadObject(const char* filename, bool cull){
 
-	return loadObject(filename, Vector3f(1.0, 0.0, 0.0), 1.0, Vector3f(0.0, 0.0, 0.0), 1.0);
+	return loadObject(filename, Vector3f(1.0, 0.0, 0.0), 1.0, Vector3f(0.0, 0.0, 0.0), 1.0, cull);
 }
 
 void Model::calcBounds(){
@@ -62,7 +64,7 @@ void Model::calcBounds(){
 	Model::bounds = true;
 }
 
-Color Model::getColor(Vector3f& a_pos){
+Color Model::getColor(const Vector3f& a_pos){
 
 
 	if (m_KDTree->m_primitive->m_texture){
@@ -71,7 +73,7 @@ Color Model::getColor(Vector3f& a_pos){
 		
 
 	}else if (m_texture){
-		m_KDTree->m_primitive->setTexture(m_texture);
+		m_KDTree->m_primitive->setTexture(m_texture.get());
 
 		return m_KDTree->m_primitive->getColor(a_pos);
 
@@ -85,7 +87,7 @@ Color Model::getColor(Vector3f& a_pos){
 	
 }
 
-Vector3f  Model::getNormal(Vector3f& a_pos){
+Vector3f  Model::getNormal(const Vector3f& a_pos){
 	
 	if (m_hasnormal){
 
@@ -101,7 +103,7 @@ Vector3f  Model::getNormal(Vector3f& a_pos){
 	
 }
 
-Material* Model::getMaterial(){
+std::shared_ptr<Material> Model::getMaterial(){
 
 	return m_KDTree->m_primitive->m_material;
 }
@@ -111,7 +113,7 @@ bool compare(const std::array<int, 10> &i_lhs, const std::array<int, 10> &i_rhs)
 	return i_lhs[9] < i_rhs[9];
 }
 
-bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vector3f &translate, float scale){
+bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vector3f &translate, float scale, bool cull){
 
 	std::string filename(a_filename);
 
@@ -155,7 +157,7 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 	Matrix4f rotMtx;
 	rotMtx.rotate(axis, degree);
 
-	for (int i = 0; i < coord.size(); i++){
+	for (unsigned int i = 0; i < coord.size(); i++){
 		
 		if ((*coord[i])[0] == '#'){
 
@@ -269,7 +271,7 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 
 	std::map<int, int> dup;
 
-	for (int i = 0; i < face.size(); i++){
+	for (unsigned int i = 0; i < face.size(); i++){
 		dup[face[i][9]]++;
 	}
 
@@ -284,7 +286,7 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 
 		if (name.empty()){
 
-			meshes.push_back(new Mesh(iterDup->second));
+			meshes.push_back(std::shared_ptr<Mesh>(new Mesh(iterDup->second)));
 
 		}
 		else{
@@ -296,7 +298,7 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 
 
 
-					meshes.push_back(new Mesh("newmtl " + iterName->first, iterDup->second));
+					meshes.push_back(std::shared_ptr<Mesh>(new Mesh("newmtl " + iterName->first, iterDup->second)));
 				}
 			}
 
@@ -307,20 +309,24 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 	name.clear();
 
 	for (int j = 0; j < m_numberOfMeshes; j++){
-	
-		meshes[j]->m_material = new Material();
-		if (meshes[j]->readMaterial((m_modelDirectory + "/" + m_mltPath).c_str())){
 
-			meshes[j]->m_texture = new Texture(&(m_modelDirectory + "/" + meshes[j]->m_material->colorMapPath)[0]);
+		
+		if (meshes[j]->readMaterial((m_modelDirectory + "/" + m_mltPath).c_str())){
+			
+			meshes[j]->m_texture = std::shared_ptr<Texture> (new Texture(&(m_modelDirectory + "/" + meshes[j]->m_material->colorMapPath)[0]));
 
 		}else{
 
-			meshes[j]->m_color = Color(1.0 / (j + 1), 1.0 / (j + 1), 1.0 / (j + 1));
-			meshes[j]->m_material->m_ambient2 = new Color(0.1, 0.1, 0.1);
-			meshes[j]->m_material->m_diffuse2 = new Color(0.7, 0.7, 0.7);
-			meshes[j]->m_material->m_specular2 = new Color(0.4, 0.4, 0.4);
-			meshes[j]->m_material->m_shinies = 20;
+			meshes[j]->m_color = Color(1.0f / (j + 1), 1.0f / (j + 1), 1.0f / (j + 1));
 
+			if (m_material){
+
+				meshes[j]->m_material = std::shared_ptr<Material> (m_material);
+
+			}else{
+				meshes[j]->m_material = std::shared_ptr<Material> (new Material());
+
+			}
 
 		}
 
@@ -341,11 +347,10 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 			end = end + meshes[j]->m_numberTriangles;
 		}
 
-		Vector3f *normal;
 		Vector3f *a;
 		Vector3f *b;
 		Vector3f *c;
-		Triangle *triangle;
+		std::shared_ptr<Triangle> triangle;
 
 
 		for (int i = start; i < end; i++){
@@ -362,7 +367,7 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 			meshes[j]->m_ymax = max(a->getVec()[1] + translate.getVec()[1], max(b->getVec()[1] + translate.getVec()[1], max(c->getVec()[1] + translate.getVec()[1], meshes[j]->m_ymax)));
 			meshes[j]->m_zmax = max(a->getVec()[2] + translate.getVec()[2], max(b->getVec()[2] + translate.getVec()[2], max(c->getVec()[2] + translate.getVec()[2], meshes[j]->m_zmax)));
 
-			triangle = new Triangle(*a + translate, *b + translate, *c + translate, Color(0.6, 1.0, 1.0));
+			triangle = std::shared_ptr<Triangle>(new Triangle(*a + translate, *b + translate, *c + translate, Color(0.6f, 1.0f, 1.0f), cull));
 			triangle->m_texture = meshes[j]->m_texture;
 			triangle->m_material = meshes[j]->m_material;
 			triangle->m_color = meshes[j]->m_color;
@@ -406,20 +411,20 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 	calcBounds();
 	std::cout << "Build KDTree!" << std::endl;
 
-	m_KDTree = new KDTree();
+	m_KDTree = std::unique_ptr<KDTree>(new KDTree());
 	m_KDTree->buildTree(triangles, box);
 
 	std::cout << "Finished KDTree!" << std::endl;
 
-	for (int i = 0; i < coord.size(); i++){
+	for (unsigned int i = 0; i < coord.size(); i++){
 		delete coord[i];
 
 	}
 
-	for (int i = 0; i < normalCoords.size(); i++){
+	for (unsigned int i = 0; i < normalCoords.size(); i++){
 		delete normalCoords[i];
 	}
-	for (int i = 0; i < positionCoords.size(); i++){
+	for (unsigned int i = 0; i < positionCoords.size(); i++){
 		delete positionCoords[i];
 	}
 
@@ -474,13 +479,10 @@ Mesh::~Mesh(){
 }
 
 
-bool Mesh::mltCompare(std::string* mltName){
-	return *mltName == m_mltName;
-}
 
 bool Mesh::readMaterial(const char* filename){
 
-
+	m_material = std::shared_ptr<Material>(new Material());
 	std::vector<std::string*>lines;
 	int start = -1;
 	int end = -1;
@@ -502,7 +504,7 @@ bool Mesh::readMaterial(const char* filename){
 	in.close();
 
 
-	for (int i = 0; i < lines.size(); i++){
+	for (unsigned int i = 0; i < lines.size(); i++){
 
 		if (strcmp((*lines[i]).c_str(), m_mltName.c_str()) == 0){
 
@@ -534,8 +536,8 @@ bool Mesh::readMaterial(const char* filename){
 		}
 		else if ((*lines[i])[0] == 'N' && (*lines[i])[1] == 's'){
 			
-			float tmp;
-			sscanf(lines[i]->c_str(), "Ns %f", &tmp);
+			int tmp;
+			sscanf(lines[i]->c_str(), "Ns %i", &tmp);
 
 			m_material->m_shinies = tmp;
 			
@@ -546,7 +548,7 @@ bool Mesh::readMaterial(const char* filename){
 
 			
 
-			m_material->m_ambient2 = new Color(tmpx, tmpy, tmpz);
+			m_material->m_ambient = Color(tmpx, tmpy, tmpz);
 		}
 		else if ((*lines[i])[0] == 'K' && (*lines[i])[1] == 'd'){
 			float tmpx, tmpy, tmpz;
@@ -554,7 +556,7 @@ bool Mesh::readMaterial(const char* filename){
 
 			
 
-			m_material->m_diffuse2 = new Color(tmpx, tmpy, tmpz);
+			m_material->m_diffuse =  Color(tmpx, tmpy, tmpz);
 
 		}
 		else if ((*lines[i])[0] == 'K' && (*lines[i])[1] == 's'){
@@ -563,7 +565,7 @@ bool Mesh::readMaterial(const char* filename){
 
 			
 
-			m_material->m_specular2 = new Color(tmpx, tmpy, tmpz);
+			m_material->m_specular =  Color(tmpx, tmpy, tmpz);
 
 		}else if ((*lines[i])[0] == 'm'){
 
@@ -588,8 +590,10 @@ bool Mesh::readMaterial(const char* filename){
 
 
 
-	for (int i = 0; i < lines.size(); i++){
+	for (unsigned int i = 0; i < lines.size(); i++){
 
 		delete lines[i];
 	}
+
+	return true;
 }

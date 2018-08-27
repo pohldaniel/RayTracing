@@ -17,7 +17,7 @@
 int height = 480;
 int width = 640;
 Scene *scene;
-Bitmap *texture;
+
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParma, LPARAM lParam);
 
@@ -35,7 +35,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	WNDCLASSEX windowClass;		// window class
 	HWND	   hwnd;			// window handle
 	MSG		   msg;				// message
-	HDC		   hdc;				// device context handle
+	
 
 
 
@@ -94,8 +94,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	HDC hdc, hmemdc;
 	PAINTSTRUCT ps;
-	POINT pt;
-	RECT rect;
+	
 
 	switch (message)
 	{
@@ -110,14 +109,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  Vector3f up(0, 1.0, 0.0);
 
-					  Regular *regular = new Regular(16, 1);
 
-
-					  Projection *projection = new Projection(camPos, xAxis, yAxis, zAxis, target, up, 45, regular);
+					  Camera *camera = new Projection(camPos, xAxis, yAxis, zAxis, target, up, 45, new Regular(16, 1));
 
 					  scene = new Scene(ViewPlane(width, height, 1.0), Color(0.2, 0.2, 0.2));
 
-					  Color *color = new Color(1.0, 1.0, 1.0);
+					  Color color = Color(0.7, 0.7, 0.7);
 
 					  scene->addLight(new Light(Vector3f(0, 200, 600), color, color, color));
 					  scene->addLight(new Light(Vector3f(40, 0, 0), color, color, color));
@@ -126,35 +123,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  Torus *torus1 = new Torus(1.0, 0.3, Color(0.4, 0.4, 0.4));
 					  torus1->rotate(Vector3f(0.0, 0.0, 1.0), 90);
 					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), 30);
-					  torus1->m_material = new Material();
-					  torus1->m_material->m_ambient2 = new Color(0.1, 0.1, 0.1);
-					  torus1->m_material->m_diffuse2 = new Color(0.8, 0.8, 0.8);
-					  torus1->m_material->m_specular2 = new Color(0.6, 0.6, 0.6);
-					  torus1->m_material->m_shinies = 50;
-
+					  torus1->setMaterial(new Material(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(0.6, 0.6, 0.6), 50));
 
 					  Torus *torus2 = new Torus(1.0, 0.3, Color(1.0, 0.4, 0.4));
 					  torus2->rotate(Vector3f(0.0, 0.0, 1.0), 90);
 					  torus2->rotate(Vector3f(1.0, 0.0, 0.0), 85);
 					  torus2->translate(1.0, 0.0, 0.0);
-					  torus2->m_material = new Material();
-					  torus2->m_material->m_ambient2 = new Color(0.1, 0.1, 0.1);
-					  torus2->m_material->m_diffuse2 = new Color(0.8, 0.8, 0.8);
-					  torus2->m_material->m_specular2 = new Color(1.0, 1.0, 1.0);
-					  torus2->m_material->m_shinies = 50;
-
+					  torus2->setMaterial(new Material(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(1.0, 1.0, 1.0), 50));
 
 
 					  Model* model = new Model(Color(0.1, 0.7, 0.1));
-					  model->loadObject("objs/face.obj");
+					  model->loadObject("objs/face.obj", false);
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 50.0);
 					  model->scale(2.0, 2.0, 2.0);
 					  model->translate(-5.0, 2.0, -30.0);
-					  model->m_material = new Material();
-					  model->m_material->m_ambient2 = new Color(0.1, 0.1, 0.1);
-					  model->m_material->m_diffuse2 = new Color(0.8, 0.8, 0.8);
-					  model->m_material->m_specular2 = new Color(0.6, 0.6, 0.6);
-					  model->m_material->m_shinies = 50;
+					  model->setMaterial(new Material(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(0.6, 0.6, 0.6), 50));
 					  model->setTexture(new Texture("textures/pinkwater.bmp"));
 
 					  scene->addPrimitive(torus1);
@@ -162,19 +145,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  scene->addPrimitive(model);
 
 
-					  projection->renderScene(*scene);
+					  camera->renderScene(*scene);
+
+
 
 					  InvalidateRect(hWnd, 0, true);
+
 					  return 0;
+
+
 	}
 	case WM_PAINT:
 	{
 					 hdc = BeginPaint(hWnd, &ps);
 
 					 hmemdc = CreateCompatibleDC(NULL);
-					 HGDIOBJ m_old = SelectObject(hmemdc, scene->bitmap->hbitmap);
+					 HGDIOBJ m_old = SelectObject(hmemdc, scene->m_bitmap->hbitmap);
 
-					 BitBlt(hdc, scene->bitmap->width / 12, scene->bitmap->height / 12, scene->bitmap->width, scene->bitmap->height, hmemdc, 0, 0, SRCCOPY);
+					 BitBlt(hdc, scene->m_bitmap->width / 12, scene->m_bitmap->height / 12, scene->m_bitmap->width, scene->m_bitmap->height, hmemdc, 0, 0, SRCCOPY);
 
 					 SelectObject(hmemdc, m_old);
 					 DeleteDC(hmemdc);
@@ -184,9 +172,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					 return 0;
 	}
 	case WM_DESTROY:
-	{				   delete texture;
-	PostQuitMessage(0);
-	return 0;
+	{				
+					  
+
+					 PostQuitMessage(0);
+					 return 0;
 	}
 	case WM_KEYDOWN:
 	{

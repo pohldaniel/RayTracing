@@ -74,8 +74,8 @@ public:
 	Vector3f &operator+=(const Vector3f &rhs);
 	Vector3f &operator-=(const Vector3f &rhs);
 
-	Vector3f &operator+(const Vector3f &rhs) const;
-	Vector3f &operator-(const Vector3f &rhs) const;
+	Vector3f operator+(const Vector3f &rhs) const;
+	Vector3f operator-(const Vector3f &rhs) const;
 
 	Vector3f operator*(float scalar) const;
 	Vector3f operator/(float scalar) const;

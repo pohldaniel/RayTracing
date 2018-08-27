@@ -36,6 +36,7 @@ Output from 13RayTracer-texture.
 
 Output from 14RayTracer-phong.
 
-![bsp13](https://user-images.githubusercontent.com/30089026/37695071-b0fb4e04-2ccc-11e8-8242-ae35388d3c3b.jpg)
+![bsp12](https://user-images.githubusercontent.com/30089026/44676184-d09f7d00-aa32-11e8-9299-ec693f2c609b.jpg)
+
 
 

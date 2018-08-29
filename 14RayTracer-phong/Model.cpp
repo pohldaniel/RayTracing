@@ -588,16 +588,11 @@ void Mesh::generateNormals(){
 		m_normalCoords[pTriangle[2]] = m_normalCoords[pTriangle[2]] + normal;
 	}
 
-	for (int i = 0; i < m_normalCoords.size(); i++){
-
-		Vector3f::normalize(m_normalCoords[i]);
-	}
-
 	for (int i = 0; i < m_numberTriangles; i++){
 	
 		pTriangle = &m_indexBuffer[i * 3];
 
-		m_triangles[i]->setNormal(m_normalCoords[pTriangle[0]], m_normalCoords[pTriangle[1]], m_normalCoords[pTriangle[2]]);
+		m_triangles[i]->setNormal(m_normalCoords[pTriangle[0]].normalize(), m_normalCoords[pTriangle[1]].normalize(), m_normalCoords[pTriangle[2]].normalize());
 
 	}
 

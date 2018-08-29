@@ -45,6 +45,8 @@ std::shared_ptr<KDTree::Node> KDTree::buildTree(BBox boundingBox, std::vector<st
 	//second termination criteria: test if maxDepth has been reached
 	if (depth == m_maximumDepth)
 	{
+
+		
 		//we have to clean up a bit
 		for (unsigned int i = 0; i < events.size(); i++)
 		if (events[i])  events[i].reset();
@@ -65,6 +67,8 @@ std::shared_ptr<KDTree::Node> KDTree::buildTree(BBox boundingBox, std::vector<st
 	//third termination critera: is it useful to split??
 	if (SAHValue >= m_costOfIntersection*primitives.size())
 	{
+		
+
 		//clean up
 		for (unsigned int i = 0; i < events.size(); i++)
 		if (events[i])  events[i].reset();
@@ -535,7 +539,6 @@ bool KDTree::intersectRec(const Ray& ray, Hit &hit)
 	// intersect the ray with the bounding box of the kdtree
 	
 	
-	
 	if (!m_boundingBox.intersect(ray)){
 		//hit.color = Color(1.0, 0.0, 0.0);
 		hit.hitObject = false;
@@ -610,11 +613,13 @@ bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 	Vector3f hitPoint;
 
 		for (unsigned int i = 0; i < m_primitives.size(); i++){
+			
+			
 			m_primitives[i]->m_primitive->hit(ray, hitTree);
 			
 			
 			if (hitTree.hitObject && hitTree.t < tminTree) {
-				
+				//std::cout << m_primitives[i]->m_primitive->m_texture << std::endl;
 
 				m_tree->m_primitive = m_primitives[i]->m_primitive;
 

@@ -43,7 +43,7 @@ public:
 		std::shared_ptr<Node> right;
 		bool m_isLeaf;
 		std::vector<std::shared_ptr<KD_Primitive>>	m_primitives;
-		std::unique_ptr<KDTree> m_tree;
+		std::shared_ptr<KDTree> m_tree;
 
 		bool leafIntersect(const Ray& ray, Hit &hit);
 		bool getNearFar(const Ray& ray, std::shared_ptr<Node>& nea, std::shared_ptr<Node>& fa);
@@ -79,7 +79,7 @@ public:
 	void buildTree(const std::vector<std::shared_ptr<Triangle>>& list, const BBox &V, int maxDepth = 15);
 	bool intersectRec(const Ray& ray, Hit &hit);
 	
-	// used to get the right material adn texture at the render function inside the class scene
+	// used to get the right material at the render function in the class scene
 	std::shared_ptr<Primitive> m_primitive;
 
 private:

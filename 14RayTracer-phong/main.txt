@@ -19,6 +19,7 @@
 
 					  Model* model = new Model();
 					  model->loadObject("objs/Dragon/dragon.obj", true);
+					  model->buildKDTree();
 					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 90.0);
 
@@ -52,6 +53,7 @@ Vector3f camPos(80.0, 40.0, 0.0);
 
 						Model* model = new Model();
 						model->loadObject("objs/Plane/plane.obj", false);
+						model->buildKDTree();
 						model->rotate(Vector3f(1.0, 0.0, 0.0), -180.0);
 						model->rotate(Vector3f(0.0, 1.0, 0.0), 90.0);
 
@@ -85,7 +87,7 @@ Vector3f camPos(80.0, 40.0, 0.0);
 					  Model* model = new Model(Color(0.1, 0.7, 0.1));
 					  model->setMaterial(new Material(Color(0.1, 0.1, 0.1), Color(2.0, 2.0, 2.0), Color(0.6, 0.6, 0.6), 5));
 					  model->loadObject("objs/coat.obj", Vector3f(1.0, 0.0, 0.0), 0, Vector3f(0.0, 0.0, 0.0), 20.0, false);
-
+					  model->buildKDTree();
 					  scene->addPrimitive(model);
 
 					  camera->renderScene(*scene);
@@ -106,7 +108,7 @@ Vector3f camPos(80.0, 40.0, 0.0);
 
 					  scene = new Scene(ViewPlane(width, height, 1.0), Color(0.2, 0.2, 0.2));
 
-					  Color color = Color(0.2, 0.2, 0.2);
+					  Color color = Color(0.5, 0.5, 0.5);
 
 					  scene->addLight(new Light(Vector3f(0, 200, 600), color, color, color));
 					  scene->addLight(new Light(Vector3f(40, 0, 0), color, color, color));
@@ -126,6 +128,7 @@ Vector3f camPos(80.0, 40.0, 0.0);
 					 
 					  Model* model = new Model(Color(0.1, 0.7, 0.1));
 					  model->loadObject("objs/face.obj", false);
+					  model->buildKDTree();
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 50.0);
 					  model->scale(2.0, 2.0, 2.0);
 					  model->translate(-5.0, 2.0, -30.0);

@@ -11,6 +11,8 @@ Texture::Texture(const char* path){
 	padWidth = bitmap->padWidth;
 	Texture::uscale = 1.0;
 	Texture::vscale = 1.0;
+
+	
 }
 
 
@@ -28,9 +30,9 @@ Color Texture::getTexel(const float a_u, const float a_v){
 	int u = (((int)(a_u*uscale*(width - 1)))  ) % width;
 	int v = (((int)(a_v*vscale*(height - 1))) ) % height;
 
-	
 	//std::cout << width << "  " << height << std::endl;
-
+	
+	//std::cout << a_u << "  " << a_v << std::endl;
 	//std::cout << u << "  " << v << std::endl;
 
 	int r = bitmap->data[padWidth*v + 3*u];

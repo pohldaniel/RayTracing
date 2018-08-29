@@ -22,7 +22,7 @@ public:
 	Model(const Color &color);
 	~Model();
 
-	std::vector<std::shared_ptr<Triangle>>	triangles;
+	std::vector<std::shared_ptr<Triangle>>	m_triangles;
 	void hit(const Ray& a_Ray, Hit &hit);
 	void calcBounds();
 	Color getColor(const Vector3f& a_Pos);
@@ -40,8 +40,8 @@ public:
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::shared_ptr<Material>  getMaterial();
 
-	
-	
+	void generateNormals();
+	void buildKDTree();
 
 private:
 	
@@ -52,7 +52,7 @@ private:
 	float	zmin;
 	float	zmax;
 
-	bool m_hasnormal;
+	bool m_hasNormals;
 
 };
 
@@ -60,7 +60,7 @@ private:
 class Mesh {
 
 	friend Model;
-
+	
 public:
 
 	Mesh(std::string mltName, int numberTriangles);
@@ -76,18 +76,21 @@ public:
 
 	bool readMaterial(const char* filename);
 
+	void generateNormals();
 
 
 private:
 
 	
-
+	std::string m_mltName;
 	Color m_color;
 	int m_numberTriangles;
-	std::string m_mltName;
 
-	
-
+	std::vector<std::shared_ptr<Triangle>>	m_triangles;
+	std::vector<unsigned int> m_indexBuffer;
+	std::vector<Vector3f> m_positionCoords;
+	std::vector<Vector3f> m_normalCoords;
+	std::vector<Vector2f> m_textureCoords;
 
 	float	m_xmin;
 	float	m_xmax;

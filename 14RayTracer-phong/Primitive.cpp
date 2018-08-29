@@ -132,6 +132,7 @@ std::shared_ptr<Texture> Primitive::getTexture(){
 void Primitive::setMaterial(Material* material){
 
 	Primitive::m_material = std::shared_ptr<Material> ( material);
+
 }
 
 std::shared_ptr<Material> Primitive::getMaterial(){
@@ -218,9 +219,17 @@ Triangle::Triangle(const Vector3f &a_V1,
 	m_a = a_V1;
 	m_b = a_V2;
 	m_c = a_V3;
+	m_n1 = Vector3f(0.0, 0.0, 0.0);
+	m_n2 = Vector3f(0.0, 0.0, 0.0);
+	m_n3 = Vector3f(0.0, 0.0, 0.0);
 	m_cull = cull;
-	m_hasnormal = false;
-	abc = Vector3f::cross(m_a - m_b, m_a - m_c).magnitude();
+	m_hasNormals = false;
+
+	m_edge1 = m_b - m_a;
+	m_edge2 = m_c - m_a;
+
+
+	abc = Vector3f::cross(m_b - m_a, m_c - m_a).magnitude();
 	calcBounds();
 	
 }
@@ -254,12 +263,8 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 
 
 	//determinat of the triangle
-	Vector3f edge1 = Triangle::m_b - Triangle::m_a;
-	Vector3f edge2 = Triangle::m_c - Triangle::m_a;
-
-
-	Vector3f P = Vector3f::cross(ray.direction, edge2);
-	float det = Vector3f::dot(P, edge1);
+	Vector3f P = Vector3f::cross(ray.direction, m_edge2);
+	float det = Vector3f::dot(P, m_edge1);
 
 	if (m_cull){
 
@@ -278,22 +283,20 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 
 	// the intersection lies outside of the triangle
 	float u = Vector3f::dot(T, P) * inv_det;
-
-	//std::cout << u << std::endl;
 	if (u < 0.0 || u > 1.0) return;
 
 	// prepare to test v parameter
-	Vector3f Q = Vector3f::cross(T, edge1);
+	Vector3f Q = Vector3f::cross(T, m_edge1);
 
 	// the intersection is outside the triangle
 	float v = Vector3f::dot(ray.direction, Q) * inv_det;
 	if (v < 0 || u + v > 1) return;
 
 	float result = -1.0;
-	result = Vector3f::dot(edge2, Q) * inv_det;
+	result = Vector3f::dot(m_edge2, Q) * inv_det;
 
 	if (result > 0.0){
-
+		
 		hit.t = result;
 		hit.hitObject = true;
 	}
@@ -303,13 +306,13 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 
 Color Triangle::getColor(const Vector3f& pos){
 	
-	if (m_texture){
+	if (m_texture && m_hasTextureCoords){
 
 
 
-		Vector3f apos = Triangle::m_a - pos;
-		Vector3f bpos = Triangle::m_b - pos;
-		Vector3f cpos = Triangle::m_c - pos;
+		Vector3f apos = m_a - pos;
+		Vector3f bpos = m_b - pos;
+		Vector3f cpos = m_c - pos;
 
 		//first triangle
 		float d1 = Vector3f::cross(bpos, cpos).magnitude() / abc;
@@ -321,8 +324,8 @@ Color Triangle::getColor(const Vector3f& pos){
 		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
 		
 
-		double u = u1*d1 + u2*d2 + u3*d3;
-		double v = v1*d1 + v2*d2 + v3*d3;
+		double u = m_uv1[0] * d1 + m_uv2[0] * d2 + m_uv3[0] * d3;
+		double v = m_uv1[1] * d1 + m_uv2[1] * d2 + m_uv3[1] * d3;
 
 
 		Color color = m_texture->getTexel(u, v);
@@ -340,7 +343,7 @@ Color Triangle::getColor(const Vector3f& pos){
 Vector3f Triangle::getNormal(const Vector3f& pos){
 	
 	
-	if (m_hasnormal){
+	if (m_hasNormals){
 
 		Vector3f apos = Triangle::m_a - pos;
 		Vector3f bpos = Triangle::m_b - pos;

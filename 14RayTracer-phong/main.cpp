@@ -134,6 +134,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  Model* model = new Model(Color(0.1, 0.7, 0.1));
 					  model->loadObject("objs/face.obj", false);
+					  model->buildKDTree();
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 50.0);
 					  model->scale(2.0, 2.0, 2.0);
 					  model->translate(-5.0, 2.0, -30.0);

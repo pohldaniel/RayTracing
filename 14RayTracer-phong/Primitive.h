@@ -110,6 +110,8 @@ public:
 
 class Triangle :public OrientablePrimitive{
 
+	friend class Mesh;
+
 public:
 	
 	Triangle(const Vector3f &a_V1, const Vector3f &a_V2, const Vector3f &a_V3, const Color &color, const bool cull);
@@ -121,14 +123,14 @@ public:
 	Color getColor(const Vector3f& a_Pos);
 	Vector3f getNormal(const Vector3f& a_Pos);
 
-	void setUV(float a_u1, float  a_u2, float  a_u3, float a_v1, float  a_v2, float  a_v3){
+	
 
-		u1 = a_u1;
-		u2 = a_u2;
-		u3 = a_u3;
-		v1 = a_v1;
-		v2 = a_v2;
-		v3 = a_v3;
+	void setUV(const Vector2f &uv1, const Vector2f &uv2, const Vector2f &uv3){
+
+		m_uv1 = uv1;
+		m_uv2 = uv2;
+		m_uv3 = uv3;
+		m_hasTextureCoords = true;
 	}
 
 	void setNormal(const Vector3f &n1, const Vector3f &n2, const Vector3f &n3){
@@ -136,13 +138,14 @@ public:
 		m_n1 = n1;
 		m_n2 = n2;
 		m_n3 = n3;
-		m_hasnormal = true;
+		m_hasNormals = true;
 	}
 
 	
 
+
 private:
-	
+
 	Vector3f m_a;
 	Vector3f m_b;
 	Vector3f m_c;
@@ -151,10 +154,16 @@ private:
 	Vector3f m_n2;
 	Vector3f m_n3;
 
-	
-	float u1, u2, u3, v1, v2, v3;
+	Vector3f m_edge1;
+	Vector3f m_edge2;
+
+	Vector2f m_uv1;
+	Vector2f m_uv2;
+	Vector2f m_uv3;
+
 	float abc;
-	bool m_hasnormal;
+	bool m_hasNormals;
+	bool m_hasTextureCoords;
 	bool m_cull;
 };
 

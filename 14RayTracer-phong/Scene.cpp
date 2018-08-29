@@ -111,9 +111,7 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 						
 						// I_in * k_specular * (R * V)^20
 						specular = specular + (m_lights[i]->m_specular * m_lights[i]->calcSpecular(hitPoint, normal, ray.direction,
-							m_primitives[j]->getMaterial()->m_shinies));
-
-					
+							m_primitives[j]->getMaterial()->m_shinies));	
 				}
 
 				ambiente = ambiente * m_primitives[j]->getMaterial()->m_ambient;
@@ -122,7 +120,12 @@ Hit Scene::hitObjects(Ray& _ray)const  {
 					
 				hit.color = m_primitives[j]->getColor(hitPoint) * (ambiente + diffuse + specular);
 				//hit.color = m_primitives[j]->getColor(hitPoint) * (ambiente + diffuse) + specular;
- 			}
+
+			}else{
+
+				hit.color = m_primitives[j]->getColor(hitPoint);
+
+			}
 
 		}
 		

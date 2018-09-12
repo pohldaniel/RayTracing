@@ -59,7 +59,7 @@ void Regular::generateSamples() {
 	
 		for (int p = 0; p < n; p++){
 			for (int q = 0; q < n; q++){
-				samples.push_back(Vector2f((q + 0.5) / n, (p + 0.5) / n));
+				samples.push_back(Vector2f((q + 0.5f) / n, (p + 0.5f) / n));
 				
 			}
 		}

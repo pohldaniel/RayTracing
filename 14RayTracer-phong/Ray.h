@@ -3,9 +3,7 @@
 
 #include "Vector.h"
 
-class Ray
-{
-
+class Ray{
 
 public:
 	Vector3f origin, direction;

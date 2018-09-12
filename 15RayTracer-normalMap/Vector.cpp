@@ -259,7 +259,11 @@ Matrix4f Matrix4f::operator*(const Matrix4f &rhs) const
 }
 
 //////////////////////////////////////////////////////////////////////
-Vector2f::Vector2f(){}
+Vector2f::Vector2f(){
+
+	vec[0] = 0.0f;
+	vec[1] = 0.0f;
+}
 Vector2f::~Vector2f(){}
 
 Vector2f::Vector2f(float x_, float y_)
@@ -328,11 +332,17 @@ Vector2f operator-(const Vector2f &v){
 
 //////////////////////////////////////////////////////////////////////
 
-Vector3f::Vector3f(){}
+Vector3f::Vector3f(){
+
+	vec[0] = 0.0f;
+	vec[1] = 0.0f;
+	vec[2] = 0.0f;
+}
+
 Vector3f::~Vector3f(){}
 
-Vector3f::Vector3f(float x_, float y_, float z_)
-{
+Vector3f::Vector3f(float x_, float y_, float z_){
+
 	vec[0] = x_;
 	vec[1] = y_;
 	vec[2] = z_;
@@ -467,7 +477,13 @@ Vector3f operator*(const Matrix4f &rhs, const Vector3f &lhs )
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-Vector4f::Vector4f(){}
+Vector4f::Vector4f(){
+
+	vec[0] = 0.0f;
+	vec[1] = 0.0f;
+	vec[2] = 0.0f;
+	vec[3] = 0.0f;
+}
 Vector4f::~Vector4f(){}
 
 Vector4f::Vector4f(float x_, float y_, float z_, float w_)

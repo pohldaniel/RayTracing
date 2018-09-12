@@ -2,21 +2,22 @@
 #define _VIEW_PLANE_
 
 class ViewPlane {
+
+	friend class Scene;
+	friend class Orthographic;
+	friend class Projection;
+	friend class Pinhole;
+
 public:
+
+	ViewPlane();   								
+	ViewPlane(int hres, int vres, float s);
+	~ViewPlane();   							
+
+private:
 	int 			hres;   					// horizontal image resolution 
 	int 			vres;   					// vertical image resolution
 	float			s;							// pixel size
-
-
-
-public:
-
-	ViewPlane();   								// default Constructor
-	ViewPlane(int hres, int vres, float s);
-
-	~ViewPlane();   							// destructor
-
-	
 };
 
 

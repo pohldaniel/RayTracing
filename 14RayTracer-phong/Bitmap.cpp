@@ -8,12 +8,14 @@ Bitmap::Bitmap()
 {
 	Bitmap::data = NULL;
 	Bitmap::dataMatrix = NULL;
+	nullBitmap = false;
 }
 
 Bitmap::Bitmap(int height, int width, int bpp){
 
 	Bitmap::data = NULL;
 	Bitmap::dataMatrix = NULL;
+	nullBitmap = false;
 	Bitmap::width = width;
 	Bitmap::height = height;
 
@@ -87,6 +89,11 @@ Bitmap::~Bitmap()
 		free(Bitmap::dataMatrix);
 		Bitmap::dataMatrix = NULL;
 	}
+
+	if (nullBitmap){
+		free(Bitmap::data);
+		Bitmap::data = NULL;
+	}
 }
 
 
@@ -135,7 +142,7 @@ bool Bitmap::loadBitmap24(const char *filename)
 
 	// allocate enough memory for the bitmap image data
 	Bitmap::data = (unsigned char*)malloc(bmih.biSizeImage);
-
+	
 	// verify memory allocation
 	if (!Bitmap::data)
 	{
@@ -178,7 +185,20 @@ bool Bitmap::loadBitmap24(const char *filename)
 	return true;
 }
 
+void Bitmap::createNullBitmap(){
 
+	Bitmap::data = (unsigned char*)malloc(120000);
+
+	for (unsigned int i = 0; i < 120000; i++) {
+
+		Bitmap::data[i] = 200;
+	}
+
+	Bitmap::width = 200;
+	Bitmap::height = 200;
+	Bitmap::padWidth = 600;
+	nullBitmap = true;
+}
 
 bool Bitmap::readMonochrome(const char *filename)
 {

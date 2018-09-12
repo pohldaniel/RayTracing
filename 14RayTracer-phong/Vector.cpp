@@ -1,7 +1,6 @@
 #include "vector.h"
 
 
-
 Matrix4f::Matrix4f(){}
 Matrix4f::~Matrix4f(){}
 
@@ -260,7 +259,11 @@ Matrix4f Matrix4f::operator*(const Matrix4f &rhs) const
 }
 
 //////////////////////////////////////////////////////////////////////
-Vector2f::Vector2f(){}
+Vector2f::Vector2f(){
+
+	vec[0] = 0.0f;
+	vec[1] = 0.0f;
+}
 Vector2f::~Vector2f(){}
 
 Vector2f::Vector2f(float x_, float y_)
@@ -278,23 +281,68 @@ const float Vector2f::operator[](int index) const{
 	return vec[index];
 }
 
-Vector2f Vector2f::operator*(float scalar) const
-{
-	return Vector2f(vec[0] * scalar, vec[1] * scalar);
-}
-
 const float* Vector2f::getVec()const{
 
 	return vec;
 }
 
+Vector2f &Vector2f::operator-=(const Vector2f &rhs){
+
+	vec[0] -= rhs.vec[0], vec[1] -= rhs.vec[1];
+	return *this;
+}
+
+Vector2f &Vector2f::operator+=(const Vector2f &rhs){
+
+	vec[0] += rhs.vec[0], vec[1] += rhs.vec[1];
+	return *this;
+}
+
+
+Vector2f Vector2f::operator+(const Vector2f &rhs) const{
+
+	Vector2f tmp(*this);
+	tmp += rhs;
+	return tmp;
+}
+
+Vector2f Vector2f::operator-(const Vector2f &rhs) const{
+
+	Vector2f tmp(*this);
+	tmp -= rhs;
+	return tmp;
+}
+
+Vector2f Vector2f::operator*(float scalar) const{
+
+	return Vector2f(vec[0] * scalar, vec[1] * scalar);
+}
+
+Vector2f Vector2f::operator/(float scalar) const{
+
+	return Vector2f(vec[0] / scalar, vec[1] / scalar);
+}
+
+Vector2f operator-(const Vector2f &v){
+
+	return Vector2f(-v.vec[0], -v.vec[1]);
+}
+
+
+
 //////////////////////////////////////////////////////////////////////
 
-Vector3f::Vector3f(){}
+Vector3f::Vector3f(){
+
+	vec[0] = 0.0f;
+	vec[1] = 0.0f;
+	vec[2] = 0.0f;
+}
+
 Vector3f::~Vector3f(){}
 
-Vector3f::Vector3f(float x_, float y_, float z_)
-{
+Vector3f::Vector3f(float x_, float y_, float z_){
+
 	vec[0] = x_;
 	vec[1] = y_;
 	vec[2] = z_;
@@ -308,16 +356,19 @@ const float Vector3f::operator[](int index) const{
 	return vec[index];
 }
 
+const float* Vector3f::getVec()const{
 
+	return vec;
+}
 
-Vector3f &Vector3f::operator-=(const Vector3f &rhs)
-{
+Vector3f &Vector3f::operator-=(const Vector3f &rhs){
+
 	vec[0] -= rhs.vec[0], vec[1] -= rhs.vec[1], vec[2] -= rhs.vec[2];
 	return *this;
 }
 
-Vector3f &Vector3f::operator+=(const Vector3f &rhs)
-{
+Vector3f &Vector3f::operator+=(const Vector3f &rhs){
+
 	vec[0] += rhs.vec[0], vec[1] += rhs.vec[1], vec[2] += rhs.vec[2];
 	return *this;
 }
@@ -329,15 +380,15 @@ Vector3f Vector3f::operator+(const Vector3f &rhs) const{
 	return tmp;
 }
 
-Vector3f Vector3f::operator-(const Vector3f &rhs) const
-{
+Vector3f Vector3f::operator-(const Vector3f &rhs) const{
+
 	Vector3f tmp(*this);
 	tmp -= rhs;
 	return tmp;
 }
 
-Vector3f Vector3f::operator*(float scalar) const
-{
+Vector3f Vector3f::operator*(float scalar) const{
+
 	return Vector3f(vec[0] * scalar, vec[1] * scalar, vec[2] * scalar);
 }
 
@@ -346,11 +397,11 @@ Vector3f Vector3f::operator/(float scalar) const{
 	return Vector3f(vec[0] / scalar, vec[1] / scalar, vec[2] / scalar);
 }
 
+Vector3f operator-(const Vector3f &v){
 
-Vector3f operator-(const Vector3f &v)
-{
 	return Vector3f(-v.vec[0], -v.vec[1], -v.vec[2]);
 }
+
 
 Vector3f Vector3f::cross(const Vector3f &p, const Vector3f &q)
 {
@@ -366,19 +417,19 @@ float Vector3f::dot(const Vector3f &p, const Vector3f &q)
 
 
 
-float Vector3f::magnitude() const
-{
+float Vector3f::magnitude() const{
+
 	return sqrtf((vec[0] * vec[0]) + (vec[1] * vec[1]) + (vec[2] * vec[2]));
 }
 
-void Vector3f::normalize(Vector3f &p)
-{
+void Vector3f::normalize(Vector3f &p){
+
 	float invMag = 1.0f / p.magnitude();
 	p.vec[0] *= invMag, p.vec[1] *= invMag, p.vec[2] *= invMag;
 }
 
-Vector3f Vector3f::normalize()
-{
+Vector3f Vector3f::normalize(){
+
 	float invMag = 1.0f / magnitude();
 
 	return Vector3f(vec[0] * invMag, vec[1] * invMag, vec[2] * invMag);
@@ -401,7 +452,11 @@ void Vector3f::set(float x_, float y_, float z_)
 }
 
 
+bool Vector3f::null(){
 
+	return vec[0] == 0.0 && vec[1] == 0.0 && vec[2] == 0.0;
+
+}
 
 Vector3f operator*(const Vector3f &lhs, const Matrix4f &rhs)
 {
@@ -418,14 +473,17 @@ Vector3f operator*(const Matrix4f &rhs, const Vector3f &lhs )
 		(lhs[0] * rhs.mtx[0][2]) + (lhs[1] * rhs.mtx[1][2]) + (lhs[2] * rhs.mtx[2][2]));
 }
 
-const float* Vector3f::getVec()const{
 
-	return vec;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
-Vector4f::Vector4f(){}
+Vector4f::Vector4f(){
+
+	vec[0] = 0.0f;
+	vec[1] = 0.0f;
+	vec[2] = 0.0f;
+	vec[3] = 0.0f;
+}
 Vector4f::~Vector4f(){}
 
 Vector4f::Vector4f(float x_, float y_, float z_, float w_)
@@ -443,6 +501,24 @@ Vector4f::Vector4f(const Vector3f &rhs, float w_){
 	vec[3] = w_;
 }
 
+float Vector4f::magnitude() const{
+
+	return sqrtf((vec[0] * vec[0]) + (vec[1] * vec[1]) + (vec[2] * vec[2]) + (vec[3] * vec[3]));
+}
+
+Vector4f Vector4f::normalize(){
+
+	float invMag = 1.0f / magnitude();
+
+	return Vector4f(vec[0] * invMag, vec[1] * invMag, vec[2] * invMag, vec[3] * invMag);
+}
+
+void Vector4f::normalize(Vector4f &p){
+
+	float invMag = 1.0f / p.magnitude();
+	p.vec[0] *= invMag, p.vec[1] *= invMag, p.vec[2] *= invMag, p.vec[3]*= invMag;
+}
+
 float &Vector4f::operator[](int index){
 	return vec[index];
 }
@@ -450,6 +526,48 @@ float &Vector4f::operator[](int index){
 const float Vector4f::operator[](int index) const{
 	return vec[index];
 }
+
+Vector4f &Vector4f::operator-=(const Vector4f &rhs){
+
+	vec[0] -= rhs.vec[0], vec[1] -= rhs.vec[1], vec[2] -= rhs.vec[2], vec[3] -= rhs.vec[3];
+	return *this;
+}
+
+Vector4f &Vector4f::operator+=(const Vector4f &rhs){
+
+	vec[0] += rhs.vec[0], vec[1] += rhs.vec[1], vec[2] += rhs.vec[2], vec[3] += rhs.vec[3];
+	return *this;
+}
+
+
+Vector4f Vector4f::operator+(const Vector4f &rhs) const{
+	Vector4f tmp(*this);
+	tmp += rhs;
+	return tmp;
+}
+
+Vector4f Vector4f::operator-(const Vector4f &rhs) const{
+
+	Vector4f tmp(*this);
+	tmp -= rhs;
+	return tmp;
+}
+
+Vector4f Vector4f::operator*(float scalar) const{
+
+	return Vector4f(vec[0] * scalar, vec[1] * scalar, vec[2] * scalar, vec[3] * scalar);
+}
+
+Vector4f Vector4f::operator/(float scalar) const{
+
+	return Vector4f(vec[0] / scalar, vec[1] / scalar, vec[2] / scalar, vec[3] / scalar);
+}
+
+Vector4f operator-(const Vector4f &v){
+
+	return Vector4f(-v.vec[0], -v.vec[1], -v.vec[2], -v.vec[3]);
+}
+
 
 Vector3f operator*(const Vector4f &lhs, const Matrix4f &rhs){
 
@@ -461,11 +579,11 @@ Vector3f operator*(const Vector4f &lhs, const Matrix4f &rhs){
 
 
 Vector3f operator*(const Matrix4f &rhs, const Vector4f &lhs){
-	
+
 	return Vector3f((lhs[0] * rhs.mtx[0][0]) + (lhs[1] * rhs.mtx[0][1]) + (lhs[2] * rhs.mtx[0][2]) + (lhs[3] * rhs.mtx[0][3]),
 		(lhs[0] * rhs.mtx[1][0]) + (lhs[1] * rhs.mtx[1][1]) + (lhs[2] * rhs.mtx[1][2]) + (lhs[3] * rhs.mtx[1][3]),
 		(lhs[0] * rhs.mtx[2][0]) + (lhs[1] * rhs.mtx[2][1]) + (lhs[2] * rhs.mtx[2][2]) + (lhs[3] * rhs.mtx[2][3]));
 
 	
-
+	
 }

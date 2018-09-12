@@ -1,7 +1,6 @@
 #include <array>
 #include "Model.h"
 
-
 bool BBox::intersect(const Ray& a_ray) {
 	double ox = a_ray.origin[0]; double oy = a_ray.origin[1]; double oz = a_ray.origin[2];
 	double dx = a_ray.direction[0]; double dy = a_ray.direction[1]; double dz = a_ray.direction[2];
@@ -82,7 +81,7 @@ Primitive::Primitive() {
 	box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
 	m_texture = NULL;
 	m_material = NULL;
-
+	m_useTexture = true;
 }
 
 Primitive::Primitive(const Color &a_color){
@@ -95,7 +94,7 @@ Primitive::Primitive(const Color &a_color){
 	box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
 	m_texture = NULL;
 	m_material = NULL;
-	
+	m_useTexture = true;
 }
 
 Primitive::~Primitive(){}
@@ -110,8 +109,7 @@ BBox &Primitive::getBounds(){
 	return box;
 }
 
-void Primitive::clip(int axis, float position, BBox& leftBoundingBox, BBox& rightBoundingBox)
-{
+void Primitive::clip(int axis, float position, BBox& leftBoundingBox, BBox& rightBoundingBox){
 	//clearing the boxes
 	leftBoundingBox = getBounds();
 	rightBoundingBox = getBounds();
@@ -122,7 +120,14 @@ void Primitive::clip(int axis, float position, BBox& leftBoundingBox, BBox& righ
 
 void Primitive::setTexture(Texture* texture){
 
-	m_texture = std::shared_ptr<Texture>(texture);
+	if (texture == NULL){
+		m_useTexture = false;
+		m_texture = NULL;
+	
+	}else{
+
+		m_texture = std::shared_ptr<Texture>(texture);
+	}
 }
 
 std::shared_ptr<Texture> Primitive::getTexture(){
@@ -193,19 +198,19 @@ void OrientablePrimitive::translate(float dx, float dy, float dz){
 
 void OrientablePrimitive::scale(float a, float b, float c){
 
-	if (a == 0) a = 1.0;
-	if (b == 0) b = 1.0;
-	if (c == 0) c = 1.0;
+	if (a == 0) a = 1.0f;
+	if (b == 0) b = 1.0f;
+	if (c == 0) c = 1.0f;
 
 	T[0][0] = T[0][0] * a;  T[1][0] = T[1][0] * b; T[2][0] = T[2][0] * c;
 	T[0][1] = T[0][1] * a;  T[1][1] = T[1][1] * b; T[2][1] = T[2][1] * c;
 	T[0][2] = T[0][2] * a;  T[1][2] = T[1][2] * b; T[2][2] = T[2][2] * c;
 	T[0][3] = T[0][3] * a;  T[1][3] = T[1][3] * b; T[2][3] = T[2][3] * c;
 
-	invT[0][0] = invT[0][0] * (1.0 / a); invT[0][1] = invT[0][1] * (1.0 / b); invT[0][2] = invT[0][2] * (1.0 / c);
-	invT[1][0] = invT[1][0] * (1.0 / a); invT[1][1] = invT[1][1] * (1.0 / b); invT[1][2] = invT[1][2] * (1.0 / c);
-	invT[2][0] = invT[2][0] * (1.0 / a); invT[2][1] = invT[2][1] * (1.0 / b); invT[2][2] = invT[2][2] * (1.0 / c);
-	invT[3][0] = invT[3][0] * (1.0 / a); invT[3][1] = invT[3][1] * (1.0 / b); invT[3][2] = invT[3][2] * (1.0 / c);
+	invT[0][0] = invT[0][0] * (1.0f / a); invT[0][1] = invT[0][1] * (1.0f / b); invT[0][2] = invT[0][2] * (1.0f / c);
+	invT[1][0] = invT[1][0] * (1.0f / a); invT[1][1] = invT[1][1] * (1.0f / b); invT[1][2] = invT[1][2] * (1.0f / c);
+	invT[2][0] = invT[2][0] * (1.0f / a); invT[2][1] = invT[2][1] * (1.0f / b); invT[2][2] = invT[2][2] * (1.0f / c);
+	invT[3][0] = invT[3][0] * (1.0f / a); invT[3][1] = invT[3][1] * (1.0f / b); invT[3][2] = invT[3][2] * (1.0f / c);
 
 
 }
@@ -214,7 +219,8 @@ Triangle::Triangle(const Vector3f &a_V1,
 	const Vector3f &a_V2,
 	const Vector3f &a_V3,
 	const Color	&a_color,
-	const bool cull) : OrientablePrimitive(a_color){
+	const bool cull,
+	const bool smooth) : OrientablePrimitive(a_color){
 
 	m_a = a_V1;
 	m_b = a_V2;
@@ -223,13 +229,15 @@ Triangle::Triangle(const Vector3f &a_V1,
 	m_n2 = Vector3f(0.0, 0.0, 0.0);
 	m_n3 = Vector3f(0.0, 0.0, 0.0);
 	m_cull = cull;
+	m_smooth = smooth;
 	m_hasNormals = false;
 
 	m_edge1 = m_b - m_a;
 	m_edge2 = m_c - m_a;
 
-
-	abc = Vector3f::cross(m_b - m_a, m_c - m_a).magnitude();
+	Vector3f crossProd = Vector3f::cross(m_b - m_a, m_c - m_a);
+	abc = crossProd.magnitude();
+	m_normal = crossProd.normalize();
 	calcBounds();
 	
 }
@@ -244,7 +252,7 @@ Triangle::~Triangle(){
 
 void Triangle::calcBounds(){
 
-	float delta = 0.000001;
+	float delta = 0.000001f;
 	box.m_pos[0] = min(min(m_a[0], m_b[0]), m_c[0]) - delta;
 	box.m_pos[1] = min(min(m_a[1], m_b[1]), m_c[1]) - delta;
 	box.m_pos[2] = min(min(m_a[2], m_b[2]), m_c[2]) - delta;
@@ -261,22 +269,22 @@ void Triangle::calcBounds(){
 // Möller Trumbore algorithm
 void Triangle::hit(const Ray &ray, Hit &hit){
 
-
+	
 	//determinat of the triangle
 	Vector3f P = Vector3f::cross(ray.direction, m_edge2);
 	float det = Vector3f::dot(P, m_edge1);
 
 	if (m_cull){
 
-		if (fabs(det) < 0.0001) return;
+		if (fabs(det) < 0.0001f) return;
 
 	}else{
 
-		if (det < 0.0001) return;
+		if (det < 0.0001f) return;
 	}
 
 
-	float inv_det = 1.0 / det;
+	float inv_det = 1.0f / det;
 
 	// Barycentric Coefficients 
 	Vector3f T = ray.origin - Triangle::m_a;
@@ -308,8 +316,6 @@ Color Triangle::getColor(const Vector3f& pos){
 	
 	if (m_texture && m_hasTextureCoords){
 
-
-
 		Vector3f apos = m_a - pos;
 		Vector3f bpos = m_b - pos;
 		Vector3f cpos = m_c - pos;
@@ -324,16 +330,15 @@ Color Triangle::getColor(const Vector3f& pos){
 		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
 		
 
-		double u = m_uv1[0] * d1 + m_uv2[0] * d2 + m_uv3[0] * d3;
-		double v = m_uv1[1] * d1 + m_uv2[1] * d2 + m_uv3[1] * d3;
+		float u = m_uv1[0] * d1 + m_uv2[0] * d2 + m_uv3[0] * d3;
+		float v = m_uv1[1] * d1 + m_uv2[1] * d2 + m_uv3[1] * d3;
 
 
 		Color color = m_texture->getTexel(u, v);
 
 		return  color;
 
-	}
-	else{
+	}else{
 
 		return m_color;
 
@@ -343,7 +348,7 @@ Color Triangle::getColor(const Vector3f& pos){
 Vector3f Triangle::getNormal(const Vector3f& pos){
 	
 	
-	if (m_hasNormals){
+	if (m_smooth && m_hasNormals){
 
 		Vector3f apos = Triangle::m_a - pos;
 		Vector3f bpos = Triangle::m_b - pos;
@@ -360,25 +365,21 @@ Vector3f Triangle::getNormal(const Vector3f& pos){
 
 		Vector3f normal =  (m_n1 * d1 + m_n2 * d2 + m_n3 * d3).normalize();
 
-
 		return  normal;
 
-	}else{
-
-
-		return Vector3f(1.0, 0.0, 0.0);
 	}
-
+	
+	return m_normal;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-Sphere::Sphere(const Vector3f& a_centre, double a_radius, const  Color &a_color) :Primitive(a_color){
+Sphere::Sphere(const Vector3f& a_centre, float a_radius, const  Color &a_color) :Primitive(a_color){
 
 	m_centre = a_centre;
 	m_sqRadius = a_radius * a_radius;
 	m_radius = a_radius;
-	m_rRadius = 1.0 / a_radius;
+	m_rRadius = 1.0f / a_radius;
 	calcBounds();
 }
 
@@ -423,10 +424,10 @@ void Sphere::hit(const Ray &ray, Hit &hit) {
 }
 
 void Sphere::calcBounds(){
-	float delta = 0.00001;
+	float delta = 0.00001f;
 
 	box.extend(m_centre - Vector3f(m_radius + delta, m_radius + delta, m_radius + delta));
-	box.extend(m_centre + Vector3f(m_radius * 2 + delta, m_radius * 2 + delta, m_radius * 2 + delta));
+	box.extend(m_centre + Vector3f(m_radius * 2.0f + delta, m_radius * 2.0f + delta, m_radius * 2.0f + delta));
 	Sphere::bounds = true;
 }
 
@@ -452,8 +453,7 @@ Color Sphere::getColor(const Vector3f& pos){
 
 		return color;
 
-	}
-	else {
+	}else {
 
 		return m_color;
 	}
@@ -685,6 +685,7 @@ void Torus::hit(const Ray &_ray, Hit &hit){
 
 
 	if (result > 0.0){
+		
 		hit.t = result;
 		hit.hitObject = true;
 		return;
@@ -696,7 +697,7 @@ void Torus::hit(const Ray &_ray, Hit &hit){
 
 void Torus::calcBounds(){
 
-	float delta = 0.00001;
+	float delta = 0.00001f;
 
 	box.m_pos[0] = -(b + delta);
 	box.m_pos[1] = -(a + b + delta);

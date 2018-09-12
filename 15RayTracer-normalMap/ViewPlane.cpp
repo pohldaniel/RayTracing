@@ -1,6 +1,5 @@
 #include "ViewPlane.h"
 
-
 ViewPlane::ViewPlane(){
 
 	hres				= 640;
@@ -20,6 +19,6 @@ ViewPlane::ViewPlane(int hres,
 }
 
 
-ViewPlane::~ViewPlane()
-{
+ViewPlane::~ViewPlane(){
+
 }

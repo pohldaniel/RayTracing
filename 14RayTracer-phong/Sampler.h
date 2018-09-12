@@ -4,8 +4,6 @@
 #include <vector>
 #include "Vector.h"
 
-
-
 class Sampler{
 public:
 

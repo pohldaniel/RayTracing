@@ -15,18 +15,30 @@
 #define	invTWO_PI  0.1591549430918953358
 
 
-class Vector2f{
+class Vector2f {
+
+	friend Vector2f operator-(const Vector2f &v);
+
 public:
 	Vector2f();
 	Vector2f(float x_, float y_);
 	~Vector2f();
 
-	Vector2f operator*(float scalar) const;
+	
 
 	float &operator[](int index);
 	const float operator[](int index) const;
 
 	const float* getVec()const;
+
+	Vector2f &operator+=(const Vector2f &rhs);
+	Vector2f &operator-=(const Vector2f &rhs);
+
+	Vector2f operator+(const Vector2f &rhs) const;
+	Vector2f operator-(const Vector2f &rhs) const;
+
+	Vector2f operator*(float scalar) const;
+	Vector2f operator/(float scalar) const;
 
 private:
 
@@ -40,8 +52,7 @@ private:
 // A 3-component vector class that represents a row vector.
 //-----------------------------------------------------------------------------
 
-class Vector3f
-{
+class Vector3f{
 
 	friend Vector3f operator-(const Vector3f &v);
 
@@ -63,7 +74,7 @@ public:
 	float magnitude() const;
 
 	void set(float x_, float y_, float z_);
-
+	bool null();
 
 
 	float &operator[](int index);
@@ -86,14 +97,33 @@ private:
 
 
 class Vector4f{
+
+	friend Vector4f operator-(const Vector4f &v);
+
 public:
 	Vector4f();
 	Vector4f(float x_, float y_, float z_, float w_);
 	Vector4f(const Vector3f &rhs, float w_);
 	~Vector4f();
 
+	static void normalize(Vector4f &p);
+
 	float &operator[](int index);
 	const float operator[](int index) const;
+
+	Vector4f normalize();
+	float magnitude() const;
+
+	Vector4f &operator+=(const Vector4f &rhs);
+	Vector4f &operator-=(const Vector4f &rhs);
+
+	Vector4f operator+(const Vector4f &rhs) const;
+	Vector4f operator-(const Vector4f &rhs) const;
+
+	Vector4f operator*(float scalar) const;
+	Vector4f operator/(float scalar) const;
+
+	
 
 private:
 

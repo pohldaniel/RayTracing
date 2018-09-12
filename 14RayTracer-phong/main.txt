@@ -18,7 +18,9 @@
 					  scene->addLight(new Light(Vector3f(40, 0, 0), color, color, color));
 
 					  Model* model = new Model();
-					  model->loadObject("objs/Dragon/dragon.obj", true);
+					  
+					  //filename, cull backface, smooth shading
+					  model->loadObject("objs/Dragon/dragon.obj", true, true);
 					  model->buildKDTree();
 					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 90.0);
@@ -29,42 +31,45 @@
 
 					  InvalidateRect(hWnd, 0, true);
 
-					  
+
 
 					  return 0;
-//Plane
+// Dragon2		
+  Vector3f camPos(25.0, 25.0, -25.0);
+					  Vector3f xAxis(1, 0, 0);
+					  Vector3f yAxis(0, 1, 0);
+					  Vector3f zAxis(0, 0, 1);
+					  Vector3f target(4.0, 2.0, 3.0);
 
-Vector3f camPos(80.0, 40.0, 0.0);
-						Vector3f xAxis(1, 0, 0);
-						Vector3f yAxis(0, 1, 0);
-						Vector3f zAxis(0, 0, 1);
-						Vector3f target(0.0, 0.0, -2.0);
+					  Vector3f up(0, 1.0, 0.0);
 
-						Vector3f up(0, 1.0, 0.0);
+					  Projection *camera = new Projection(camPos, xAxis, yAxis, zAxis, target, up, 45, new Regular(1, 1));
 
-						Projection *camera = new Projection(camPos, xAxis, yAxis, zAxis, target, up, 45, new Regular(16, 1));
+					  scene = new Scene(ViewPlane(width, height, 1.0), Color(0.2, 0.2, 0.2));
 
-						scene = new Scene(ViewPlane(width, height, 1.0), Color(1.0, 1.0, 1.0));
+					  Color color = Color(0.5, 0.5, 0.5);
 
-						Color color = Color(0.8, 0.8, 0.8);
+					  scene->addLight(new Light(Vector3f(0, 200, 600), color, color, color));
+					  scene->addLight(new Light(Vector3f(40, 0, 0), color, color, color));
 
-						scene->addLight(new Light(Vector3f(0, 200, 600), color, color, color));
-						scene->addLight(new Light(Vector3f(40, 0, 0), color, color, color));
+					  Model* model = new Model(Color(1.0, 1.0, 0.0));
 
-						Model* model = new Model();
-						model->loadObject("objs/Plane/plane.obj", false);
-						model->buildKDTree();
-						model->rotate(Vector3f(1.0, 0.0, 0.0), -180.0);
-						model->rotate(Vector3f(0.0, 1.0, 0.0), 90.0);
+					  //filename, cull backface, smooth shading
+					  model->loadObject("objs/Dragon/dragon.obj", true, false);
+					  model->buildKDTree();
+					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
+					  model->rotate(Vector3f(0.0, 1.0, 0.0), 90.0);
+					  model->setTexture(NULL);
+					  model->setMaterial(new Phong());
+					  scene->addPrimitive(model);
 
-						scene->addPrimitive(model);
+					  camera->renderScene(*scene);
 
-						camera->renderScene(*scene);
-
-						InvalidateRect(hWnd, 0, true);
+					  InvalidateRect(hWnd, 0, true);
 
 
-						return 0;
+
+					  return 0;			  
 
 //Coat
   Vector3f camPos(10.0, 13.0, 15.0);
@@ -84,9 +89,10 @@ Vector3f camPos(80.0, 40.0, 0.0);
 					  scene->addLight(new Light(Vector3f(0, 200, 600), color, color, color));
 					  scene->addLight(new Light(Vector3f(40, 0, 0), color, color, color));
 
-					  Model* model = new Model(Color(0.1, 0.7, 0.1));
-					  model->setMaterial(new Material(Color(0.1, 0.1, 0.1), Color(2.0, 2.0, 2.0), Color(0.6, 0.6, 0.6), 5));
-					  model->loadObject("objs/coat.obj", Vector3f(1.0, 0.0, 0.0), 0, Vector3f(0.0, 0.0, 0.0), 20.0, false);
+					  Model* model = new Model();
+					  model->setMaterial(new Phong(Color(0.1, 0.1, 0.1), Color(2.0, 2.0, 2.0), Color(0.6, 0.6, 0.6), 5));
+					  //filename, cull backface, smooth shading
+					  model->loadObject("objs/coat.obj", Vector3f(1.0, 0.0, 0.0), 0, Vector3f(0.0, 0.0, 0.0), 20.0, false, true);
 					  model->buildKDTree();
 					  scene->addPrimitive(model);
 
@@ -95,7 +101,7 @@ Vector3f camPos(80.0, 40.0, 0.0);
 					  return 0;
 
 // Torus
-  Vector3f camPos(-2.0, 0.0, 4.0);
+   Vector3f camPos(-2.0, 0.0, 4.0);
 					  Vector3f xAxis(1, 0, 0);
 					  Vector3f yAxis(0, 1, 0);
 					  Vector3f zAxis(0, 0, 1);
@@ -103,7 +109,7 @@ Vector3f camPos(80.0, 40.0, 0.0);
 
 					  Vector3f up(0, 1.0, 0.0);
 
-					
+
 					  Camera *camera = new Projection(camPos, xAxis, yAxis, zAxis, target, up, 45, new Regular(16, 1));
 
 					  scene = new Scene(ViewPlane(width, height, 1.0), Color(0.2, 0.2, 0.2));
@@ -117,33 +123,31 @@ Vector3f camPos(80.0, 40.0, 0.0);
 					  Torus *torus1 = new Torus(1.0, 0.3, Color(0.4, 0.4, 0.4));
 					  torus1->rotate(Vector3f(0.0, 0.0, 1.0), 90);
 					  torus1->rotate(Vector3f(1.0, 0.0, 0.0), 30);
-					  torus1->setMaterial(new Material(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(0.6, 0.6, 0.6), 50));
-					 
+					  torus1->setMaterial(new Phong(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(0.6, 0.6, 0.6), 50));
+
 					  Torus *torus2 = new Torus(1.0, 0.3, Color(1.0, 0.4, 0.4));
 					  torus2->rotate(Vector3f(0.0, 0.0, 1.0), 90);
 					  torus2->rotate(Vector3f(1.0, 0.0, 0.0), 85);
 					  torus2->translate(1.0, 0.0, 0.0);
-					  torus2->setMaterial(new Material(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(1.0, 1.0, 1.0), 50));
+					  torus2->setMaterial(new Phong(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(1.0, 1.0, 1.0), 50));
 
-					 
+
 					  Model* model = new Model(Color(0.1, 0.7, 0.1));
-					  model->loadObject("objs/face.obj", false);
+					  //filename, cull backface, smooth shading
+					  model->loadObject("objs/face.obj", false, true);
 					  model->buildKDTree();
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 50.0);
 					  model->scale(2.0, 2.0, 2.0);
 					  model->translate(-5.0, 2.0, -30.0);
-					  model->setMaterial(new Material(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(0.6, 0.6, 0.6), 50));
+					  model->setMaterial(new Phong(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(0.6, 0.6, 0.6), 50));
 					  model->setTexture(new Texture("textures/pinkwater.bmp"));
 
 					  scene->addPrimitive(torus1);
 					  scene->addPrimitive(torus2);
 					  scene->addPrimitive(model);
 
-
 					  camera->renderScene(*scene);
 
-					
-
 					  InvalidateRect(hWnd, 0, true);
-  
+
 					  return 0;

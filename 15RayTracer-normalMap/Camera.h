@@ -11,7 +11,6 @@
 class Scene;
 class Camera{
 
-
 public:
 
 	Camera();
@@ -40,7 +39,7 @@ public:
 	const Vector3f &getViewDirection() const;
 
 
-	virtual void renderScene(const Scene &scene) = 0;
+	virtual void renderScene(Scene &scene) = 0;
 
 protected:
 
@@ -86,7 +85,7 @@ public:
 
 	~Orthographic();
 
-	void renderScene(const Scene &scene);
+	void renderScene(Scene &scene);
 
 };
 
@@ -112,7 +111,7 @@ public:
 		float fovy,
 		Sampler *sampler);
 
-	void renderScene(const Scene &scene);
+	void renderScene(Scene &scene);
 
 private:
 	
@@ -146,7 +145,7 @@ public:
 	~Pinhole();
 
 	Vector3f getViewDirection(float px, float py) const;
-	void renderScene(const Scene &scene);
+	void renderScene(Scene &scene);
 
 private:
 

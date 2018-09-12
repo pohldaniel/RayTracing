@@ -7,9 +7,7 @@ KDTree::KDTree(){
 	m_costOfTraversal = 1;
 }
 
-KDTree::~KDTree(){
-
-}
+KDTree::~KDTree(){}
 
 
 //the method that is called from extern to built the tree
@@ -610,7 +608,7 @@ bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 	float tmin = hit.t;
 	float tminTree = hit.t;
 	Hit hitTree;
-	Vector3f hitPoint;
+	
 
 		for (unsigned int i = 0; i < m_primitives.size(); i++){
 			
@@ -619,13 +617,9 @@ bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 			
 			
 			if (hitTree.hitObject && hitTree.t < tminTree) {
-				//std::cout << m_primitives[i]->m_primitive->m_texture << std::endl;
-
-				m_tree->m_primitive = m_primitives[i]->m_primitive;
-
 				
 
-					//m_tree->m_primitive = m_primitives[i]->m_primitive;
+				m_tree->m_primitive = m_primitives[i]->m_primitive;	
 				tminTree = (float)hitTree.t;
 				
 			}
@@ -635,10 +629,8 @@ bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 		// find closest triangle
 		if (tminTree <= tmin){
 			
-			/*hitPoint = ray.origin + ray.direction*tminTree;
-			hit.color = m_tree->m_primitive->getColor(hitPoint);*/
-			
-
+			//hit.hitPoint = ray.origin + ray.direction*tminTree;
+			//hit.color = m_tree->m_primitive->getColor(hitPoint);
 			
 			hit.t = tminTree;
 			hit.hitObject = hitTree.hitObject;

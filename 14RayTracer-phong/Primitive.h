@@ -59,10 +59,9 @@ public:
 	virtual ~Primitive();
 
 	virtual void hit(const Ray& ray, Hit &hit) = 0;
-	virtual void calcBounds() = 0;
 	virtual Color getColor(const Vector3f& a_Pos) = 0;
 	virtual Vector3f getNormal(const Vector3f& a_Pos) = 0;
-	virtual void clip(int axis, float position, BBox& leftBoundingBox, BBox& rightBoundingBox);
+	void clip(int axis, float position, BBox& leftBoundingBox, BBox& rightBoundingBox);
 
 	BBox& getBounds();
 
@@ -78,16 +77,17 @@ protected:
 
 	bool orientable;
 	bool bounds;	
-	
+	bool m_useTexture;
 	
 	Matrix4f T;
 	Matrix4f invT;
 	BBox box;
 
-
 	std::shared_ptr<Material> m_material;
 	std::shared_ptr<Texture> m_texture;
 	Color m_color;
+
+	virtual void calcBounds() = 0;
 	
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -114,12 +114,10 @@ class Triangle :public OrientablePrimitive{
 
 public:
 	
-	Triangle(const Vector3f &a_V1, const Vector3f &a_V2, const Vector3f &a_V3, const Color &color, const bool cull);
+	Triangle(const Vector3f &a_V1, const Vector3f &a_V2, const Vector3f &a_V3, const Color &color, const bool cull, const bool smooth);
 	~Triangle();
 
-	
 	void hit(const Ray& ray, Hit &hit);
-	void calcBounds();
 	Color getColor(const Vector3f& a_Pos);
 	Vector3f getNormal(const Vector3f& a_Pos);
 
@@ -139,20 +137,33 @@ public:
 		m_n2 = n2;
 		m_n3 = n3;
 		m_hasNormals = true;
+		
 	}
 
 	
+	void setTangents(const Vector4f &t1, const Vector4f &t2, const Vector4f &t3){
+
+		m_t1 = t1;
+		m_t2 = t2;
+		m_t3 = t3;
+		//m_hasTangents = true;
+	}
+
+	void setBiTangents(const Vector3f &bt1, const Vector3f &bt2, const Vector3f &bt3){
+
+		m_bt1 = bt1;
+		m_bt2 = bt2;
+		m_bt3 = bt3;
+		//m_hasBiTangents = true;
+	}
 
 
+	
 private:
 
 	Vector3f m_a;
 	Vector3f m_b;
 	Vector3f m_c;
-
-	Vector3f m_n1;
-	Vector3f m_n2;
-	Vector3f m_n3;
 
 	Vector3f m_edge1;
 	Vector3f m_edge2;
@@ -161,10 +172,27 @@ private:
 	Vector2f m_uv2;
 	Vector2f m_uv3;
 
+	Vector3f m_normal;
+
+	Vector3f m_n1;
+	Vector3f m_n2;
+	Vector3f m_n3;
+
+	Vector4f m_t1;
+	Vector4f m_t2;
+	Vector4f m_t3;
+
+	Vector3f m_bt1;
+	Vector3f m_bt2;
+	Vector3f m_bt3;
+
 	float abc;
 	bool m_hasNormals;
 	bool m_hasTextureCoords;
 	bool m_cull;
+	bool m_smooth;
+
+	void calcBounds();
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -172,18 +200,19 @@ private:
 class Sphere : public Primitive{
 public:
 
-	Sphere(const Vector3f& centre, double radius, const Color &color);
+	Sphere(const Vector3f& centre, float radius, const Color &color);
 	~Sphere();
 
 	void hit(const Ray& ray, Hit &hit);
-	void calcBounds();
 	Color getColor(const Vector3f& pos);
 	Vector3f getNormal(const Vector3f& pos);
 	
 private:
 
 	Vector3f m_centre;						
-	double m_sqRadius, m_radius, m_rRadius;	
+	float m_sqRadius, m_radius, m_rRadius;	
+
+	void calcBounds();
 				
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -196,7 +225,6 @@ public:
 	~Plane();
 
 	void hit(const Ray &ray, Hit &hit);
-	void calcBounds();
 	Color getColor(const Vector3f& pos);
 	Vector3f getNormal(const Vector3f& pos);
 	
@@ -205,6 +233,8 @@ private:
 	float distance;
 	Vector3f m_normal;
 	Vector3f m_u, m_v;
+
+	void calcBounds();
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class Torus : public OrientablePrimitive{
@@ -216,13 +246,14 @@ public:
 	~Torus();
 
 	void hit(const Ray &ray, Hit &hit);
-	void calcBounds();
 	Color getColor(const Vector3f& pos);
 	Vector3f getNormal(const Vector3f& pos);
 
 private:
 	float a;
 	float b;
+
+	void calcBounds();
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

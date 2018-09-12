@@ -147,9 +147,9 @@ Orthographic::Orthographic(const Vector3f &eye,
 	const float zoom,
 	Sampler  *sampler) : Camera(eye, xAxis, yAxis, zAxis, target, up, zoom, sampler){	}
 
-void Orthographic::renderScene(const Scene& scene) {
+void Orthographic::renderScene(Scene& scene) {
 
-	ViewPlane	vp = scene.m_vp;
+	ViewPlane	vp = scene.getViewPlane();
 
 	int n = (int)sqrt((float)m_sampler->getNumSamples());
 	int numSamples = n*n;
@@ -207,9 +207,9 @@ Projection::Projection(const Vector3f &eye,
 
 
 
-void Projection::renderScene(const Scene& scene){
+void Projection::renderScene(Scene& scene){
 
-	ViewPlane	vp = scene.m_vp;
+	ViewPlane	vp = scene.getViewPlane();
 
 	Color		color;
 	Ray			ray;
@@ -289,9 +289,9 @@ Vector3f  Pinhole::getViewDirection(float px, float py) const{
 
 }
 
-void Pinhole::renderScene(const Scene &scene) {
+void Pinhole::renderScene(Scene &scene) {
 
-	ViewPlane	vp = scene.m_vp;
+	ViewPlane	vp = scene.getViewPlane();
 
 	int n = (int)sqrt((float)m_sampler->getNumSamples());
 	int numSamples = n*n;

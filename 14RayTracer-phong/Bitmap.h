@@ -26,6 +26,7 @@ public:
 	bool writeBitmap24(COLORREF *(*RGBMatrix), int height, int width);
 	void setPixel24(int x, int y, Color &color);
 	void setPixel24(int x, int y, int r, int g, int b);
+	void createNullBitmap();
 
 private:
 	//variables
@@ -35,7 +36,7 @@ private:
 
 
 	int	paddingByte;										// number of Bytes to fill up the row to a multiple of four
-
+	bool nullBitmap;
 };
 
 #endif

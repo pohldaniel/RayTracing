@@ -101,7 +101,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_CREATE:
 	{
-
 					  Vector3f camPos(0.0, 0.0, 20.0);
 					  Vector3f xAxis(1, 0, 0);
 					  Vector3f yAxis(0, 1, 0);
@@ -120,36 +119,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  scene->addLight(new Light(Vector3f(0, 200, 600), color, color, color));
 					  scene->addLight(new Light(Vector3f(40, 0, 0), color, color, color));
 
-
-					 
 					  Model* model = new Model(Color(0.1, 0.7, 0.1));
-					  model->loadObject("objs/FaceTN/face.obj", true);
+
+					  //filename, cull backface, smooth shading
+					  model->loadObject("objs/FaceT/face.obj", false, true);
 					  model->buildKDTree();
-					  //model->generateNormals();
-					  model->generateTangents();
+					  model->generateNormals();
+					  //model->generateTangents();
 					  //model->setMaterial(new Material(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(0.6, 0.6, 0.6), 80));
 					  //model->setTexture(new Texture("textures/pinkwater.bmp"));
-					  
-					  
-					  
+
 					  scene->addPrimitive(model);
 					  camera->renderScene(*scene);
 
 					  InvalidateRect(hWnd, 0, true);
 
+					  delete camera;
+
 					  return 0;
 
-
-
 	}
-	case WM_PAINT:
-	{
+	case WM_PAINT:{				
+					std::unique_ptr<Bitmap> bitmap = scene->getBitmap();
+					
 					 hdc = BeginPaint(hWnd, &ps);
 
 					 hmemdc = CreateCompatibleDC(NULL);
-					 HGDIOBJ m_old = SelectObject(hmemdc, scene->m_bitmap->hbitmap);
+					 HGDIOBJ m_old = SelectObject(hmemdc, bitmap->hbitmap);
 
-					 BitBlt(hdc, scene->m_bitmap->width / 12, scene->m_bitmap->height / 12, scene->m_bitmap->width, scene->m_bitmap->height, hmemdc, 0, 0, SRCCOPY);
+					 BitBlt(hdc, bitmap->width / 12, bitmap->height / 12, bitmap->width, bitmap->height, hmemdc, 0, 0, SRCCOPY);
 
 					 SelectObject(hmemdc, m_old);
 					 DeleteDC(hmemdc);

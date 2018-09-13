@@ -42,8 +42,6 @@ Model::Model(const Color &color) :OrientablePrimitive(color) {
 	zmax = -FLT_MAX;
 }
 
-
-
 Model::~Model(){
 
 	
@@ -63,6 +61,11 @@ void Model::calcBounds(){
 
 	box = BBox(p1, p2 - p1);
 	Model::bounds = true;
+}
+
+std::pair <float, float> Model::getUV(const Vector3f& a_pos){
+
+	return m_KDTree->m_primitive->getUV(a_pos);
 }
 
 Color Model::getColor(const Vector3f& a_pos){
@@ -97,6 +100,36 @@ Vector3f  Model::getNormal(const Vector3f& a_pos){
 	
 	return Vector3f(0.0, 0.0, 0.0);
 	
+}
+
+Vector3f Model::getTangent(const Vector3f& a_pos){
+
+	if (m_hasTangents){
+
+		return (invT *  m_KDTree->m_primitive->getTangent(a_pos)).normalize();
+	}
+
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+Vector3f Model::getBiTangent(const Vector3f& a_pos){
+	
+	if (m_hasTangents){
+
+		return (invT *  m_KDTree->m_primitive->getBiTangent(a_pos)).normalize();
+	}
+
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+std::shared_ptr<Material>  Model::getMaterialMesh(){
+
+	if (m_materialMesh){
+
+		return m_materialMesh;
+	}
+
+	return std::shared_ptr<Material>(new Phong());
 }
 
 std::shared_ptr<Material> Model::getMaterial(){
@@ -335,7 +368,7 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 				meshes[j]->m_material = std::shared_ptr<Material>(m_material);
 
 			}else if (m_hasMaterials){
-
+				
 				meshes[j]->m_material = std::shared_ptr<Material>(new Phong());
 				
 			}
@@ -348,17 +381,22 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 					
 				}
 
+				if (meshes[j]->m_material->bumpMapPath != ""){
+				
+					meshes[j]->m_material = static_cast<std::shared_ptr<NormalMap>>(new NormalMap(meshes[j]->m_material));
+					static_cast<NormalMap*>(meshes[j]->m_material.get())->setNormalMap( std::unique_ptr<Texture>(new Texture(&(m_modelDirectory + "/" + meshes[j]->m_material->bumpMapPath)[0])));
+
+				}
+
 			}
 
 			meshes[j]->m_color = Color(1.0f / (j + 1), 1.0f / (j + 1), 1.0f / (j + 1));
 
 		}// end for
-
-
+		m_materialMesh = meshes[0]->m_material;
+	
 		int start = 0;
 		int end = meshes[0]->m_numberOfTriangles;
-
-
 
 		for (int j = 0; j < m_numberOfMeshes; j++){
 
@@ -442,9 +480,6 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 				meshes[j]->m_triangles.push_back(triangle);
 			}
 
-
-			
-
 			xmin = min(meshes[j]->m_xmin, xmin);
 			ymin = min(meshes[j]->m_ymin, ymin);
 			zmin = min(meshes[j]->m_zmin, zmin);
@@ -452,13 +487,10 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 			xmax = max(meshes[j]->m_xmax, xmax);
 			ymax = max(meshes[j]->m_ymax, ymax);
 			zmax = max(meshes[j]->m_zmax, zmax);
-
-
 		}
 
-
-
 		std::cout << "Number of faces: " << face.size() << std::endl;
+		std::cout << "Number of Meshes: " << m_numberOfMeshes << std::endl;
 		calcBounds();
 
 
@@ -469,7 +501,7 @@ bool Model::loadObject(const char* a_filename, Vector3f &axis, float degree, Vec
 void Model::buildKDTree(){
 
 	std::cout << "Build KDTree!" << std::endl;
-
+	
 
 	for (int j = 0; j < m_numberOfMeshes; j++){
 
@@ -650,6 +682,10 @@ void Model::generateTangents(){
 
 			bitangent = ((edge2 * texEdge1[0]) - (edge1 * texEdge2[0])) * det;
 
+			/*bitangent[0] = ((edge2[0] * texEdge1[0]) - (edge1[0] * texEdge2[0])) * det;
+			bitangent[1] = ((edge2[1] * texEdge1[0]) - (edge1[1] * texEdge2[0])) * det;
+			bitangent[2] = ((edge2[2] * texEdge1[0]) - (edge1[2] * texEdge2[0])) * det;*/
+		
 		}
 
 		// Accumulate the tangents and bitangents.
@@ -742,9 +778,11 @@ void Model::generateTangents(){
 			bitangent[2] * bitangents[i][2];
 
 		// Calculate handedness
+		
+
 		tangents[i][3] = (bDotB < 0.0f) ? 1.0f : -1.0f;
 		bitangents[i] = bitangent;
-
+		
 	}
 
 	for (int j = 0; j < m_numberOfMeshes; j++){
@@ -787,14 +825,13 @@ Mesh::Mesh(std::string mltName, int numberTriangles, Model *model){
 	m_numberOfTriangles = numberTriangles;
 	m_mltName = mltName;
 	m_texture = NULL;
+	//m_normalMap = NULL;
 	m_material = NULL;
 	m_model = std::unique_ptr<Model>(model);
 
 	m_hasNormals = false;
 	m_hasTexels = false;
 	m_hasTangents = false;
-
-	
 
 	m_indexBuffer.clear();
 	m_indexBufferTexel.clear();
@@ -813,14 +850,13 @@ Mesh::Mesh(int numberTriangles, Model *model){
 	m_color = Color(1.0, 1.0, 1.0);
 	m_numberOfTriangles = numberTriangles;
 	m_texture = NULL;
+	//m_normalMap = NULL;
 	m_material = NULL;
 	m_model = std::unique_ptr<Model>(model);
 
 	m_hasNormals = false;
 	m_hasTexels = false;
 	m_hasTangents = false;
-
-	
 
 	m_indexBuffer.clear();
 	m_indexBufferTexel.clear();
@@ -835,7 +871,6 @@ Mesh::Mesh(int numberTriangles, Model *model){
 }
 
 Mesh::~Mesh(){
-
 
 }
 
@@ -997,6 +1032,11 @@ void Mesh::generateTangents(){
 
 			bitangent = ((edge2 * texEdge1[0]) - (edge1 * texEdge2[0])) * det;
 
+			/*bitangent[0] = ((edge2[0] * texEdge1[0]) - (edge1[0] * texEdge2[0])) * det;
+			bitangent[1] = ((edge2[1] * texEdge1[0]) - (edge1[1] * texEdge2[0])) * det;
+			bitangent[2] = ((edge2[2] * texEdge1[0]) - (edge1[2] * texEdge2[0])) * det;*/
+			
+
 		}
 
 		// Accumulate the tangents and bitangents.
@@ -1094,7 +1134,7 @@ void Mesh::generateTangents(){
 		// Calculate handedness
 		m_tangents[i][3] = (bDotB < 0.0f) ? 1.0f : -1.0f;
 		m_bitangents[i] = bitangent;
-		
+	
 	}
 
 	for (int i = 0; i <m_numberOfTriangles; i++){
@@ -1205,8 +1245,7 @@ bool Mesh::readMaterial(const char* filename){
 				m_material->colorMapPath = valueBuffer;
 
 				
-			}
-			else if (strstr(identifierBuffer, "map_bump") != 0){
+			}else if (strstr(identifierBuffer, "map_bump") != 0){
 
 				m_material->bumpMapPath = valueBuffer;
 

@@ -9,6 +9,7 @@
 class Light{
 	
 	friend class Phong;
+	friend class NormalMap;
 
 public:
 	

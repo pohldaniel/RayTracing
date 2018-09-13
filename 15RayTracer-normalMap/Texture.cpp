@@ -6,7 +6,7 @@
 
 Texture::Texture(){
 	m_bitmap = std::unique_ptr<Bitmap>(new Bitmap());
-	m_bitmap->createNullBitmap();
+	m_bitmap->createNullBitmap(200);
 
 	m_width = m_bitmap->width;
 	m_height = m_bitmap->height;
@@ -20,7 +20,7 @@ Texture::Texture(const char* path){
 
 	if (!m_bitmap->loadBitmap24(path)){
 
-		m_bitmap->createNullBitmap();
+		m_bitmap->createNullBitmap(200);
 	}
 
 

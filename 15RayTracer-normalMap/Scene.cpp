@@ -100,15 +100,20 @@ Hit Scene::hitObjects(Ray& _ray)  {
 		
 
 		if (m_hit.hitObject && m_hit.t < tmin) {
-
+			
 			tmin = m_hit.t;
 			m_hit.hitPoint = ray.origin + ray.direction* m_hit.t;
 			m_hit.normal = m_primitives[j]->getNormal(m_hit.hitPoint);
+			m_hit.tangent = m_primitives[j]->getTangent(m_hit.hitPoint);
+			m_hit.bitangent = m_primitives[j]->getBiTangent(m_hit.hitPoint);
+			std::pair <float, float> uv = m_primitives[j]->getUV(m_hit.hitPoint);
+			m_hit.u = uv.first;
+			m_hit.v = uv.second;
 
 			if (m_primitives[j]->getMaterial()){
 				
 				m_hit.color = m_primitives[j]->getColor(m_hit.hitPoint) * m_primitives[j]->getMaterial()->shade(m_hit, ray.direction);
-				
+				//m_hit.color = m_primitives[j]->getMaterial()->shade(m_hit, ray.direction);
 			}else{
 
 				m_hit.color = m_primitives[j]->getColor(m_hit.hitPoint);

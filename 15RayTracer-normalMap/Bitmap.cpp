@@ -185,13 +185,13 @@ bool Bitmap::loadBitmap24(const char *filename)
 	return true;
 }
 
-void Bitmap::createNullBitmap(){
+void Bitmap::createNullBitmap(int color){
 
 	Bitmap::data = (unsigned char*)malloc(120000);
 
 	for (unsigned int i = 0; i < 120000; i++) {
 
-		Bitmap::data[i] = 200;
+		Bitmap::data[i] = color;
 	}
 
 	Bitmap::width = 200;

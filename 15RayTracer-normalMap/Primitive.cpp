@@ -104,7 +104,6 @@ BBox &Primitive::getBounds(){
 	if (!bounds){
 
 		calcBounds();
-
 	}
 	return box;
 }
@@ -115,8 +114,8 @@ void Primitive::clip(int axis, float position, BBox& leftBoundingBox, BBox& righ
 	rightBoundingBox = getBounds();
 	leftBoundingBox.getSize()[axis] = position;
 	rightBoundingBox.getPos()[axis] = position;
-
 }
+
 
 void Primitive::setTexture(Texture* texture){
 
@@ -147,18 +146,14 @@ std::shared_ptr<Material> Primitive::getMaterial(){
 //////////////////////////////////////////////////////////////////////////////////////////////////
 OrientablePrimitive::OrientablePrimitive() :Primitive(){
 	orientable = true;
-
-
 }
 
 
 OrientablePrimitive::OrientablePrimitive(const Color& color) : Primitive(color){
 	orientable = true;
-
 }
 
 OrientablePrimitive::~OrientablePrimitive(){
-
 
 }
 
@@ -192,8 +187,6 @@ void OrientablePrimitive::translate(float dx, float dy, float dz){
 	invT[1][3] = invT[1][3] - (dx*invT[1][0] + dy*invT[1][1] + dz*invT[1][2]);
 	invT[2][3] = invT[2][3] - (dx*invT[2][0] + dy*invT[2][1] + dz*invT[2][2]);
 	invT[3][3] = invT[3][3] - (dx*invT[3][0] + dy*invT[3][1] + dz*invT[3][2]);
-
-	
 }
 
 void OrientablePrimitive::scale(float a, float b, float c){
@@ -231,7 +224,7 @@ Triangle::Triangle(const Vector3f &a_V1,
 	m_cull = cull;
 	m_smooth = smooth;
 	m_hasNormals = false;
-
+	m_hasTangents = false;
 	m_edge1 = m_b - m_a;
 	m_edge2 = m_c - m_a;
 
@@ -312,29 +305,34 @@ void Triangle::hit(const Ray &ray, Hit &hit){
 
 }
 
-Color Triangle::getColor(const Vector3f& pos){
+std::pair <float, float> Triangle::getUV(const Vector3f& a_pos){
+	Vector3f apos = m_a - a_pos;
+	Vector3f bpos = m_b - a_pos;
+	Vector3f cpos = m_c - a_pos;
+
+	//first triangle
+	float d1 = Vector3f::cross(bpos, cpos).magnitude() / abc;
+
+	//second triangle
+	float d2 = Vector3f::cross(cpos, apos).magnitude() / abc;
+
+	//third triangle
+	float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
+
+	float u = m_uv1[0] * d1 + m_uv2[0] * d2 + m_uv3[0] * d3;
+	float v = m_uv1[1] * d1 + m_uv2[1] * d2 + m_uv3[1] * d3;
+
+	return std::make_pair(u, v);
+}
+
+Color Triangle::getColor(const Vector3f& a_pos){
 	
 	if (m_texture && m_hasTextureCoords){
 
-		Vector3f apos = m_a - pos;
-		Vector3f bpos = m_b - pos;
-		Vector3f cpos = m_c - pos;
-
-		//first triangle
-		float d1 = Vector3f::cross(bpos, cpos).magnitude() / abc;
-
-		//second triangle
-		float d2 = Vector3f::cross(cpos, apos).magnitude() / abc;
-
-		//third triangle
-		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
 		
+		std::pair <float, float> uv = getUV(a_pos);
 
-		float u = m_uv1[0] * d1 + m_uv2[0] * d2 + m_uv3[0] * d3;
-		float v = m_uv1[1] * d1 + m_uv2[1] * d2 + m_uv3[1] * d3;
-
-
-		Color color = m_texture->getTexel(u, v);
+		Color color = m_texture->getTexel(uv.first, uv.second);
 
 		return  color;
 
@@ -372,6 +370,69 @@ Vector3f Triangle::getNormal(const Vector3f& pos){
 	return m_normal;
 }
 
+Vector3f Triangle::getTangent(const Vector3f& pos){
+
+	if (m_hasTangents){
+
+		Vector3f apos = Triangle::m_a - pos;
+		Vector3f bpos = Triangle::m_b - pos;
+		Vector3f cpos = Triangle::m_c - pos;
+
+		//first triangle
+		float d1 = Vector3f::cross(bpos, cpos).magnitude() / abc;
+
+		//second triangle
+		float d2 = Vector3f::cross(cpos, apos).magnitude() / abc;
+
+		//third triangle
+		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
+
+		//Vector3f = 
+
+		Vector3f tangent = (m_t1 * d1 + m_t2 * d2 + m_t3 * d3);
+		
+		//m_handness = tangent[3];
+		
+
+		return  tangent.normalize();
+
+	}
+
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+Vector3f Triangle::getBiTangent(const Vector3f& pos){
+
+	if (m_hasTangents){
+
+		Vector3f apos = Triangle::m_a - pos;
+		Vector3f bpos = Triangle::m_b - pos;
+		Vector3f cpos = Triangle::m_c - pos;
+
+		//first triangle
+		float d1 = Vector3f::cross(bpos, cpos).magnitude() / abc;
+
+		//second triangle
+		float d2 = Vector3f::cross(cpos, apos).magnitude() / abc;
+
+		//third triangle
+		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
+
+		/*Vector3f bt1 = m_bt1;
+		Vector3f bt2 = m_bt2;
+		Vector3f bt3 = m_bt3;
+
+		Vector3f bitangent = (bt1 * d1 + bt2 * d2 + bt3 * d3).normalize();
+		return  bitangent * ;*/
+
+		Vector3f bitangent = (m_bt1 * d1 + m_bt2 * d2 + m_bt3 * d3).normalize();
+
+		return  bitangent ;
+
+	}
+
+	return Vector3f(0.0, 0.0, 0.0);
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 Sphere::Sphere(const Vector3f& a_centre, float a_radius, const  Color &a_color) :Primitive(a_color){
@@ -431,25 +492,30 @@ void Sphere::calcBounds(){
 	Sphere::bounds = true;
 }
 
-Color Sphere::getColor(const Vector3f& pos){
+std::pair <float, float>  Sphere::getUV(const Vector3f& a_pos){
+
+	Vector3f vp = (a_pos - m_centre) * m_rRadius;
+
+	float theta = acos(vp[1]);
+
+	float phi = atan2(vp[0], vp[2]);
+	if (phi < 0.0)
+		phi += TWO_PI;
+
+	// next, map theta and phi to (u, v) in [0, 1] X [0, 1]
+
+	float u = (phi * invTWO_PI);
+	float v = (1.0 - theta * invPI);
+
+	return std::make_pair(u, v);
+}
+
+Color Sphere::getColor(const Vector3f& a_pos){
 
 	if (m_texture){
 
-		Vector3f vp = (pos - m_centre) * m_rRadius;
-
-		float theta = acos(vp[1]);
-
-		float phi = atan2(vp[0], vp[2]);
-		if (phi < 0.0)
-			phi += TWO_PI;
-
-		// next, map theta and phi to (u, v) in [0, 1] X [0, 1]
-
-		float u = (phi * invTWO_PI);
-		float v = (1.0 - theta * invPI);
-
-
-		Color color = m_texture->getTexel(u, v);
+		std::pair <float, float> uv = getUV(a_pos);
+		Color color = m_texture->getTexel(uv.first, uv.second);
 
 		return color;
 
@@ -459,9 +525,19 @@ Color Sphere::getColor(const Vector3f& pos){
 	}
 }
 
-Vector3f Sphere::getNormal(const Vector3f& a_Pos){
+Vector3f Sphere::getNormal(const Vector3f& a_pos){
 
-	return ((a_Pos - m_centre) * m_rRadius).normalize();
+	return ((a_pos - m_centre) * m_rRadius).normalize();
+}
+
+Vector3f Sphere::getTangent(const Vector3f& pos){
+
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+Vector3f Sphere::getBiTangent(const Vector3f& pos){
+
+	return Vector3f(0.0, 0.0, 0.0);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 Plane::Plane() :Primitive(){
@@ -506,27 +582,42 @@ void Plane::calcBounds(){
 
 }
 
-Color Plane::getColor(const Vector3f& a_Pos){
+std::pair <float, float>  Plane::getUV(const Vector3f& a_pos){
+
+	float u = abs(Vector3f::dot(a_pos, m_u));
+	float v = abs(Vector3f::dot(a_pos, m_v));
+
+	return std::make_pair(u, v);
+}
+
+Color Plane::getColor(const Vector3f& a_pos){
 
 	if (m_texture){
 
-		float u = abs(Vector3f::dot(a_Pos, m_u));
-		float v = abs(Vector3f::dot(a_Pos, m_v));
-
-		Color color = m_texture->getTexel(u, v);
+		std::pair <float, float> uv = getUV(a_pos);
+		Color color = m_texture->getTexel(uv.first, uv.second);
 
 		return color;
 
-	}
-	else{
+	}else{
 
 		return m_color;
 	}
 }
 
-Vector3f Plane::getNormal(const Vector3f& a_Pos){
+Vector3f Plane::getNormal(const Vector3f& pos){
 
 	return  m_normal;
+}
+
+Vector3f Plane::getTangent(const Vector3f& pos){
+
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+Vector3f Plane::getBiTangent(const Vector3f& pos){
+
+	return Vector3f(0.0, 0.0, 0.0);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -711,21 +802,28 @@ void Torus::calcBounds(){
 	
 }
 
+std::pair <float, float>  Torus::getUV(const Vector3f& a_pos){
+
+	// Determine its angle from the x-axis.
+	float u = (1.0 - (atan2(a_pos[2], a_pos[1]) + PI) / TWO_PI);
+
+	float len = sqrt(a_pos[1] * a_pos[1] + a_pos[2] * a_pos[2]);
+
+
+	// Now rotate about the x-axis to get the point P into the x-z plane.
+	float x = len - a;
+	float v = ((atan2(a_pos[0], x) + PI) / TWO_PI);
+
+	return std::make_pair(u, v);
+}
+
+
 Color Torus::getColor(const Vector3f& a_pos){
 
 	if (m_texture){
 
-		// Determine its angle from the x-axis.
-		float u = (1.0 - (atan2(a_pos[2], a_pos[1]) + PI) / TWO_PI);
-
-		float len = sqrt(a_pos[1] * a_pos[1] + a_pos[2] * a_pos[2]);
-
-
-		// Now rotate about the x-axis to get the point P into the x-z plane.
-		float x = len - a;
-		float v = ((atan2(a_pos[0], x) + PI) / TWO_PI);
-
-		Color color = m_texture->getTexel(u, v);
+		std::pair <float, float> uv = getUV(a_pos);
+		Color color = m_texture->getTexel(uv.first, uv.second);
 
 		return color;
 
@@ -787,7 +885,15 @@ Vector3f Torus::getNormal(const Vector3f& a_pos){
 
 }
 
+Vector3f Torus::getTangent(const Vector3f& pos){
 
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+Vector3f Torus::getBiTangent(const Vector3f& pos){
+
+	return Vector3f(0.0, 0.0, 0.0);
+}
 
 
 

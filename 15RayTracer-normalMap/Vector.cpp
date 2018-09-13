@@ -348,6 +348,12 @@ Vector3f::Vector3f(float x_, float y_, float z_){
 	vec[2] = z_;
 }
 
+Vector3f::Vector3f(const Vector4f &v){
+	vec[0] = v[0];
+	vec[1] = v[1];
+	vec[2] = v[2];
+}
+
 float &Vector3f::operator[](int index){
 	return vec[index];
 }

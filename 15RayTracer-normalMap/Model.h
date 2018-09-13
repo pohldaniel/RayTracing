@@ -26,7 +26,11 @@ public:
 	void hit(const Ray& a_Ray, Hit &hit);
 	Color getColor(const Vector3f& a_Pos);
 	Vector3f getNormal(const Vector3f& a_Pos);
+	Vector3f getTangent(const Vector3f& a_Pos);
+	Vector3f getBiTangent(const Vector3f& a_Pos);
+	std::pair <float, float> getUV(const Vector3f& a_pos);
 	std::shared_ptr<Material>  getMaterial();
+	std::shared_ptr<Material>  getMaterialMesh();
 
 	bool loadObject(const char* filename, bool cull, bool smooth);
 	bool loadObject(const char* filename, Vector3f &rotate, float degree, Vector3f &translate, float scale, bool cull, bool smooth);
@@ -42,6 +46,7 @@ private:
 	std::string m_mltPath;
 	std::string m_modelDirectory;
 	std::vector<std::shared_ptr<Mesh>> meshes;
+	std::shared_ptr<Material> m_materialMesh;
 
 	float	xmin;
 	float	xmax;
@@ -99,6 +104,7 @@ private:
 	bool m_hasTangents;
 
 	std::shared_ptr<Texture> m_texture;
+	//std::shared_ptr<Texture> m_normalMap;
 	std::shared_ptr<Material>  m_material;
 
 	

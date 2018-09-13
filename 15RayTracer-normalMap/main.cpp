@@ -101,40 +101,77 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_CREATE:
 	{
-					  Vector3f camPos(0.0, 0.0, 20.0);
+					  Vector3f camPos(-3.4, 12.0, 20.0);
 					  Vector3f xAxis(1, 0, 0);
 					  Vector3f yAxis(0, 1, 0);
 					  Vector3f zAxis(0, 0, 1);
-					  Vector3f target(0.0, 0.0, -1.0);
+					  Vector3f target(0.0, 6.0, -0.1);
 
 					  Vector3f up(0, 1.0, 0.0);
 
-
-					  Camera *camera = new Projection(camPos, xAxis, yAxis, zAxis, target, up, 45, new Regular(16, 1));
+					  Projection *camera = new Projection(camPos, xAxis, yAxis, zAxis, target, up, 45, new Regular(16, 1));
 
 					  scene = new Scene(ViewPlane(width, height, 1.0), Color(0.2, 0.2, 0.2));
 
-					  Color color = Color(0.5, 0.5, 0.5);
+					  Color color = Color(0.4, 0.4, 0.4);
 
-					  scene->addLight(new Light(Vector3f(0, 200, 600), color, color, color));
-					  scene->addLight(new Light(Vector3f(40, 0, 0), color, color, color));
+					  scene->addLight(new Light(Vector3f(-60, 60, 60), Color(0.1, 0.1, 0.1), Color(0.4, 0.4, 0.4), Color(0.8, 0.8, 0.8)));
+					  scene->addLight(new Light(Vector3f(60, 60, 60), Color(0.1, 0.1, 0.1), color, color));
 
-					  Model* model = new Model(Color(0.1, 0.7, 0.1));
+					  Model* model = new Model(Color(1.0, 1.0, 1.0));
 
 					  //filename, cull backface, smooth shading
-					  model->loadObject("objs/FaceT/face.obj", false, true);
+					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0,0.0,0.0), 0.0, Vector3f(0.0, 0.0, 0.0),4, false, true);
 					  model->buildKDTree();
-					  model->generateNormals();
-					  //model->generateTangents();
-					  //model->setMaterial(new Material(Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(0.6, 0.6, 0.6), 80));
-					  //model->setTexture(new Texture("textures/pinkwater.bmp"));
-
+					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
+					  model->rotate(Vector3f(0.0, 1.0, 0.0), 30.0);
+					  model->translate(-6.0, 0.0, 0.0);
+					  model->generateTangents();
+					  model->setTexture(NULL);
 					  scene->addPrimitive(model);
+
+
+					  model = new Model(Color(1.0, 1.0, 1.0));
+
+					  //filename, cull backface, smooth shading
+					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 4, false, true);
+					  model->buildKDTree();
+					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
+					  model->rotate(Vector3f(0.0, 1.0, 0.0), 20.0);
+					  model->translate(-2.0, 0.0, 0.0);
+					  model->generateTangents();
+					  model->setTexture(NULL);
+					  model->setMaterial(new Phong(model->getMaterialMesh()));
+					  scene->addPrimitive(model);
+
+					  model = new Model();
+
+					  //filename, cull backface, smooth shading
+					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 4, false, true);
+					  model->buildKDTree();
+					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
+					  model->rotate(Vector3f(0.0, 1.0, 0.0), 20.0);
+					  model->translate(2.0, 0.0, 0.0);
+					  model->generateTangents();
+					  scene->addPrimitive(model);
+
+					  model = new Model();
+
+					  //filename, cull backface, smooth shading
+					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 4, false, true);
+					  model->buildKDTree();
+					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
+					  model->rotate(Vector3f(0.0, 1.0, 0.0), 20.0);
+					  model->translate(6.0, 0.0, 0.0);
+					  model->generateTangents();
+					  model->setMaterial(new Phong(model->getMaterialMesh()));
+					  scene->addPrimitive(model);
+
 					  camera->renderScene(*scene);
 
 					  InvalidateRect(hWnd, 0, true);
 
-					  delete camera;
+
 
 					  return 0;
 

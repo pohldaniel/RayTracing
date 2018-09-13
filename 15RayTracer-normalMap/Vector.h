@@ -51,7 +51,7 @@ private:
 //-----------------------------------------------------------------------------
 // A 3-component vector class that represents a row vector.
 //-----------------------------------------------------------------------------
-
+class Vector4f;
 class Vector3f{
 
 	friend Vector3f operator-(const Vector3f &v);
@@ -60,6 +60,7 @@ public:
 
 	Vector3f();
 	Vector3f(float x_, float y_, float z_);
+	Vector3f(const Vector4f &v);
 	~Vector3f();
 
 

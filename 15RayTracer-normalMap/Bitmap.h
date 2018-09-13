@@ -26,7 +26,7 @@ public:
 	bool writeBitmap24(COLORREF *(*RGBMatrix), int height, int width);
 	void setPixel24(int x, int y, Color &color);
 	void setPixel24(int x, int y, int r, int g, int b);
-	void createNullBitmap();
+	void createNullBitmap(int color);
 
 private:
 	//variables

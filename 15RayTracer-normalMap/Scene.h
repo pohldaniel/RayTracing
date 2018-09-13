@@ -15,6 +15,7 @@
 class Scene {
 
 	friend class Phong;
+	friend class NormalMap;
 
 public:
 

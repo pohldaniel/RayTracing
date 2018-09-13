@@ -59,6 +59,7 @@
 					  model->buildKDTree();
 					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 90.0);
+					  model->generateTangents();
 					  model->setTexture(NULL);
 					  model->setMaterial(new Phong());
 					  scene->addPrimitive(model);
@@ -70,6 +71,41 @@
 
 
 					  return 0;			  
+
+//Plane
+
+ Vector3f camPos(0.0, 0.0, 20.0);
+					  Vector3f xAxis(1, 0, 0);
+					  Vector3f yAxis(0, 1, 0);
+					  Vector3f zAxis(0, 0, 1);
+					  Vector3f target(0.0, 0.0, -1.0);
+
+					  Vector3f up(0, 1.0, 0.0);
+
+					  Projection *camera = new Projection(camPos, xAxis, yAxis, zAxis, target, up, 45, new Regular(16, 1));
+
+					  scene = new Scene(ViewPlane(width, height, 1.0), Color(1.0, 1.0, 1.0));
+
+					  Color color = Color(0.4, 0.4, 0.4);
+
+					  scene->addLight(new Light(Vector3f(-60, 0, 60), color, color, color));
+					  //scene->addLight(new Light(Vector3f(60, 0, 60), color, color, color));
+
+					  Model* model = new Model();
+
+					  //filename, cull backface, smooth shading
+					  model->loadObject("objs/Plane/plane3.obj", true, true);
+					  model->buildKDTree();
+					  model->generateTangents();
+					  //model->setTexture(NULL);
+					  //model->setMaterial(new Phong(model->getMaterialMesh()));
+					  scene->addPrimitive(model);
+
+					
+
+					  camera->renderScene(*scene);
+
+					  InvalidateRect(hWnd, 0, true);
 
 //Coat
   Vector3f camPos(10.0, 13.0, 15.0);

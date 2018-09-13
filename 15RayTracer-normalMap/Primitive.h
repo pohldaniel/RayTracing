@@ -59,9 +59,11 @@ public:
 	virtual ~Primitive();
 
 	virtual void hit(const Ray& ray, Hit &hit) = 0;
-	virtual Color getColor(const Vector3f& a_Pos) = 0;
-	virtual Vector3f getNormal(const Vector3f& a_Pos) = 0;
-	void clip(int axis, float position, BBox& leftBoundingBox, BBox& rightBoundingBox);
+	virtual Color getColor(const Vector3f& a_pos) = 0;
+	virtual Vector3f getNormal(const Vector3f& a_pos) = 0;
+	virtual Vector3f getTangent(const Vector3f& a_pos) = 0;
+	virtual Vector3f getBiTangent(const Vector3f& a_pos) = 0;
+	virtual std::pair <float, float> getUV(const Vector3f& a_pos) = 0;
 
 	BBox& getBounds();
 
@@ -87,6 +89,7 @@ protected:
 	std::shared_ptr<Texture> m_texture;
 	Color m_color;
 
+	void clip(int axis, float position, BBox& leftBoundingBox, BBox& rightBoundingBox);
 	virtual void calcBounds() = 0;
 	
 };
@@ -118,10 +121,12 @@ public:
 	~Triangle();
 
 	void hit(const Ray& ray, Hit &hit);
-	Color getColor(const Vector3f& a_Pos);
-	Vector3f getNormal(const Vector3f& a_Pos);
+	Color getColor(const Vector3f& a_pos);
+	Vector3f getNormal(const Vector3f& a_pos);
+	Vector3f getTangent(const Vector3f& a_pos);
+	Vector3f getBiTangent(const Vector3f& a_pos);
+	std::pair <float, float> getUV(const Vector3f& a_pos);
 
-	
 
 	void setUV(const Vector2f &uv1, const Vector2f &uv2, const Vector2f &uv3){
 
@@ -146,7 +151,7 @@ public:
 		m_t1 = t1;
 		m_t2 = t2;
 		m_t3 = t3;
-		//m_hasTangents = true;
+		m_hasTangents = true;
 	}
 
 	void setBiTangents(const Vector3f &bt1, const Vector3f &bt2, const Vector3f &bt3){
@@ -178,16 +183,18 @@ private:
 	Vector3f m_n2;
 	Vector3f m_n3;
 
-	Vector4f m_t1;
-	Vector4f m_t2;
-	Vector4f m_t3;
+	Vector3f m_t1;
+	Vector3f m_t2;
+	Vector3f m_t3;
 
 	Vector3f m_bt1;
 	Vector3f m_bt2;
 	Vector3f m_bt3;
 
 	float abc;
+	
 	bool m_hasNormals;
+	bool m_hasTangents;
 	bool m_hasTextureCoords;
 	bool m_cull;
 	bool m_smooth;
@@ -206,7 +213,10 @@ public:
 	void hit(const Ray& ray, Hit &hit);
 	Color getColor(const Vector3f& pos);
 	Vector3f getNormal(const Vector3f& pos);
-	
+	Vector3f getTangent(const Vector3f& a_pos);
+	Vector3f getBiTangent(const Vector3f& a_pos);
+	std::pair <float, float> getUV(const Vector3f& a_pos);
+
 private:
 
 	Vector3f m_centre;						
@@ -227,7 +237,10 @@ public:
 	void hit(const Ray &ray, Hit &hit);
 	Color getColor(const Vector3f& pos);
 	Vector3f getNormal(const Vector3f& pos);
-	
+	Vector3f getTangent(const Vector3f& a_pos);
+	Vector3f getBiTangent(const Vector3f& a_pos);
+	std::pair <float, float> getUV(const Vector3f& a_pos);
+
 private:
 
 	float distance;
@@ -248,6 +261,9 @@ public:
 	void hit(const Ray &ray, Hit &hit);
 	Color getColor(const Vector3f& pos);
 	Vector3f getNormal(const Vector3f& pos);
+	Vector3f getTangent(const Vector3f& a_pos);
+	Vector3f getBiTangent(const Vector3f& a_pos);
+	std::pair <float, float> getUV(const Vector3f& a_pos);
 
 private:
 	float a;

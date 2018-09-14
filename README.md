@@ -40,4 +40,5 @@ Output from 14RayTracer-phong.
 
 Output from 15RayTracer-normalMap.
 
-![altair](https://user-images.githubusercontent.com/30089026/45498339-1ae66500-b77a-11e8-8c5d-fcb42cae4b73.jpg)
+![altair](https://user-images.githubusercontent.com/30089026/45578328-1062c300-b881-11e8-8aa6-d51df21199af.jpg)
+

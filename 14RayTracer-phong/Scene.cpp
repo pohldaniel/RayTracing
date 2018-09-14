@@ -109,6 +109,9 @@ Hit Scene::hitObjects(Ray& _ray)  {
 				
 				m_hit.color = m_primitives[j]->getColor(m_hit.hitPoint) * m_primitives[j]->getMaterial()->shade(m_hit, ray.direction);
 				
+				/*Vector3f normal= m_primitives[j]->getNormal(m_hit.hitPoint);
+				m_hit.color = Color(normal[0], normal[1], normal[2]);*/
+
 			}else{
 
 				m_hit.color = m_primitives[j]->getColor(m_hit.hitPoint);

@@ -26,8 +26,8 @@ void Texture::setUVScale(float uscale, float vscale){
 
 Color Texture::getTexel(float a_u, float a_v){
 
-	int u = (((int)(a_u*uscale*(width - 1))) + 100000) % width;
-	int v = (((int)(a_v*vscale*(height - 1))) + 100000) % height;
+	int u = abs((((int)(a_u*uscale*(width - 1)))) % width);
+	int v = abs((((int)(a_v*vscale*(height - 1)))) % height);
 
 
 	//std::cout << width << "  " << height << std::endl;

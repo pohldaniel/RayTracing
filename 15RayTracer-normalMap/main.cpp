@@ -121,7 +121,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  Model* model = new Model(Color(1.0, 1.0, 1.0));
 
 					  //filename, cull backface, smooth shading
-					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0,0.0,0.0), 0.0, Vector3f(0.0, 0.0, 0.0),4, false, true);
+					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 4, false, true);
 					  model->buildKDTree();
 					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 30.0);
@@ -129,7 +129,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  model->generateTangents();
 					  model->setTexture(NULL);
 					  scene->addPrimitive(model);
-
 
 					  model = new Model(Color(1.0, 1.0, 1.0));
 
@@ -170,8 +169,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  camera->renderScene(*scene);
 
 					  InvalidateRect(hWnd, 0, true);
-
-
 
 					  return 0;
 

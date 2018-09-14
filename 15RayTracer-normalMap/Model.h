@@ -35,13 +35,20 @@ public:
 	bool loadObject(const char* filename, bool cull, bool smooth);
 	bool loadObject(const char* filename, Vector3f &rotate, float degree, Vector3f &translate, float scale, bool cull, bool smooth);
 
+	bool loadObject2(const char* filename, bool cull, bool smooth);
+	bool loadObject2(const char* filename, Vector3f &rotate, float degree, Vector3f &translate, float scale, bool cull, bool smooth);
+
 	void generateNormals();
 	void generateTangents();
+
+	void generateTangents2();
+	void generateNormals2();
+
 	void buildKDTree();
 
 private:
 
-	std::unique_ptr<KDTree> m_KDTree;
+	std::shared_ptr<KDTree> m_KDTree;
 	std::vector<std::shared_ptr<Triangle>>	m_triangles;
 	std::string m_mltPath;
 	std::string m_modelDirectory;
@@ -65,15 +72,22 @@ private:
 	int  m_numberOfTriangles;
 	int m_numberOfMeshes;
 
+	std::vector<float> m_vertexBuffer;
 	std::vector<unsigned int> m_indexBuffer;
+
+	std::vector<unsigned int> m_indexBufferPosition;
 	std::vector<unsigned int> m_indexBufferTexel;
 	std::vector<unsigned int> m_indexBufferNormal;
 	std::vector<Vector3f> m_positions;
 	std::vector<Vector3f> m_normals;
 	std::vector<Vector2f> m_texels;
 
-
 	void calcBounds();
+
+	void indexVBO_P(std::vector<float> & in_vertices, std::vector<unsigned int> & out_indices, std::vector<float> & out_vertices);
+	void indexVBO_PN(std::vector<float> & in_vertices, std::vector<unsigned int> & out_indices, std::vector<float> & out_vertices);
+	void indexVBO_PT(std::vector<float> & in_vertices, std::vector<unsigned int> & out_indices, std::vector<float> & out_vertices);
+	void indexVBO_PTN(std::vector<float> & in_vertices, std::vector<unsigned int> & out_indices, std::vector<float> & out_vertices);
 };
 
 

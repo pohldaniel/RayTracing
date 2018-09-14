@@ -21,6 +21,11 @@ public:
 	Material(const std::shared_ptr<Material> material);
 	~Material();
 
+	void setAmbient(const Color &ambient);
+	void setDiffuse(const Color &diffuse);
+	void setSpecular(const Color &specular);
+	void setshinies(const int shinies);
+
 	virtual Color shade(Hit &hit, const Vector3f &w_0) = 0;
 
 protected:

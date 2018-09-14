@@ -66,9 +66,6 @@ void Camera::updateView()
 	Vector3f::normalize(m_xAxis);
 
 	m_viewDir = -m_zAxis;
-
-
-	
 }
 
 void Camera::updateView(const Vector3f &eye, const Vector3f &target, const Vector3f &up){
@@ -87,7 +84,8 @@ void Camera::updateView(const Vector3f &eye, const Vector3f &target, const Vecto
 	Vector3f::normalize(m_yAxis);
 
 	m_viewDir = -m_zAxis;
-
+	
+	
 	// take care of the singularity by hardwiring in specific camera orientations
 
 	/*if (eye[0] == target[0] && eye[2] == target[2] && eye[1] > target[1]) { // camera looking vertically down
@@ -227,6 +225,9 @@ void Projection::renderScene(Scene& scene){
 	int numSamples = n*n;
 
 	ray.origin = m_eye;
+
+	
+
 	for (int y = 0; y < vp.vres; y++){
 		for (int x = 0; x < vp.hres; x++){
 
@@ -240,7 +241,7 @@ void Projection::renderScene(Scene& scene){
 
 				ray.direction = (m_viewDir + m_xAxis *(aspectRatio*(2 * px - 1))*scale + m_yAxis *(2 * py - 1)*scale).normalize();
 				color = color + scene.hitObjects(ray).color;
-				
+				//std::cout << ray.direction[0] << "  " << ray.direction[1] << " " << ray.direction[2] << std::endl;
 			}
 				
 

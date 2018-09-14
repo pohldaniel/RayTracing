@@ -85,7 +85,7 @@ Hit Scene::hitObjects(Ray& _ray)  {
 	
 	
 	for (unsigned int j = 0; j < m_primitives.size(); j++){
-
+		
 		if (m_primitives[j]->orientable){
 
 			ray = Ray(m_primitives[j]->invT * (Vector4f(_ray.origin, 1.0)),
@@ -113,9 +113,12 @@ Hit Scene::hitObjects(Ray& _ray)  {
 			if (m_primitives[j]->getMaterial()){
 				
 				m_hit.color = m_primitives[j]->getColor(m_hit.hitPoint) * m_primitives[j]->getMaterial()->shade(m_hit, ray.direction);
+				
+				//m_hit.color = Color(m_hit.normal[0], m_hit.normal[1], m_hit.normal[2]);
 				//m_hit.color = m_primitives[j]->getMaterial()->shade(m_hit, ray.direction);
-			}else{
 
+			}else{
+				
 				m_hit.color = m_primitives[j]->getColor(m_hit.hitPoint);
 
 			}

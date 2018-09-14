@@ -76,7 +76,7 @@ public:
 
 	void set(float x_, float y_, float z_);
 	bool null();
-
+	bool isSame(const Vector3f &p);
 
 	float &operator[](int index);
 	const float operator[](int index) const;

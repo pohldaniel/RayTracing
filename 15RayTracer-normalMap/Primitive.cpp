@@ -122,9 +122,9 @@ void Primitive::setTexture(Texture* texture){
 	if (texture == NULL){
 		m_useTexture = false;
 		m_texture = NULL;
-	
+		
 	}else{
-
+		
 		m_texture = std::shared_ptr<Texture>(texture);
 	}
 }
@@ -347,7 +347,7 @@ Vector3f Triangle::getNormal(const Vector3f& pos){
 	
 	
 	if (m_smooth && m_hasNormals){
-
+		
 		Vector3f apos = Triangle::m_a - pos;
 		Vector3f bpos = Triangle::m_b - pos;
 		Vector3f cpos = Triangle::m_c - pos;
@@ -362,7 +362,7 @@ Vector3f Triangle::getNormal(const Vector3f& pos){
 		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
 
 		Vector3f normal =  (m_n1 * d1 + m_n2 * d2 + m_n3 * d3).normalize();
-
+		
 		return  normal;
 
 	}
@@ -372,6 +372,7 @@ Vector3f Triangle::getNormal(const Vector3f& pos){
 
 Vector3f Triangle::getTangent(const Vector3f& pos){
 
+	
 	if (m_hasTangents){
 
 		Vector3f apos = Triangle::m_a - pos;
@@ -392,7 +393,6 @@ Vector3f Triangle::getTangent(const Vector3f& pos){
 		Vector3f tangent = (m_t1 * d1 + m_t2 * d2 + m_t3 * d3);
 		
 		//m_handness = tangent[3];
-		
 
 		return  tangent.normalize();
 
@@ -861,7 +861,7 @@ Vector3f Torus::getNormal(const Vector3f& a_pos){
 	normal = a_pos - tmp;
 	
 	//calculate the transpose of invT with the normal
-	return (invT * normal).normalize();
+	return ( normal * invT).normalize();
 
 	//return (invT.transpose() * Vector4f(normal, 0.0)).normalize();
 	//return (T * Vector4f(normal, 0.0)).normalize();
@@ -878,7 +878,7 @@ Vector3f Torus::getNormal(const Vector3f& a_pos){
 	normal[2] =  a_pos[2] * (sum_squared - param_squared );
 
 	//calculate the transpose of invT with the normal
-	return (invT * normal).normalize();
+	return (normal * invT).normalize();
 
 	//return (invT.transpose() * Vector4f(normal, 0.0)).normalize();
 	//return (T * Vector4f(normal, 0.0)).normalize();*/

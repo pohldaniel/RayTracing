@@ -2,7 +2,7 @@
 #include "Scene.h"
 Material::Material(){
 
-	m_shinies = 50;
+	m_shinies = 20;
 	m_ambient = Color(0.1, 0.1, 0.1);
 	m_diffuse = Color(0.8, 0.8, 0.8);
 	m_specular = Color(0.6, 0.6, 0.6);
@@ -33,6 +33,20 @@ Material::Material(const std::shared_ptr<Material> material) : m_ambient(materia
 
 Material::~Material(){}
 
+void Material::setAmbient(const Color &ambient){
+	m_ambient = ambient;
+}
+void Material::setDiffuse(const Color &diffuse){
+	m_diffuse = diffuse;
+}
+void Material::setSpecular(const Color &specular){
+	m_specular = specular;
+}
+void Material::setshinies(const int shinies){
+	m_shinies = shinies;
+}
+
+
 ////////////////////////////////////////////////////Phong//////////////////////////////////////////////////////
 Phong::Phong(): Material(){
 
@@ -51,10 +65,8 @@ Phong::~Phong(){}
 
 float Phong::calcDiffuse(const Hit &hit, const Vector3f &w_0, const Vector3f &w_i){
 
-	
-
 	float diff = Vector3f::dot(w_i, hit.normal);
-	
+
 	return max(0.0, diff);
 }
 
@@ -64,11 +76,8 @@ float Phong::calcSpecular(const Hit &hit, const Vector3f &w_0, const Vector3f &w
 
 	float spec = Vector3f::dot(w_0, V);
 
+	return powf(max(spec, 0.0f), m_shinies);
 
-	if (spec > 0.0) return   powf(spec, m_shinies);
-
-	return 0.0;
-	
 }
 
 Color Phong::shade(Hit &hit, const Vector3f &w_0){
@@ -141,15 +150,18 @@ Color NormalMap::shade( Hit &hit, const Vector3f &a_w_0){
 
 	Color ambiente(0.0, 0.0, 0.0), diffuse(0.0, 0.0, 0.0), specular(0.0, 0.0, 0.0);
 	Vector3f w_0 = (TBN * Vector4f(a_w_0, 0.0f)).normalize();
-
+	
 	Color tmp = m_normalMap->getTexel(hit.u, hit.v);
-	hit.normal = (TBN * Vector4f(Vector3f(tmp.r, tmp.g, tmp.b) * 2.0 - Vector3f(1.0, 1.0, 1.0), 0.0)).normalize();
+
+	
+
+	hit.normal = (TBN * (Vector3f(tmp.r, tmp.g, tmp.b) * 2.0 - Vector3f(1.0, 1.0, 1.0))).normalize();
 
 	for (unsigned int i = 0; i < hit.m_scene->m_lights.size(); i++){
 
 		Vector3f L = (hit.m_scene->m_lights[i]->m_position - hit.hitPoint).normalize(); // Lightdirection | w_i
 		L = (TBN * Vector4f(L, 0.0f)).normalize();
-
+		
 		// I_in * k_ambiente
 		ambiente = ambiente + hit.m_scene->m_lights[i]->m_ambient;
 
@@ -181,28 +193,33 @@ Color NormalMap::shade( Hit &hit, const Vector3f &a_w_0){
 
 	//std::cout << (diffuse).r << "  " << (diffuse).g << "  " << (diffuse).b << std::endl;
 
-	return ambiente + diffuse + specular;
+	return  ambiente + diffuse + specular;
 }
 
 Matrix4f NormalMap::getTBN(const Hit &hit){
 
-	/*Matrix4f tmp = Matrix4f(hit.tangent[0], hit.tangent[1], hit.tangent[2], 0.0f,
-		hit.normal[0], hit.normal[1], hit.normal[2], 0.0f,
+	
+
+	Matrix4f tmp1 = Matrix4f(hit.tangent[0], hit.tangent[1], hit.tangent[2], 0.0f,
 		hit.bitangent[0], hit.bitangent[1], hit.bitangent[2], 0.0f,
+		hit.normal[0], hit.normal[1], hit.normal[2], 0.0f,
 		0.0f, 0.0f, 0.0f, 1.0f);
 
+
+	Matrix4f tmp2 = Matrix4f(hit.tangent[0], hit.bitangent[0], hit.normal[0], 0.0f,
+		hit.tangent[1], hit.bitangent[1], hit.normal[1], 0.0f,
+		hit.tangent[2], hit.bitangent[2], hit.normal[2], 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f);
+
+
+	/*Matrix4f tmp =  tmp2;
+	std::cout << hit.tangent[1] << std::endl;
 	std::cout << tmp[0][0] << "  " << tmp[0][1] << "  " << tmp[0][2] << " " << tmp[0][3] << std::endl;
 	std::cout << tmp[1][0] << "  " << tmp[1][1] << "  " << tmp[1][2] << " " << tmp[1][3] << std::endl;
 	std::cout << tmp[2][0] << "  " << tmp[2][1] << "  " << tmp[2][2] << " " << tmp[2][3] << std::endl;
 	std::cout << tmp[3][0] << "  " << tmp[3][1] << "  " << tmp[3][2] << " " << tmp[3][3] << std::endl;*/
 
-	return Matrix4f(hit.tangent[0]  , hit.tangent[1]  , hit.tangent[2]  , 0.0f,
-					hit.bitangent[0], hit.bitangent[1], hit.bitangent[2], 0.0f,
-					hit.normal[0], hit.normal[1], hit.normal[2], 0.0f,
-					0.0f, 0.0f, 0.0f, 1.0f);
+	
 
-	/*return Matrix4f(hit.tangent[0], hit.bitangent[0], hit.normal[0], 0.0f,
-					hit.tangent[1], hit.bitangent[1], hit.normal[1], 0.0f,
-					hit.tangent[2], hit.bitangent[2], hit.normal[2], 0.0f,
-					0.0f, 0.0f, 0.0f, 1.0f);*/
+	return tmp2;
 }

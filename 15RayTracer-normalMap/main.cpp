@@ -118,27 +118,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					  scene->addLight(new Light(Vector3f(-60, 60, 60), Color(0.1, 0.1, 0.1), Color(0.4, 0.4, 0.4), Color(0.8, 0.8, 0.8)));
 					  scene->addLight(new Light(Vector3f(60, 60, 60), Color(0.1, 0.1, 0.1), color, color));
 
-					  Model* model = new Model(Color(1.0, 1.0, 1.0));
-
-					  //filename, cull backface, smooth shading
-					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 4, false, true);
-					  model->buildKDTree();
-					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
-					  model->rotate(Vector3f(0.0, 1.0, 0.0), 30.0);
-					  model->translate(-6.0, 0.0, 0.0);
-					  model->generateTangents();
-					  model->setTexture(NULL);
-					  scene->addPrimitive(model);
+					  Model* model;
 
 					  model = new Model(Color(1.0, 1.0, 1.0));
 
 					  //filename, cull backface, smooth shading
 					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 4, false, true);
+					  model->generateTangents();
+					  model->buildKDTree();
+					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
+					  model->rotate(Vector3f(0.0, 1.0, 0.0), 30.0);
+					  model->translate(-6.0, 0.0, 0.0);
+					  scene->addPrimitive(model);
+					  model->setTexture(NULL);
+
+					  model = new Model(Color(1.0, 1.0, 1.0));
+
+					  //filename, cull backface, smooth shading
+					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 4, false, true);
+					  model->generateTangents();
 					  model->buildKDTree();
 					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 20.0);
 					  model->translate(-2.0, 0.0, 0.0);
-					  model->generateTangents();
 					  model->setTexture(NULL);
 					  model->setMaterial(new Phong(model->getMaterialMesh()));
 					  scene->addPrimitive(model);
@@ -147,22 +149,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  //filename, cull backface, smooth shading
 					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 4, false, true);
+					  model->generateTangents();
 					  model->buildKDTree();
 					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 20.0);
 					  model->translate(2.0, 0.0, 0.0);
-					  model->generateTangents();
 					  scene->addPrimitive(model);
 
 					  model = new Model();
 
 					  //filename, cull backface, smooth shading
 					  model->loadObject("objs/Altair/altair.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 4, false, true);
+					  model->generateTangents();
 					  model->buildKDTree();
 					  model->rotate(Vector3f(1.0, 0.0, 0.0), -90.0);
 					  model->rotate(Vector3f(0.0, 1.0, 0.0), 20.0);
 					  model->translate(6.0, 0.0, 0.0);
-					  model->generateTangents();
 					  model->setMaterial(new Phong(model->getMaterialMesh()));
 					  scene->addPrimitive(model);
 
@@ -174,11 +176,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	}
 	case WM_PAINT:{				
-					std::unique_ptr<Bitmap> bitmap = scene->getBitmap();
 					
+					 std::shared_ptr<Bitmap> bitmap = scene->getBitmap();
 					 hdc = BeginPaint(hWnd, &ps);
 
 					 hmemdc = CreateCompatibleDC(NULL);
+
+					 
 					 HGDIOBJ m_old = SelectObject(hmemdc, bitmap->hbitmap);
 
 					 BitBlt(hdc, bitmap->width / 12, bitmap->height / 12, bitmap->width, bitmap->height, hmemdc, 0, 0, SRCCOPY);

@@ -21,6 +21,7 @@ public:
 	Vector3f tangent;
 	Vector3f bitangent;
 	Vector3f hitPoint;
+	Matrix4f modelView;
 
 	std::shared_ptr<Scene> m_scene;
 	

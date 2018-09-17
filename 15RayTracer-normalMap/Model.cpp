@@ -95,7 +95,7 @@ Vector3f  Model::getNormal(const Vector3f& a_pos){
 	
 	if (m_hasNormals){
 
-		return ( m_KDTree->m_primitive->getNormal(a_pos) * invT).normalize();
+		return (m_KDTree->m_primitive->getNormal(a_pos) * invT).normalize();
 	}
 	
 	return Vector3f(0.0, 0.0, 0.0);
@@ -106,20 +106,20 @@ Vector3f Model::getTangent(const Vector3f& a_pos){
 
 	if (m_hasTangents){
 		
-		return (invT *  m_KDTree->m_primitive->getTangent(a_pos)).normalize();
+		return (m_KDTree->m_primitive->getTangent(a_pos) * invT).normalize();
 	}
 
-	return Vector3f(0.0, 0.0, 0.0);
+	return Vector3f(1.0, 0.0, 0.0);
 }
 
 Vector3f Model::getBiTangent(const Vector3f& a_pos){
 	
 	if (m_hasTangents){
 
-		return (invT *  m_KDTree->m_primitive->getBiTangent(a_pos)).normalize();
+		return (  m_KDTree->m_primitive->getBiTangent(a_pos) * invT).normalize();
 	}
 
-	return Vector3f(0.0, 0.0, 0.0);
+	return Vector3f(0.0, 1.0, 0.0);
 }
 
 std::shared_ptr<Material>  Model::getMaterialMesh(){
@@ -1103,98 +1103,7 @@ bool Model::loadObject2(const char* a_filename, Vector3f &axis, float degree, Ve
 	}
 
 
-	/*int start = 0;
-	int end = meshes[0]->m_numberOfTriangles;
-
-	for (int j = 0; j < m_numberOfMeshes; j++){
-
-
-		if (j > 0){
-
-			start = end;
-			end = end + meshes[j]->m_numberOfTriangles;
-		}
-
-		Vector3f a;
-		Vector3f b;
-		Vector3f c;
-		std::shared_ptr<Triangle> triangle;
-
-		for (int i = start; i < end; i++){
-
-			
-
-			a = m_positions[(face[i])[0] - 1];
-			b = m_positions[(face[i])[1] - 1];
-			c = m_positions[(face[i])[2] - 1];
-
-			m_indexBufferPosition.push_back((face[i])[0] - 1);
-			m_indexBufferPosition.push_back((face[i])[1] - 1);
-			m_indexBufferPosition.push_back((face[i])[2] - 1);
-
-			meshes[j]->m_indexBuffer.push_back((face[i])[0] - 1);
-			meshes[j]->m_indexBuffer.push_back((face[i])[1] - 1);
-			meshes[j]->m_indexBuffer.push_back((face[i])[2] - 1);
-
-
-			meshes[j]->m_xmin = min(a[0] + translate[0], min(b[0] + translate[0], min(c[0] + translate[0], meshes[j]->m_xmin)));
-			meshes[j]->m_ymin = min(a[1] + translate[1], min(b[1] + translate[1], min(c[1] + translate[1], meshes[j]->m_ymin)));
-			meshes[j]->m_zmin = min(a[2] + translate[2], min(b[2] + translate[2], min(c[2] + translate[2], meshes[j]->m_zmin)));
-
-			meshes[j]->m_xmax = max(a[0] + translate[0], max(b[0] + translate[0], max(c[0] + translate[0], meshes[j]->m_xmax)));
-			meshes[j]->m_ymax = max(a[1] + translate[1], max(b[1] + translate[1], max(c[1] + translate[1], meshes[j]->m_ymax)));
-			meshes[j]->m_zmax = max(a[2] + translate[2], max(b[2] + translate[2], max(c[2] + translate[2], meshes[j]->m_zmax)));
-
-			triangle = std::shared_ptr<Triangle>(new Triangle(a + translate, b + translate, c + translate, meshes[j]->m_color, cull, smooth));
-			triangle->m_texture = meshes[j]->m_texture;
-			triangle->m_material = meshes[j]->m_material;
-
-
-			if (m_texels.size() > 0){
-
-				m_indexBufferTexel.push_back((face[i])[3] - 1);
-				m_indexBufferTexel.push_back((face[i])[4] - 1);
-				m_indexBufferTexel.push_back((face[i])[5] - 1);
-
-				meshes[j]->m_indexBufferTexel.push_back((face[i])[3] - 1);
-				meshes[j]->m_indexBufferTexel.push_back((face[i])[4] - 1);
-				meshes[j]->m_indexBufferTexel.push_back((face[i])[5] - 1);
-
-				meshes[j]->m_hasTexels = true;
-				m_hasTexels = true;
-
-				triangle->setUV(m_texels[(face[i])[3] - 1], m_texels[(face[i])[4] - 1], m_texels[(face[i])[5] - 1]);
-			}
-
-
-			if (m_normals.size() > 0){
-
-				m_indexBufferNormal.push_back((face[i])[6] - 1);
-				m_indexBufferNormal.push_back((face[i])[7] - 1);
-				m_indexBufferNormal.push_back((face[i])[8] - 1);
-
-				meshes[j]->m_indexBufferNormal.push_back((face[i])[6] - 1);
-				meshes[j]->m_indexBufferNormal.push_back((face[i])[7] - 1);
-				meshes[j]->m_indexBufferNormal.push_back((face[i])[8] - 1);
-
-				meshes[j]->m_hasNormals = true;
-				m_hasNormals = true;
-
-				triangle->setNormal(m_normals[(face[i])[6] - 1], m_normals[(face[i])[7] - 1], m_normals[(face[i])[8] - 1]);
-			}
-
-			meshes[j]->m_triangles.push_back(triangle);
-		}
-
-		xmin = min(meshes[j]->m_xmin, xmin);
-		ymin = min(meshes[j]->m_ymin, ymin);
-		zmin = min(meshes[j]->m_zmin, zmin);
-
-		xmax = max(meshes[j]->m_xmax, xmax);
-		ymax = max(meshes[j]->m_ymax, ymax);
-		zmax = max(meshes[j]->m_zmax, zmax);
-	}*/
-
+	
 	
 
 		std::cout << "Number of faces: " << m_numberOfTriangles << std::endl;
@@ -1854,33 +1763,11 @@ void Model::generateTangents2(){
 		pVertex0[10] *= length;
 
 
-		// Calculate the handedness of the local tangent space.
-		// The bitangent vector is the cross product between the triangle face
-		// normal vector and the calculated tangent vector. The resulting
-		// bitangent vector should be the same as the bitangent vector
-		// calculated from the set of linear equations above. If they point in
-		// different directions then we need to invert the cross product
-		// calculated bitangent vector. We store this scalar multiplier in the
-		// tangent vector's 'w' component so that the correct bitangent vector
-		// can be generated in the normal mapping shader's vertex shader.
-		//
-		// Normal maps have a left handed coordinate system with the origin
-		// located at the top left of the normal map texture. The x coordinates
-		// run horizontally from left to right. The y coordinates run
-		// vertically from top to bottom. The z coordinates run out of the
-		// normal map texture towards the viewer. Our handedness calculations
-		// must take this fact into account as well so that the normal mapping
-		// shader's vertex shader will generate the correct bitangent vectors.
-		// Some normal map authoring tools such as Crazybump
-		// (http://www.crazybump.com/) includes options to allow you to control
-		// the orientation of the normal map normal's y-axis.
+		
 
-		bitangent[0] = (pVertex0[6] * pVertex0[10]) -
-			(pVertex0[7] * pVertex0[9]);
-		bitangent[1] = (pVertex0[7] * pVertex0[8]) -
-			(pVertex0[5] * pVertex0[10]);
-		bitangent[2] = (pVertex0[5] * pVertex0[9]) -
-			(pVertex0[6] * pVertex0[8]);
+		bitangent[0] = (pVertex0[6] * pVertex0[10]) -(pVertex0[7] * pVertex0[9]);
+		bitangent[1] = (pVertex0[7] * pVertex0[8]) -(pVertex0[5] * pVertex0[10]);
+		bitangent[2] = (pVertex0[5] * pVertex0[9]) -(pVertex0[6] * pVertex0[8]);
 
 		bDotB = bitangent[0] * pVertex0[12] +
 			bitangent[1] * pVertex0[13] +
@@ -1890,10 +1777,12 @@ void Model::generateTangents2(){
 		pVertex0[11] = (bDotB < 0.0f) ? 1.0f : -1.0f;
 
 		if (bDotB < 0.0f){
+			
 			pVertex0[8] = -pVertex0[8];
 			pVertex0[9] = -pVertex0[9];
 			pVertex0[10] = -pVertex0[10];
 		}
+		
 
 		pVertex0[12] = bitangent[0];
 		pVertex0[13] = bitangent[1];
@@ -1932,9 +1821,6 @@ void Model::generateTangents2(){
 			pVertex1 = &m_vertexBuffer[pTriangle[1] * 15];
 			pVertex2 = &m_vertexBuffer[pTriangle[2] * 15];
 
-			
-
-
 			Vector3f a = Vector3f(pVertex0[0], pVertex0[1], pVertex0[2]);
 			Vector3f b = Vector3f(pVertex1[0], pVertex1[1], pVertex1[2]);
 			Vector3f c = Vector3f(pVertex2[0], pVertex2[1], pVertex2[2]);
@@ -1958,13 +1844,12 @@ void Model::generateTangents2(){
 			Vector4f t1 = Vector4f(pVertex0[8], pVertex0[9], pVertex0[10], pVertex0[11]);
 			Vector4f t2 = Vector4f(pVertex1[8], pVertex1[9], pVertex1[10], pVertex1[11]);
 			Vector4f t3 = Vector4f(pVertex2[8], pVertex2[9], pVertex2[10], pVertex2[11]);
-
+			
 			triangle->setTangents(t1, t2, t3);
 
 			Vector3f bt1 = Vector3f(pVertex0[12], pVertex0[13], pVertex0[14]);
 			Vector3f bt2 = Vector3f(pVertex1[12], pVertex1[13], pVertex1[14]);
 			Vector3f bt3 = Vector3f(pVertex2[12], pVertex2[13], pVertex2[14]);
-
 			triangle->setBiTangents(bt1, bt2, bt3);
 
 			meshes[j]->m_triangles.push_back(triangle);

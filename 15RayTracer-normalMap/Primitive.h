@@ -146,7 +146,7 @@ public:
 	}
 
 	
-	void setTangents(const Vector4f &t1, const Vector4f &t2, const Vector4f &t3){
+	void setTangents(const Vector3f &t1, const Vector3f &t2, const Vector3f &t3){
 		
 		m_t1 = t1;
 		m_t2 = t2;

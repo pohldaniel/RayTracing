@@ -16,7 +16,7 @@ class Scene {
 
 	friend class Phong;
 	friend class NormalMap;
-	friend class Projection;
+
 public:
 
 	Scene();

@@ -11,7 +11,7 @@ Scene::Scene() {
 	
 	try {
 
-		m_bitmap = std::shared_ptr<Bitmap>( new Bitmap(m_vp.vres, m_vp.hres, 24));
+		m_bitmap = std::unique_ptr<Bitmap>( new Bitmap(m_vp.vres, m_vp.hres, 24));
 	}
 	catch (const char* e) {
 
@@ -30,7 +30,7 @@ Scene::Scene(const ViewPlane &vp, const Color &background){
 
 	try {
 
-		m_bitmap = std::shared_ptr<Bitmap>(new Bitmap(m_vp.vres, m_vp.hres, 24));
+		m_bitmap = std::unique_ptr<Bitmap>( new Bitmap(vp.vres, vp.hres, 24));
 
 	}catch (const char* e) {
 		std::cout << "Could not load Scene bitmap!" << std::endl;
@@ -110,10 +110,11 @@ Hit Scene::hitObjects(Ray& _ray)  {
 			std::pair <float, float> uv = m_primitives[j]->getUV(m_hit.hitPoint);
 			m_hit.u = uv.first;
 			m_hit.v = uv.second;
-			m_hit.modelView = m_hit.modelView *m_primitives[j]->T;
+			
+
 			if (m_primitives[j]->getMaterial()){
 				
-				m_hit.color = m_primitives[j]->getMaterial()->shade(m_hit, ray.direction);
+				m_hit.color = m_primitives[j]->getColor(m_hit.hitPoint) * m_primitives[j]->getMaterial()->shade(m_hit, ray.direction);
 				
 				//m_hit.color = Color(m_hit.normal[0], m_hit.normal[1], m_hit.normal[2]);
 				//m_hit.color = m_primitives[j]->getMaterial()->shade(m_hit, ray.direction);

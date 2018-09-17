@@ -37,10 +37,10 @@ public:
 	const Vector3f &getCamY() const;
 	const Vector3f &getCamZ() const;
 	const Vector3f &getViewDirection() const;
-	const Matrix4f &getViewMatrix() const;
+
 
 	virtual void renderScene(Scene &scene) = 0;
-	
+
 protected:
 
 
@@ -58,8 +58,6 @@ protected:
 	Vector3f		m_zAxis;		// w --> eye - target
 	Vector3f		m_viewDir;		// 
 	float			m_zoom;			// zoom factor
-
-	Matrix4f		m_viewMatrix;
 
 	std::unique_ptr<Sampler> m_sampler;
 	

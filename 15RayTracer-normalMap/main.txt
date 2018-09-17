@@ -236,10 +236,8 @@
 
 					  scene = new Scene(ViewPlane(width, height, 1.0), Color(0.2, 0.2, 0.2));
 
-					  Color color = Color(0.4, 0.4, 0.4);
-
-					  scene->addLight(new Light(Vector3f(-60, 60, 60), Color(0.1, 0.1, 0.1), Color(0.4, 0.4, 0.4), Color(0.8, 0.8, 0.8)));
-					  scene->addLight(new Light(Vector3f(60, 60, 60), Color(0.1, 0.1, 0.1), color, color));
+					  scene->addLight(new Light(Vector3f(-60, 60, 60), Color(0.1, 0.1, 0.1), Color(0.4, 0.4, 0.4), Color(0.5, 0.5, 0.5)));
+					  scene->addLight(new Light(Vector3f(60, 60, 60), Color(0.1, 0.1, 0.1),  Color(0.4, 0.4, 0.4), Color(0.5, 0.5, 0.5)));
 
 					  Model* model;
 
@@ -294,8 +292,9 @@
 					  camera->renderScene(*scene);
 
 					  InvalidateRect(hWnd, 0, true);
-					  
+
 					  return 0;
+
 //Dragon				  
 					  Vector3f camPos(0.0, 0.0, -50.0);
 					  Vector3f xAxis(1, 0, 0);

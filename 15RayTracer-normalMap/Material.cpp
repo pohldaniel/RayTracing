@@ -86,16 +86,26 @@ Color Phong::shade(Hit &hit, const Vector3f &w_0){
 	
 	for (unsigned int i = 0; i < hit.m_scene->m_lights.size(); i++){
 
-		Vector3f L = (  hit.m_scene->m_lights[i]->m_position - hit.hitPoint).normalize(); // Lightdirection | w_i
-		//Vector3f L = ((Vector4f(hit.m_scene->m_lights[i]->m_position, 1.0)*hit.modelView ) - hit.hitPoint).normalize();
+		Vector3f L = (hit.m_scene->m_lights[i]->m_position - hit.hitPoint).normalize(); // Lightdirection | w_i
+
 		// I_in * k_ambiente
 		ambiente = ambiente + hit.m_scene->m_lights[i]->m_ambient;
 
+		float lambert = Vector3f::dot(L, hit.normal);
+
+		if (lambert > 0.0){
+
+			diffuse = diffuse + (hit.m_scene->m_lights[i]->m_diffuse * lambert);
+
+			Vector3f V = (hit.normal  * 2.0f *Vector3f::dot(L, hit.normal)) - L;
+			specular = specular + (hit.m_scene->m_lights[i]->m_specular *hit.m_scene->m_lights[i]->m_specular * pow(max(Vector3f::dot(w_0, V), 0.0), m_shinies));
+		}
+
 		// I_in * k_diffuse * (L * N)
-		diffuse = diffuse + (hit.m_scene->m_lights[i]->m_diffuse * calcDiffuse(hit, w_0, L));
+		//diffuse = diffuse + (hit.m_scene->m_lights[i]->m_diffuse * calcDiffuse(hit, w_0, L));
 		
 		// I_in * k_specular * (R * V)^20
-		specular = specular + (hit.m_scene->m_lights[i]->m_specular * calcSpecular(hit, w_0, L));
+		//specular = specular + (hit.m_scene->m_lights[i]->m_specular * calcSpecular(hit, w_0, L));
 		
 	}
 
@@ -136,7 +146,7 @@ float NormalMap::calcDiffuse(const Hit &hit, const Vector3f &w_0, const Vector3f
 
 float NormalMap::calcSpecular(const Hit &hit, const Vector3f &w_0, const Vector3f &w_i){
 
-	Vector3f V = w_i - (hit.normal  * 2.0f *Vector3f::dot(w_i, hit.normal)) ;
+	Vector3f V = (hit.normal  * 2.0f *Vector3f::dot(w_i, hit.normal)) - w_i;
 
 	float spec = Vector3f::dot(w_0, V);
 
@@ -144,26 +154,25 @@ float NormalMap::calcSpecular(const Hit &hit, const Vector3f &w_0, const Vector3
 
 }
 
-Color NormalMap::shade( Hit &hit, const Vector3f &a_w_0){
+Color NormalMap::shade( Hit &hit, const Vector3f &w_0){
 
 	Matrix4f TBN = getTBN(hit);
 
 	Color ambiente(0.0, 0.0, 0.0), diffuse(0.0, 0.0, 0.0), specular(0.0, 0.0, 0.0);
-	Vector3f w_0 = (TBN *a_w_0).normalize();
-	
+
 	Color tmp = m_normalMap->getTexel(hit.u, hit.v);
 
-	hit.normal = ( (Vector3f(tmp.r, tmp.g, tmp.b) * 2.0 - Vector3f(1.0, 1.0, 1.0))).normalize();
+	//push back the normal of the normalMap to the object Space with the inverses TBN
+	hit.normal = (TBN * (Vector3f(tmp.r, tmp.g, tmp.b) * 2.0 - Vector3f(1.0, 1.0, 1.0))).normalize();
 
 	for (unsigned int i = 0; i < hit.m_scene->m_lights.size(); i++){
 
-		//Vector3f L = ((Vector4f(hit.m_scene->m_lights[i]->m_position, 1.0)*hit.modelView) - hit.hitPoint).normalize(); // Lightdirection | w_i
-		Vector3f L = (hit.m_scene->m_lights[i]->m_position - hit.hitPoint).normalize();
-
-		L = (TBN * L).normalize();
+		Vector3f L = (hit.m_scene->m_lights[i]->m_position - hit.hitPoint).normalize(); // Lightdirection | w_i
+		
 		
 		// I_in * k_ambiente
 		ambiente = ambiente + hit.m_scene->m_lights[i]->m_ambient;
+
 
 		float lambert = Vector3f::dot(L, hit.normal);
 		
@@ -171,11 +180,9 @@ Color NormalMap::shade( Hit &hit, const Vector3f &a_w_0){
 
 			diffuse = diffuse + (hit.m_scene->m_lights[i]->m_diffuse * lambert);
 
-			Vector3f V = L - (hit.normal  * 2.0f *Vector3f::dot(L, hit.normal)) ;
-			specular = specular + Color((pow(max(Vector3f::dot(w_0, V), 0.0), m_shinies)), (pow(max(Vector3f::dot(w_0, V), 0.0), m_shinies)), (pow(max(Vector3f::dot(w_0, V), 0.0), m_shinies)));
+			Vector3f V = (hit.normal  * 2.0f *Vector3f::dot(L, hit.normal)) - L;
+			specular = specular + (hit.m_scene->m_lights[i]->m_specular *hit.m_scene->m_lights[i]->m_specular * pow(max(Vector3f::dot(w_0, V), 0.0), m_shinies));
 		}
-
-		
 
 		// I_in * k_diffuse * (L * N)
 		//diffuse = diffuse + (hit.m_scene->m_lights[i]->m_diffuse * calcDiffuse(hit, w_0, L));
@@ -187,13 +194,17 @@ Color NormalMap::shade( Hit &hit, const Vector3f &a_w_0){
 
 	ambiente = ambiente * m_ambient;
 	diffuse = diffuse * m_diffuse;
-	specular = specular * m_specular ;
+	specular = specular * m_specular;
 
+
+	//std::cout << (diffuse).r << "  " << (diffuse).g << "  " << (diffuse).b << std::endl;
 
 	return hit.color *(ambiente + diffuse + specular);
 }
 
 Matrix4f NormalMap::getTBN(const Hit &hit){
+
+	
 
 	Matrix4f tmp1 = Matrix4f(hit.tangent[0], hit.tangent[1], hit.tangent[2], 0.0f,
 		hit.bitangent[0], hit.bitangent[1], hit.bitangent[2], 0.0f,
@@ -208,11 +219,13 @@ Matrix4f NormalMap::getTBN(const Hit &hit){
 
 
 	/*Matrix4f tmp =  tmp2;
+	std::cout << hit.tangent[1] << std::endl;
 	std::cout << tmp[0][0] << "  " << tmp[0][1] << "  " << tmp[0][2] << " " << tmp[0][3] << std::endl;
 	std::cout << tmp[1][0] << "  " << tmp[1][1] << "  " << tmp[1][2] << " " << tmp[1][3] << std::endl;
 	std::cout << tmp[2][0] << "  " << tmp[2][1] << "  " << tmp[2][2] << " " << tmp[2][3] << std::endl;
 	std::cout << tmp[3][0] << "  " << tmp[3][1] << "  " << tmp[3][2] << " " << tmp[3][3] << std::endl;*/
 
+	
 
-	return tmp1;
+	return tmp2;
 }

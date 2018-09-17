@@ -113,10 +113,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					  scene = new Scene(ViewPlane(width, height, 1.0), Color(0.2, 0.2, 0.2));
 
-					  Color color = Color(0.4, 0.4, 0.4);
-
-					  scene->addLight(new Light(Vector3f(-60, 60, 60), Color(0.1, 0.1, 0.1), Color(0.4, 0.4, 0.4), Color(0.8, 0.8, 0.8)));
-					  scene->addLight(new Light(Vector3f(60, 60, 60), Color(0.1, 0.1, 0.1), color, color));
+					  scene->addLight(new Light(Vector3f(-60, 60, 60), Color(0.1, 0.1, 0.1), Color(0.4, 0.4, 0.4), Color(0.3, 0.3, 0.3)));
+					  scene->addLight(new Light(Vector3f(60, 60, 60), Color(0.1, 0.1, 0.1),  Color(0.4, 0.4, 0.4), Color(0.3, 0.3, 0.3)));
 
 					  Model* model;
 
@@ -176,13 +174,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	}
 	case WM_PAINT:{				
+					std::shared_ptr<Bitmap> bitmap = scene->getBitmap();
 					
-					 std::shared_ptr<Bitmap> bitmap = scene->getBitmap();
 					 hdc = BeginPaint(hWnd, &ps);
 
 					 hmemdc = CreateCompatibleDC(NULL);
-
-					 
 					 HGDIOBJ m_old = SelectObject(hmemdc, bitmap->hbitmap);
 
 					 BitBlt(hdc, bitmap->width / 12, bitmap->height / 12, bitmap->width, bitmap->height, hmemdc, 0, 0, SRCCOPY);

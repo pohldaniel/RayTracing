@@ -66,28 +66,6 @@ void Camera::updateView()
 	Vector3f::normalize(m_xAxis);
 
 	m_viewDir = -m_zAxis;
-
-	// Reconstruct the view matrix.
-	m_viewMatrix[0][0] = m_xAxis[0];
-	m_viewMatrix[0][1] = m_xAxis[1];
-	m_viewMatrix[0][2] = m_xAxis[2];
-	m_viewMatrix[0][3] = -Vector3f::dot(m_xAxis, m_eye);
-
-	m_viewMatrix[1][0] = m_yAxis[0];
-	m_viewMatrix[1][1] = m_yAxis[1];
-	m_viewMatrix[1][2] = m_yAxis[2];
-	m_viewMatrix[1][3] = -Vector3f::dot(m_yAxis, m_eye);
-
-	m_viewMatrix[2][0] = m_zAxis[0];
-	m_viewMatrix[2][1] = m_zAxis[1];
-	m_viewMatrix[2][2] = m_zAxis[2];
-	m_viewMatrix[2][3] = -Vector3f::dot(m_zAxis, m_eye);
-
-	m_viewMatrix[3][0] = 0.0f;
-	m_viewMatrix[3][1] = 0.0f;
-	m_viewMatrix[3][2] = 0.0f;
-	m_viewMatrix[3][3] = 1.0f;
-	
 }
 
 void Camera::updateView(const Vector3f &eye, const Vector3f &target, const Vector3f &up){
@@ -122,26 +100,6 @@ void Camera::updateView(const Vector3f &eye, const Vector3f &target, const Vecto
 		m_viewDir = Vector3f(0, -1, 0);
 	}*/
 
-	m_viewMatrix[0][0] = m_xAxis[0];
-	m_viewMatrix[0][1] = m_xAxis[1];
-	m_viewMatrix[0][2] = m_xAxis[2];
-	m_viewMatrix[0][3] = -Vector3f::dot(m_xAxis, eye);
-
-	m_viewMatrix[1][0] = m_yAxis[0];
-	m_viewMatrix[1][1] = m_yAxis[1];
-	m_viewMatrix[1][2] = m_yAxis[2];
-	m_viewMatrix[1][3] = -Vector3f::dot(m_yAxis, eye);
-
-	m_viewMatrix[2][0] = m_zAxis[0];
-	m_viewMatrix[2][1] = m_zAxis[1];
-	m_viewMatrix[2][2] = m_zAxis[2];
-	m_viewMatrix[2][3] = -Vector3f::dot(m_zAxis, eye);
-
-	m_viewMatrix[3][0] = 0.0f;
-	m_viewMatrix[3][1] = 0.0f;
-	m_viewMatrix[3][2] = 0.0f;
-	m_viewMatrix[3][3] = 1.0f;
-
 }
 
 
@@ -166,11 +124,6 @@ const Vector3f &Camera::getViewDirection() const{
 	return m_viewDir;
 }
 
-const Matrix4f &Camera::getViewMatrix() const{
-
-	return m_viewMatrix;
-}
-
 ///////////////////////////////////////////////////////////////////////
 Orthographic::~Orthographic(){}
 
@@ -193,7 +146,6 @@ Orthographic::Orthographic(const Vector3f &eye,
 	Sampler  *sampler) : Camera(eye, xAxis, yAxis, zAxis, target, up, zoom, sampler){	}
 
 void Orthographic::renderScene(Scene& scene) {
-
 	std::cout << "Render scene!" << std::endl;
 	ViewPlane	vp = scene.getViewPlane();
 
@@ -255,7 +207,6 @@ Projection::Projection(const Vector3f &eye,
 
 void Projection::renderScene(Scene& scene){
 	std::cout << "Render scene!" << std::endl;
-	scene.m_hit.modelView = m_viewMatrix;
 	ViewPlane	vp = scene.getViewPlane();
 
 	Color		color;

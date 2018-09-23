@@ -14,6 +14,9 @@ KDTree::~KDTree(){}
 void KDTree::buildTree(const std::vector<std::shared_ptr<Triangle>> &list, const BBox &bbox, int maxDepth){
 	//setting the needed information
 	m_boundingBox = bbox;
+	BBox box = BBox(bbox.m_pos, bbox.m_size);
+	box.doubleSize();
+
 	m_maximumDepth = maxDepth;
 
 	//the data-structures for the sah heuristic
@@ -26,7 +29,7 @@ void KDTree::buildTree(const std::vector<std::shared_ptr<Triangle>> &list, const
 	//sorting the events one single time
 	sortEvents(events);
 
-	m_rootNode = buildTree(m_boundingBox, primitives, events, 0);
+	m_rootNode = buildTree(box, primitives, events, 0);
 
 }
 
@@ -605,8 +608,8 @@ bool KDTree::intersect(std::shared_ptr<Node> node, const Ray& ray, float min, fl
 
 bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 	
-	float tmin = hit.t;
-	float tminTree = hit.t;
+	double tmin = hit.t;
+	double tminTree = hit.t;
 	Hit hitTree;
 	
 
@@ -620,14 +623,14 @@ bool KDTree::Node::leafIntersect(const Ray& ray, Hit &hit){
 				
 
 				m_tree->m_primitive = m_primitives[i]->m_primitive;	
-				tminTree = (float)hitTree.t;
+				tminTree = hitTree.t;
 				
 			}
 
 		}
 		
 		// find closest triangle
-		if (tminTree <= tmin){
+		if (tminTree < tmin){
 			
 			//hit.hitPoint = ray.origin + ray.direction*tminTree;
 			//hit.color = m_tree->m_primitive->getColor(hitPoint);

@@ -19,7 +19,7 @@ Texture::Texture(const char* path){
 	m_bitmap = std::unique_ptr<Bitmap>(new Bitmap());
 
 	if (!m_bitmap->loadBitmap24(path)){
-
+		std::cout << "create nulltexture" << std::endl;
 		m_bitmap->createNullBitmap(200);
 	}
 

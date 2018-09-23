@@ -98,7 +98,7 @@ Hit Scene::hitObjects(Ray& _ray)  {
 		
 		m_primitives[j]->hit(ray, m_hit);
 		
-
+		
 		if (m_hit.hitObject && m_hit.t < tmin) {
 			
 			tmin = m_hit.t;
@@ -111,6 +111,7 @@ Hit Scene::hitObjects(Ray& _ray)  {
 			m_hit.u = uv.first;
 			m_hit.v = uv.second;
 			
+			//std::cout << m_hit.u << "  " << m_hit.v << std::endl;
 
 			if (m_primitives[j]->getMaterial()){
 				

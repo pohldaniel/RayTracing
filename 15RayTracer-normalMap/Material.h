@@ -66,13 +66,14 @@ public:
 	NormalMap();
 	NormalMap(const Color &ambient, const Color &diffuse, const Color &specular, const int shinies);
 	NormalMap(const std::shared_ptr<Material> material);
+	NormalMap(const char* path);
 	~NormalMap();
 
 	Color shade(Hit &hit, const Vector3f &w_0);
-	void setNormalMap(std::unique_ptr<Texture> normalMap);
+	void setNormalMap(std::shared_ptr<Texture> normalMap);
 private:
 	
-	std::unique_ptr<Texture> m_normalMap;
+	std::shared_ptr<Texture> m_normalMap;
 	float calcDiffuse(const Hit &hit, const Vector3f &w_0, const Vector3f &w_i);
 	float calcSpecular(const Hit &hit, const Vector3f &w_0, const Vector3f &w_i);
 

@@ -129,11 +129,17 @@ NormalMap::NormalMap(const Color &ambient, const Color &diffuse, const Color &sp
 NormalMap::NormalMap(const std::shared_ptr<Material> material) : Material(material){
 
 }
+
+NormalMap::NormalMap(const char* path){
+
+	m_normalMap = std::shared_ptr<Texture>(new Texture(path));
+}
+
 NormalMap::~NormalMap(){}
 
-void NormalMap::setNormalMap(std::unique_ptr<Texture> normalMap){
+void NormalMap::setNormalMap(std::shared_ptr<Texture> normalMap){
 	
-	m_normalMap = std::move(normalMap);
+	m_normalMap = normalMap;
 	
 }
 
@@ -158,18 +164,25 @@ Color NormalMap::shade( Hit &hit, const Vector3f &w_0){
 
 	Matrix4f TBN = getTBN(hit);
 
+	//Vector3f normal =Vector3f::cross(hit.tangent, hit.bitangent);
+	//hit.normal = normal;
+	
 	Color ambiente(0.0, 0.0, 0.0), diffuse(0.0, 0.0, 0.0), specular(0.0, 0.0, 0.0);
 
 	Color tmp = m_normalMap->getTexel(hit.u, hit.v);
 
 	//push back the normal of the normalMap to the object Space with the inverses TBN
-	hit.normal = (TBN * (Vector3f(tmp.r, tmp.g, tmp.b) * 2.0 - Vector3f(1.0, 1.0, 1.0))).normalize();
+	hit.normal = (TBN*(Vector3f(tmp.r, tmp.g, tmp.b) * 2.0 - Vector3f(1.0, 1.0, 1.0))).normalize();
+	
+	
 
 	for (unsigned int i = 0; i < hit.m_scene->m_lights.size(); i++){
 
 		Vector3f L = (hit.m_scene->m_lights[i]->m_position - hit.hitPoint).normalize(); // Lightdirection | w_i
+		L = L;
 		
-		
+		Vector3f _w_0 = w_0;
+
 		// I_in * k_ambiente
 		ambiente = ambiente + hit.m_scene->m_lights[i]->m_ambient;
 
@@ -196,8 +209,6 @@ Color NormalMap::shade( Hit &hit, const Vector3f &w_0){
 	diffuse = diffuse * m_diffuse;
 	specular = specular * m_specular;
 
-
-	//std::cout << (diffuse).r << "  " << (diffuse).g << "  " << (diffuse).b << std::endl;
 
 	return hit.color *(ambiente + diffuse + specular);
 }

@@ -435,7 +435,7 @@ Vector3f Triangle::getBiTangent(const Vector3f& pos){
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-Sphere::Sphere(const Vector3f& a_centre, float a_radius, const  Color &a_color) :Primitive(a_color){
+Sphere::Sphere(const Vector3f& a_centre, float a_radius, const  Color &a_color) :OrientablePrimitive(a_color){
 
 	m_centre = a_centre;
 	m_sqRadius = a_radius * a_radius;
@@ -498,14 +498,14 @@ std::pair <float, float>  Sphere::getUV(const Vector3f& a_pos){
 
 	float theta = acos(vp[1]);
 
-	float phi = atan2(vp[0], vp[2]);
+	float phi = atan2(vp[2], vp[0]);
 	if (phi < 0.0)
 		phi += TWO_PI;
 
 	// next, map theta and phi to (u, v) in [0, 1] X [0, 1]
 
-	float u = (phi * invTWO_PI);
-	float v = (1.0 - theta * invPI);
+	float u = phi * invTWO_PI;
+	float v = 1- theta * invPI;
 
 	return std::make_pair(u, v);
 }
@@ -527,17 +527,35 @@ Color Sphere::getColor(const Vector3f& a_pos){
 
 Vector3f Sphere::getNormal(const Vector3f& a_pos){
 
-	return ((a_pos - m_centre) * m_rRadius).normalize();
+	return  ((a_pos - m_centre) * m_rRadius) * invT;
+
+
 }
 
-Vector3f Sphere::getTangent(const Vector3f& pos){
+//x= r* sin(theta) * cos(phi)
+//y= r* cos(theta)
+//z= r* sin(theta) * sin(phi)
 
-	return Vector3f(0.0, 0.0, 0.0);
+Vector3f Sphere::getTangent(const Vector3f& a_pos){
+
+	Vector3f vp = (a_pos - m_centre) * m_rRadius;
+	float phi = atan2(vp[2], vp[0]);
+	if (phi < 0.0) phi += TWO_PI;
+		
+
+	return Vector3f(-sinf(phi), 0.0, cosf(phi)) * invT;
 }
 
-Vector3f Sphere::getBiTangent(const Vector3f& pos){
+Vector3f Sphere::getBiTangent(const Vector3f& a_pos){
 
-	return Vector3f(0.0, 0.0, 0.0);
+	Vector3f vp = (a_pos - m_centre) * m_rRadius;
+
+	float theta = acos(vp[1]);
+
+	float phi = atan2(vp[2], vp[0]);
+	
+
+	return Vector3f(cosf(theta)*cosf(phi), -sinf(theta), cosf(theta)*sinf(phi)) * invT;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 Plane::Plane() :Primitive(){
@@ -612,12 +630,12 @@ Vector3f Plane::getNormal(const Vector3f& pos){
 
 Vector3f Plane::getTangent(const Vector3f& pos){
 
-	return Vector3f(0.0, 0.0, 0.0);
+	return m_u;
 }
 
 Vector3f Plane::getBiTangent(const Vector3f& pos){
 
-	return Vector3f(0.0, 0.0, 0.0);
+	return m_v;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -639,7 +657,7 @@ Torus::Torus(float a, float b, Color color) :OrientablePrimitive(color){
 Torus::~Torus(){
 
 }
-
+// f(x) = (|x|² + a² - b²)² - 4·a²·|xz|² = 0
 void Torus::hit(const Ray &_ray, Hit &hit){
 
 	/*if (!box.intersect(_ray)){
@@ -659,9 +677,9 @@ void Torus::hit(const Ray &_ray, Hit &hit){
 
 	double k = (m - ra2 - Ra2) / 2.0;
 	double a = n;
-	double b = n*n + Ra2*rd[0] * rd[0] + k;
-	double c = k*n + Ra2*ro[0] * rd[0];
-	double d = k*k + Ra2*ro[0] * ro[0] - Ra2*ra2;
+	double b = n*n + Ra2*rd[1] * rd[1] + k;
+	double c = k*n + Ra2*ro[1] * rd[1];
+	double d = k*k + Ra2*ro[1] * ro[1] - Ra2*ra2;
 
 	//----------------------------------
 
@@ -805,14 +823,15 @@ void Torus::calcBounds(){
 std::pair <float, float>  Torus::getUV(const Vector3f& a_pos){
 
 	// Determine its angle from the x-axis.
-	float u = (1.0 - (atan2(a_pos[2], a_pos[1]) + PI) / TWO_PI);
+	float u = ((atan2(a_pos[0], a_pos[2]) + PI) / TWO_PI);
+	
 
-	float len = sqrt(a_pos[1] * a_pos[1] + a_pos[2] * a_pos[2]);
+	float len = sqrt(a_pos[2] * a_pos[2] + a_pos[0] * a_pos[0]);
 
 
 	// Now rotate about the x-axis to get the point P into the x-z plane.
 	float x = len - a;
-	float v = ((atan2(a_pos[0], x) + PI) / TWO_PI);
+	float v = ((atan2(a_pos[1], x) + PI) / TWO_PI);
 
 	return std::make_pair(u, v);
 }
@@ -842,12 +861,12 @@ Vector3f Torus::getNormal(const Vector3f& a_pos){
 	Vector3f normal;
 	Vector3f tmp;
 
-	float dist = sqrtf(a_pos[1] * a_pos[1] + a_pos[2] * a_pos[2]);
+	float dist = sqrtf(a_pos[0] * a_pos[0] + a_pos[2] * a_pos[2]);
 
 	if (dist > 0.0001){
 		
-		tmp[0] = 0.0;
-		tmp[1] = a *a_pos[1] / dist;
+		tmp[0] = a *a_pos[0] / dist;
+		tmp[1] = 0.0f;
 		tmp[2] = a *a_pos[2] / dist;
 
 	}
@@ -873,8 +892,8 @@ Vector3f Torus::getNormal(const Vector3f& a_pos){
 	float param_squared = a * a + b * b;
 	float sum_squared = a_pos[0] * a_pos[0] + a_pos[1] * a_pos[1] + a_pos[2] * a_pos[2];
 
-	normal[0] =  a_pos[0] * (sum_squared - param_squared + a * a);
-	normal[1] =  a_pos[1] * (sum_squared - param_squared );
+	normal[0] =  a_pos[0] * (sum_squared - param_squared);
+	normal[1] =  a_pos[1] * (sum_squared - param_squared + a * a);
 	normal[2] =  a_pos[2] * (sum_squared - param_squared );
 
 	//calculate the transpose of invT with the normal
@@ -887,12 +906,27 @@ Vector3f Torus::getNormal(const Vector3f& a_pos){
 
 Vector3f Torus::getTangent(const Vector3f& pos){
 
-	return Vector3f(0.0, 0.0, 0.0);
+	float phi = ((atan2(pos[0], pos[2]) + PI) / TWO_PI);
+	
+
+	float len = sqrt(pos[2] * pos[2] + pos[0] * pos[0]);
+
+
+	// Now rotate about the x-axis to get the point P into the x-z plane.
+	float x = len - a;
+	float theta = ((atan2(pos[1], x) + PI) / TWO_PI);
+
+
+	return Vector3f(-sinf(theta)*cosf(phi), cosf(theta), -sinf(theta)*sinf(phi))* invT;
+	
 }
 
 Vector3f Torus::getBiTangent(const Vector3f& pos){
 
-	return Vector3f(0.0, 0.0, 0.0);
+	float phi = ((atan2(pos[0], pos[2]) + PI) / TWO_PI);
+
+	return Vector3f(-sinf(phi), 0.0, cosf(phi)) * invT;
+
 }
 
 

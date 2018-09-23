@@ -7,6 +7,7 @@
 #include <fstream>
 #include <memory>
 
+
 #include "Material.h"
 #include "Texture.h"
 #include "Vector.h"
@@ -19,8 +20,16 @@ class BBox{
 public:
 	BBox() : m_pos(Vector3f(0, 0, 0)), m_size(Vector3f(0, 0, 0)) {};
 	BBox(Vector3f& a_pos, Vector3f& a_size) : m_pos(a_pos), m_size(a_size)  {};
+	BBox(const Vector3f& a_pos, const Vector3f& a_size) : m_pos(a_pos), m_size(a_size)  {};
 	Vector3f& getPos() { return m_pos; }
 	Vector3f& getSize() { return m_size; }
+
+	inline void doubleSize(){
+
+		m_pos = m_pos *2;
+		m_size = m_size * 2;
+		
+	}
 
 	inline void extend(Vector3f a){
 
@@ -204,7 +213,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-class Sphere : public Primitive{
+class Sphere : public OrientablePrimitive{
 public:
 
 	Sphere(const Vector3f& centre, float radius, const Color &color);

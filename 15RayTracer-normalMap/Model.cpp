@@ -106,7 +106,7 @@ Vector3f Model::getTangent(const Vector3f& a_pos){
 
 	if (m_hasTangents){
 		
-		return (invT *  m_KDTree->m_primitive->getTangent(a_pos)).normalize();
+		return (m_KDTree->m_primitive->getTangent(a_pos) * invT ).normalize();
 	}
 
 	return Vector3f(0.0, 0.0, 0.0);
@@ -116,7 +116,7 @@ Vector3f Model::getBiTangent(const Vector3f& a_pos){
 	
 	if (m_hasTangents){
 
-		return (invT *  m_KDTree->m_primitive->getBiTangent(a_pos)).normalize();
+		return ( m_KDTree->m_primitive->getBiTangent(a_pos) * invT).normalize();
 	}
 
 	return Vector3f(0.0, 0.0, 0.0);
@@ -390,7 +390,7 @@ bool Model::loadObject(const char* a_filename, Vector3f &rotate, float degree, V
 			if (meshes[j]->m_material->bumpMapPath != ""){
 
 				meshes[j]->m_material = static_cast<std::shared_ptr<NormalMap>>(new NormalMap(meshes[j]->m_material));
-				static_cast<NormalMap*>(meshes[j]->m_material.get())->setNormalMap(std::unique_ptr<Texture>(new Texture(&(m_modelDirectory + "/" + meshes[j]->m_material->bumpMapPath)[0])));
+				static_cast<NormalMap*>(meshes[j]->m_material.get())->setNormalMap(std::shared_ptr<Texture>(new Texture(&(m_modelDirectory + "/" + meshes[j]->m_material->bumpMapPath)[0])));
 
 			}
 
@@ -435,15 +435,15 @@ bool Model::loadObject(const char* a_filename, Vector3f &rotate, float degree, V
 	meshes[j]->m_indexBuffer.push_back((face[i])[2] - 1);
 
 
-	meshes[j]->m_xmin = min(a[0] + translate[0], min(b[0] + translate[0], min(c[0] + translate[0], meshes[j]->m_xmin)));
-	meshes[j]->m_ymin = min(a[1] + translate[1], min(b[1] + translate[1], min(c[1] + translate[1], meshes[j]->m_ymin)));
-	meshes[j]->m_zmin = min(a[2] + translate[2], min(b[2] + translate[2], min(c[2] + translate[2], meshes[j]->m_zmin)));
+	meshes[j]->m_xmin = min(a[0], min(b[0], min(c[0], meshes[j]->m_xmin)));
+	meshes[j]->m_ymin = min(a[1], min(b[1], min(c[1], meshes[j]->m_ymin)));
+	meshes[j]->m_zmin = min(a[2], min(b[2], min(c[2], meshes[j]->m_zmin)));
 
-	meshes[j]->m_xmax = max(a[0] + translate[0], max(b[0] + translate[0], max(c[0] + translate[0], meshes[j]->m_xmax)));
-	meshes[j]->m_ymax = max(a[1] + translate[1], max(b[1] + translate[1], max(c[1] + translate[1], meshes[j]->m_ymax)));
-	meshes[j]->m_zmax = max(a[2] + translate[2], max(b[2] + translate[2], max(c[2] + translate[2], meshes[j]->m_zmax)));
+	meshes[j]->m_xmax = max(a[0], max(b[0], max(c[0], meshes[j]->m_xmax)));
+	meshes[j]->m_ymax = max(a[1], max(b[1], max(c[1], meshes[j]->m_ymax)));
+	meshes[j]->m_zmax = max(a[2], max(b[2], max(c[2], meshes[j]->m_zmax)));
 
-	triangle = std::shared_ptr<Triangle>(new Triangle(a + translate, b + translate, c + translate, meshes[j]->m_color, cull, smooth));
+	triangle = std::shared_ptr<Triangle>(new Triangle(a, b, c, meshes[j]->m_color, cull, smooth));
 	triangle->m_texture = meshes[j]->m_texture;
 	triangle->m_material = meshes[j]->m_material;
 
@@ -484,17 +484,20 @@ bool Model::loadObject(const char* a_filename, Vector3f &rotate, float degree, V
 	meshes[j]->m_triangles.push_back(triangle);
 	}
 
-	xmin = min(meshes[j]->m_xmin, xmin);
-	ymin = min(meshes[j]->m_ymin, ymin);
-	zmin = min(meshes[j]->m_zmin, zmin);
+		xmin = min(meshes[j]->m_xmin, xmin);
+		ymin = min(meshes[j]->m_ymin, ymin);
+		zmin = min(meshes[j]->m_zmin, zmin);
 
-	xmax = max(meshes[j]->m_xmax, xmax);
-	ymax = max(meshes[j]->m_ymax, ymax);
-	zmax = max(meshes[j]->m_zmax, zmax);
+		xmax = max(meshes[j]->m_xmax, xmax);
+		ymax = max(meshes[j]->m_ymax, ymax);
+		zmax = max(meshes[j]->m_zmax, zmax);
+	
+
+
 	}
 
-
-
+	 
+	
 	std::cout << "Number of faces: " << m_numberOfTriangles << std::endl;
 	std::cout << "Number of Meshes: " << m_numberOfMeshes << std::endl;
 	calcBounds();
@@ -1620,26 +1623,7 @@ void Model::generateTangents(){
 		// Normalize the tangent.
 		Vector4f::normalize(tangents[i]);
 
-		// Calculate the handedness of the local tangent space.
-		// The bitangent vector is the cross product between the triangle face
-		// normal vector and the calculated tangent vector. The resulting
-		// bitangent vector should be the same as the bitangent vector
-		// calculated from the set of linear equations above. If they point in
-		// different directions then we need to invert the cross product
-		// calculated bitangent vector. We store this scalar multiplier in the
-		// tangent vector's 'w' component so that the correct bitangent vector
-		// can be generated in the normal mapping shader's vertex shader.
-		//
-		// Normal maps have a left handed coordinate system with the origin
-		// located at the top left of the normal map texture. The x coordinates
-		// run horizontally from left to right. The y coordinates run
-		// vertically from top to bottom. The z coordinates run out of the
-		// normal map texture towards the viewer. Our handedness calculations
-		// must take this fact into account as well so that the normal mapping
-		// shader's vertex shader will generate the correct bitangent vectors.
-		// Some normal map authoring tools such as Crazybump
-		// (http://www.crazybump.com/) includes options to allow you to control
-		// the orientation of the normal map normal's y-axis.
+		
 
 		bitangent[0] = (m_normals[i][1] * tangents[i][2]) -
 			(m_normals[i][2] * tangents[i][1]);
@@ -1653,8 +1637,6 @@ void Model::generateTangents(){
 			bitangent[2] * bitangents[i][2];
 
 		// Calculate handedness
-		
-
 		tangents[i][3] = (bDotB < 0.0f) ? 1.0f : -1.0f;
 		bitangents[i] = bitangent;
 		

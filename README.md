@@ -1,6 +1,6 @@
 
 # RayTracer for educational purposes only
-Output from 16RayTracer-reflective
+Output from 16RayTracer-reflection
 ![reflective](https://user-images.githubusercontent.com/30089026/55880893-ecaaf580-5ba1-11e9-813d-d63b8d535a07.png)
 
 

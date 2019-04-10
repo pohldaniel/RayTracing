@@ -1,0 +1,108 @@
+//////////////////////////////////////////////////////					   
+					   //////////////////set up camera/////////////////////////
+					   Vector3f camPos(6.0, 5.0, 15.0);
+					   Vector3f target(3.0, 5.0, -1.0);
+					   Vector3f up(0, 1.0, 0.0);
+					   Projection *camera = new Projection(camPos, target, up, new Regular(16, 1));
+					   //////////////////set up scene/////////////////////////
+					   scene = new Scene(ViewPlane(width, height, 1.0), Color(0.5, 0.5, 0.5));
+					   scene->setDepth(1.0);
+					   //////////////////set up light/////////////////////////
+					   scene->addLight(new Light(Vector3f(0, 8, -100), Color(0.1, 0.1, 0.1), Color(1.8, 1.8, 1.8), Color(0.8, 0.8, 0.8)));
+					   scene->addLight(new Light(Vector3f(0, 8, 100), Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(0.8, 0.8, 0.8)));
+					   scene->addLight(new Light(Vector3f(60, 100, 100), Color(0.1, 0.1, 0.1), Color(0.8, 0.8, 0.8), Color(0.8, 0.8, 0.8)));				  
+					   //////////////////set up objects/////////////////////////
+					   Model* model = new Model();
+					   //filename,rotation, translation, cull backface, smooth shading
+					   model->loadObject("objs/statue/statue.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 2.0, true, true);
+					   model->generateTangents();
+					   model->buildKDTree();
+
+					   Reflective *reflective = new Reflective();
+					   reflective->setReflectionColor(1.0);
+					   reflective->setFrensel(0.4);
+
+					   primitive::Rectangle* mirror = new primitive::Rectangle(Vector3f(-12.0, 0.0, -5.0), Vector3f(30.0, 0.0, 0.0), Vector3f(0.0, 20.0, 0.0));
+					   mirror->setColor(Color(0.4, 0.4, 0.4));
+					   mirror->setMaterial(reflective);
+					   
+					   RectangleChecker* rectangleChecker = new RectangleChecker();
+					   rectangleChecker->setNumXCheckers(4);
+					   rectangleChecker->setNumZCheckers(4);
+					   rectangleChecker->setXLineWidth(0.0);
+					   rectangleChecker->setZLineWidth(0.0);
+					   rectangleChecker->setColor1(Color(1.0, 1.0, 1.0));
+					   rectangleChecker->setColor2(Color(0.0, 0.0, 0.0));
+					   rectangleChecker->setLineColor(Color(1.0, 1.0, 0.0));
+					   rectangleChecker->setAttributes(Vector3f(-12.0, 0.0, -5.0), Vector3f(30.0, 0.0, 0.0), Vector3f(0.0, 0.0, 30.0));
+
+					   primitive::Rectangle* bottom = new primitive::Rectangle(Vector3f(-12.0, 0.0, -5.0), Vector3f(30.0, 0.0, 0.0), Vector3f(0.0, 0.0, 30.0));
+					   bottom->setColor(Color(0.4, 0.4, 0.4));
+					   bottom->setMaterial(new Phong(Color(0.5, 0.5, 0.5), Color(0.8, 0.8, 0.8), Color(1.0, 1.0, 1.0), 50));
+					   bottom->setTexture(rectangleChecker);
+
+					 
+					   scene->addPrimitive(mirror);
+					   scene->addPrimitive(model);
+					   scene->addPrimitive(bottom);
+
+					   camera->renderScene(*scene);
+
+					   InvalidateRect(hWnd, 0, true);
+
+					   return 0;		
+//////////////////////////////////////////////////////	
+					   //////////////////set up camera/////////////////////////
+					   Vector3f camPos(400.0, 200.0, 400.0);
+					   Vector3f target(0.0, -150.0, 0.0);
+					   Vector3f up(0, 1.0, 0.0);
+					   Pinhole *pinhole = new Pinhole(camPos, target, up, new Regular(16, 1));
+					   pinhole->setViewPlaneDistance(200.0);
+					   //////////////////set up scene/////////////////////////
+					   scene = new Scene(ViewPlane(400, 400, 1.0), Color(0.0, 0.0, 0.0));
+					   scene->setDepth(1);
+					   //////////////////set up light/////////////////////////
+					   scene->addLight(new Light(Vector3f(-400.0, 400.0, 400.0), Color(0.2, 0.2, 0.2), Color(1.5, 1.5, 1.5), Color(0.2, 0.2, 0.2)));
+					   scene->addLight(new Light(Vector3f(400.0, -400.0, 400.0), Color(0.2, 0.2, 0.2), Color(1.5, 1.5, 1.5), Color(0.2, 0.2, 0.2)));
+					   //////////////////set up objects/////////////////////////
+
+					   Reflective *reflective = new Reflective(Color(0.1, 0.1, 0.1), Color(0.4, 0.4, 0.4), Color(0.2, 0.2, 0.2), 50);
+					   reflective->setReflectionColor(1.0);
+					   reflective->setFrensel(0.4);
+
+					   ImageTexture *front = new ImageTexture("../skyboxes/morning/01_morning_front.bmp");
+					   ImageTexture *back = new ImageTexture("../skyboxes/morning/02_morning_back.bmp");
+					   ImageTexture *top = new ImageTexture("../skyboxes/morning/03_morning_top.bmp");
+					   ImageTexture *bottom = new ImageTexture("../skyboxes/morning/04_morning_bottom.bmp");
+					   ImageTexture *right = new ImageTexture("../skyboxes/morning/05_morning_right.bmp");
+					   ImageTexture *left = new ImageTexture("../skyboxes/morning/06_morning_left.bmp");
+
+					   // box
+					   Box* box = new Box(Vector3f(-500.0, -500.0, 500.0), Vector3f(1000.0, 1000.0, -1000.0));
+					   box->setTexture(front, Box::Components::FrontFace);
+					   box->setTexture(back, Box::Components::BackFace);
+					   box->setTexture(top, Box::Components::TopFace);
+					   box->setTexture(bottom, Box::Components::BottomFace);
+					   box->setTexture(right, Box::Components::RightFace);
+					   box->setTexture(left, Box::Components::LeftFace);
+
+					   //second Image
+					   /*box->setMaterial(reflective, Box::Components::FrontFace);
+					   box->setMaterial(reflective, Box::Components::BackFace);
+					   box->setMaterial(reflective, Box::Components::TopFace);
+					   box->setMaterial(reflective, Box::Components::BottomFace);
+					   box->setMaterial(reflective, Box::Components::RightFace);
+					   box->setMaterial(reflective, Box::Components::LeftFace);*/
+
+					   box->flipNormals();
+
+					   Sphere* sphere = new Sphere(Vector3f(0.0, 0.0, 0.0), 250);
+					   sphere->setColor(Color(0.2, 0.6, 0.4));
+					   sphere->setMaterial(reflective);
+
+					   scene->addPrimitive(sphere);
+					   scene->addPrimitive(box);
+					   pinhole->renderScene(*scene);
+
+					   InvalidateRect(hWnd, 0, true);
+					   return 0;					   

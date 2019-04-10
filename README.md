@@ -1,5 +1,8 @@
 
 # RayTracer for educational purposes only
+Output from 16RayTracer-reflective
+![reflective](https://user-images.githubusercontent.com/30089026/55880893-ecaaf580-5ba1-11e9-813d-d63b8d535a07.png)
+
 
 01RayTracer-basic, 02RayTracer-light, 03RayTracer-glsl
 Move the camera with 'w' 'a' 's' 'd' 'q' 'e' and mouse, release the capture with space.

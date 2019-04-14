@@ -293,8 +293,6 @@ Color Reflective::shade(Hit &hit){
 		Color tmp = m_normalMap->getSmoothTexel(hit.u, hit.v);
 		//push back the normal of the normalMap to the object Space with the inverses TBN
 		hit.normal = (TBN * (Vector3f(tmp.r, tmp.g, tmp.b) * 2.0 - Vector3f(1.0, 1.0, 1.0))).normalize();
-
-		m_phong->m_normalMap = m_normalMap;
 	}
 
 	hit.color = m_phong->shade(hit);

@@ -108,8 +108,7 @@ Ks 0.498039 0.498039 0.498039
 illum 2
 Ns 64
 map_Kd rai.bmp
-map_bump rai_NRM.bmp
-bump rai_NRM.bmp
+
 map_opacity 
 map_d 
 refl 
@@ -156,8 +155,6 @@ Ks 0.803922 0.803922 0.803922
 illum 2
 Ns 45.2548
 map_Kd rai.bmp
-map_bump rai_NRM.bmp
-bump rai_NRM.bmp
 map_opacity 
 map_d 
 refl 

@@ -169,10 +169,12 @@ Color NormalMap::shade( Hit &hit, const Vector3f &w_0){
 	
 	Color ambiente(0.0, 0.0, 0.0), diffuse(0.0, 0.0, 0.0), specular(0.0, 0.0, 0.0);
 
-	Color tmp = m_normalMap->getTexel(hit.u, hit.v);
+	Color tmp = m_normalMap->getSmoothTexel(hit.u, hit.v);
+
+	double length = sqrt(tmp.r * tmp.r + tmp.g * tmp.g + tmp.b * tmp.b);
 
 	//push back the normal of the normalMap to the object Space with the inverses TBN
-	hit.normal = (TBN*(Vector3f(tmp.r, tmp.g, tmp.b) * 2.0 - Vector3f(1.0, 1.0, 1.0))).normalize();
+	hit.normal = (TBN*( Vector3f(tmp.r, tmp.g, tmp.b) * 2.0 - Vector3f(1.0, 1.0, 1.0))).normalize();
 	
 	
 

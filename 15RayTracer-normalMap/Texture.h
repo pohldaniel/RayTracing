@@ -15,6 +15,7 @@ public:
 	~Texture();
 
 	Color getTexel(const float u, const float v);
+	Color getSmoothTexel(float u, float v);
 	void setUVScale(const float uscale, const float vscale);
 
 private:

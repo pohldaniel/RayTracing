@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <memory>
+#include <cmath>
 
 #include "ViewPlane.h"
 #include "Bitmap.h"
@@ -47,6 +48,7 @@ private:
 	std::vector<std::unique_ptr<Light>>	m_lights;
 	std::unique_ptr<AmbientLight> m_ambient;
 	std::shared_ptr<Bitmap> m_bitmap;
+	
 
 	ViewPlane m_vp;
 	Color m_background;
@@ -56,6 +58,7 @@ private:
 
 	int m_maximumDepth;
 	
+	float torsion = 0.0;
 };
 
 #endif // _SCENE_H

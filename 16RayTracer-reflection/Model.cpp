@@ -7,7 +7,8 @@ Model::Model() : Primitive() {
 	m_hasNormals = false;
 	m_hasTexels = false;
 	m_hasTangents = false;
-	m_hasColor = false;
+	m_hasNormalDerivatives = false;
+	m_defaultColor = true;
 	
 
 	m_texture = NULL;
@@ -29,7 +30,7 @@ Model::~Model(){
 
 void Model::setColor(Color color){
 	m_color = color;
-	m_hasColor = true;
+	m_defaultColor = false;
 }
 
 void Model::hit(Hit &hit){
@@ -67,7 +68,7 @@ Color Model::getColor(const Vector3f& a_pos){
 		return m_KDTree->m_primitive->getColor(a_pos);
 
     // use one color for the whole model
-	}else if(m_hasColor) {
+	}else if (!m_defaultColor) {
 		
 		return m_color;
 	
@@ -314,8 +315,6 @@ bool Model::loadObject(const char* a_filename, Vector3f &rotate, float degree, V
 
 	}
 
-
-
 	std::sort(face.begin(), face.end(), compare);
 
 	std::map<int, int> dup;
@@ -379,8 +378,7 @@ bool Model::loadObject(const char* a_filename, Vector3f &rotate, float degree, V
 
 			if (meshes[j]->m_material->bumpMapPath != ""){
 				
-				meshes[j]->m_material = static_cast<std::shared_ptr<NormalMap>>(new NormalMap(meshes[j]->m_material));
-				static_cast<NormalMap*>(meshes[j]->m_material.get())->setNormalMap(std::shared_ptr<ImageTexture>(new ImageTexture(&(m_modelDirectory + "/" + meshes[j]->m_material->bumpMapPath)[0])));
+				meshes[j]->m_material->setNormalTexture(new ImageTexture(&(m_modelDirectory + "/" + meshes[j]->m_material->bumpMapPath)[0]));
 			}
 
 		}
@@ -409,69 +407,67 @@ bool Model::loadObject(const char* a_filename, Vector3f &rotate, float degree, V
 
 	for (int i = start; i < end; i++){
 
+		a = m_positions[(face[i])[0] - 1];
+		b = m_positions[(face[i])[1] - 1];
+		c = m_positions[(face[i])[2] - 1];
+
+		m_indexBufferPosition.push_back((face[i])[0] - 1);
+		m_indexBufferPosition.push_back((face[i])[1] - 1);
+		m_indexBufferPosition.push_back((face[i])[2] - 1);
+
+		meshes[j]->m_indexBuffer.push_back((face[i])[0] - 1);
+		meshes[j]->m_indexBuffer.push_back((face[i])[1] - 1);
+		meshes[j]->m_indexBuffer.push_back((face[i])[2] - 1);
 
 
-	a = m_positions[(face[i])[0] - 1];
-	b = m_positions[(face[i])[1] - 1];
-	c = m_positions[(face[i])[2] - 1];
+		meshes[j]->m_xmin = min(a[0], min(b[0], min(c[0], meshes[j]->m_xmin)));
+		meshes[j]->m_ymin = min(a[1], min(b[1], min(c[1], meshes[j]->m_ymin)));
+		meshes[j]->m_zmin = min(a[2], min(b[2], min(c[2], meshes[j]->m_zmin)));
 
-	m_indexBufferPosition.push_back((face[i])[0] - 1);
-	m_indexBufferPosition.push_back((face[i])[1] - 1);
-	m_indexBufferPosition.push_back((face[i])[2] - 1);
+		meshes[j]->m_xmax = max(a[0], max(b[0], max(c[0], meshes[j]->m_xmax)));
+		meshes[j]->m_ymax = max(a[1], max(b[1], max(c[1], meshes[j]->m_ymax)));
+		meshes[j]->m_zmax = max(a[2], max(b[2], max(c[2], meshes[j]->m_zmax)));
 
-	meshes[j]->m_indexBuffer.push_back((face[i])[0] - 1);
-	meshes[j]->m_indexBuffer.push_back((face[i])[1] - 1);
-	meshes[j]->m_indexBuffer.push_back((face[i])[2] - 1);
-
-
-	meshes[j]->m_xmin = min(a[0], min(b[0], min(c[0], meshes[j]->m_xmin)));
-	meshes[j]->m_ymin = min(a[1], min(b[1], min(c[1], meshes[j]->m_ymin)));
-	meshes[j]->m_zmin = min(a[2], min(b[2], min(c[2], meshes[j]->m_zmin)));
-
-	meshes[j]->m_xmax = max(a[0], max(b[0], max(c[0], meshes[j]->m_xmax)));
-	meshes[j]->m_ymax = max(a[1], max(b[1], max(c[1], meshes[j]->m_ymax)));
-	meshes[j]->m_zmax = max(a[2], max(b[2], max(c[2], meshes[j]->m_zmax)));
-
-	triangle = std::shared_ptr<Triangle>(new Triangle(a, b, c, cull, smooth));
-	triangle->setColor(meshes[j]->m_color);
-	triangle->m_texture = meshes[j]->m_texture;
-	triangle->m_material = meshes[j]->m_material;
+		triangle = std::shared_ptr<Triangle>(new Triangle(a, b, c, cull, smooth));
+		triangle->setColor(meshes[j]->m_color);
+		triangle->m_texture = meshes[j]->m_texture;
+		triangle->m_material = meshes[j]->m_material;
 
 
-	if (m_texels.size() > 0){
+		if (m_texels.size() > 0){
 
-	m_indexBufferTexel.push_back((face[i])[3] - 1);
-	m_indexBufferTexel.push_back((face[i])[4] - 1);
-	m_indexBufferTexel.push_back((face[i])[5] - 1);
+			m_indexBufferTexel.push_back((face[i])[3] - 1);
+			m_indexBufferTexel.push_back((face[i])[4] - 1);
+			m_indexBufferTexel.push_back((face[i])[5] - 1);
 
-	meshes[j]->m_indexBufferTexel.push_back((face[i])[3] - 1);
-	meshes[j]->m_indexBufferTexel.push_back((face[i])[4] - 1);
-	meshes[j]->m_indexBufferTexel.push_back((face[i])[5] - 1);
+			meshes[j]->m_indexBufferTexel.push_back((face[i])[3] - 1);
+			meshes[j]->m_indexBufferTexel.push_back((face[i])[4] - 1);
+			meshes[j]->m_indexBufferTexel.push_back((face[i])[5] - 1);
 
-	meshes[j]->m_hasTexels = true;
-	m_hasTexels = true;
+			meshes[j]->m_hasTexels = true;
+			m_hasTexels = true;
 
-	triangle->setUV(m_texels[(face[i])[3] - 1], m_texels[(face[i])[4] - 1], m_texels[(face[i])[5] - 1]);
-	}
+			triangle->setUV(m_texels[(face[i])[3] - 1], m_texels[(face[i])[4] - 1], m_texels[(face[i])[5] - 1]);
+		}
 
 
-	if (m_normals.size() > 0){
+		if (m_normals.size() > 0){
 
-	m_indexBufferNormal.push_back((face[i])[6] - 1);
-	m_indexBufferNormal.push_back((face[i])[7] - 1);
-	m_indexBufferNormal.push_back((face[i])[8] - 1);
+			m_indexBufferNormal.push_back((face[i])[6] - 1);
+			m_indexBufferNormal.push_back((face[i])[7] - 1);
+			m_indexBufferNormal.push_back((face[i])[8] - 1);
+	
+			meshes[j]->m_indexBufferNormal.push_back((face[i])[6] - 1);
+			meshes[j]->m_indexBufferNormal.push_back((face[i])[7] - 1);
+			meshes[j]->m_indexBufferNormal.push_back((face[i])[8] - 1);
 
-	meshes[j]->m_indexBufferNormal.push_back((face[i])[6] - 1);
-	meshes[j]->m_indexBufferNormal.push_back((face[i])[7] - 1);
-	meshes[j]->m_indexBufferNormal.push_back((face[i])[8] - 1);
+			meshes[j]->m_hasNormals = true;
+			m_hasNormals = true;
 
-	meshes[j]->m_hasNormals = true;
-	m_hasNormals = true;
+			triangle->setNormal(m_normals[(face[i])[6] - 1], m_normals[(face[i])[7] - 1], m_normals[(face[i])[8] - 1]);
+		}
 
-	triangle->setNormal(m_normals[(face[i])[6] - 1], m_normals[(face[i])[7] - 1], m_normals[(face[i])[8] - 1]);
-	}
-
-	meshes[j]->m_triangles.push_back(triangle);
+		meshes[j]->m_triangles.push_back(triangle);
 	}
 
 		xmin = min(meshes[j]->m_xmin, xmin);
@@ -482,15 +478,11 @@ bool Model::loadObject(const char* a_filename, Vector3f &rotate, float degree, V
 		ymax = max(meshes[j]->m_ymax, ymax);
 		zmax = max(meshes[j]->m_zmax, zmax);
 	
-
-
 	}
 
-	 
-	
-	std::cout << "Number of faces: " << m_numberOfTriangles << std::endl;
-	std::cout << "Number of Meshes: " << m_numberOfMeshes << std::endl;
-	calcBounds();
+		std::cout << "Number of faces: " << m_numberOfTriangles << std::endl;
+		std::cout << "Number of Meshes: " << m_numberOfMeshes << std::endl;
+		calcBounds();
 
 
 	return true;
@@ -570,7 +562,7 @@ bool Model::loadObject2(const char* a_filename, Vector3f &axis, float degree, Ve
 						  break;
 
 			}case 't':{
-
+						
 						  float tmpu, tmpv;
 
 
@@ -737,9 +729,7 @@ bool Model::loadObject2(const char* a_filename, Vector3f &axis, float degree, Ve
 
 			if (meshes[j]->m_material->bumpMapPath != ""){
 				
-				meshes[j]->m_material = static_cast<std::shared_ptr<NormalMap>>(new NormalMap(meshes[j]->m_material));
-				static_cast<NormalMap*>(meshes[j]->m_material.get())->setNormalMap(std::unique_ptr<ImageTexture>(new ImageTexture(&(m_modelDirectory + "/" + meshes[j]->m_material->bumpMapPath)[0])));
-
+				meshes[j]->m_material->setNormalTexture(new ImageTexture(&(m_modelDirectory + "/" + meshes[j]->m_material->bumpMapPath)[0]));
 			}
 
 		}
@@ -753,7 +743,9 @@ bool Model::loadObject2(const char* a_filename, Vector3f &axis, float degree, Ve
 	
 
 	if (!m_normals.empty() && !m_texels.empty()) {
+		  
 		
+
 		m_hasNormals = true;
 		m_hasTexels = true;
 		for (int i = 0; i < m_numberOfTriangles; i++){
@@ -1151,8 +1143,6 @@ void Model::generateNormals(){
 	Vector3f edge1;
 	Vector3f edge2;
 
-
-
 	const unsigned int *pTriangle = 0;
 
 	m_normals = std::vector<Vector3f>(m_numberOfVertices);
@@ -1389,7 +1379,7 @@ void Model::generateTangents(){
 	float length = 0.0f;
 	float bDotB = 0.0f;
 
-	unsigned int *pTriangle = 0;
+	const unsigned int *pTriangle = 0;
 	const unsigned int *pTriangleTex = 0;
 	const unsigned int *pTriangleNormal = 0;
 
@@ -1447,12 +1437,8 @@ void Model::generateTangents(){
 
 			bitangent = ((edge2 * texEdge1[0]) - (edge1 * texEdge2[0])) * det;
 
-			/*bitangent[0] = ((edge2[0] * texEdge1[0]) - (edge1[0] * texEdge2[0])) * det;
-			bitangent[1] = ((edge2[1] * texEdge1[0]) - (edge1[1] * texEdge2[0])) * det;
-			bitangent[2] = ((edge2[2] * texEdge1[0]) - (edge1[2] * texEdge2[0])) * det;*/
 		}
 
-		//std::cout << bitangent[0] << "  " << bitangent[1] << "  " << bitangent[2] << std::endl;
 		// Accumulate the tangents and bitangents.
 		tangents[pTriangle[0]] = tangents[pTriangle[0]] + tangent;
 		tangents[pTriangle[1]] = tangents[pTriangle[1]] + tangent;
@@ -1462,35 +1448,42 @@ void Model::generateTangents(){
 		bitangents[pTriangle[1]] = bitangents[pTriangle[1]] + bitangent;
 		bitangents[pTriangle[2]] = bitangents[pTriangle[2]] + bitangent;
 
-		// Order the normals
-		if (!m_indexBufferNormal.empty()){
+		//sort the normals
+		//the normals maybe sorted during the generateNormalDerivatives function
+		if (!m_hasNormalDerivatives){
 
-			pTriangleNormal = &m_indexBufferNormal[i * 3];
+			//this step isn't necessary if the normals are generated an not from the obj-file
+			if (!m_indexBufferNormal.empty()){
 
-			if (normals[pTriangle[0]].null()){
+				pTriangleNormal = &m_indexBufferNormal[i * 3];
 
-				normals[pTriangle[0]] = m_normals[pTriangleNormal[0]];
-			}
+				if (normals[pTriangle[0]].null()){
 
-			if (normals[pTriangle[1]].null()){
+					normals[pTriangle[0]] = m_normals[pTriangleNormal[0]];
+				}
 
-				normals[pTriangle[1]] = m_normals[pTriangleNormal[1]];
-			}
+				if (normals[pTriangle[1]].null()){
 
-			if (normals[pTriangle[2]].null()){
+					normals[pTriangle[1]] = m_normals[pTriangleNormal[1]];
+				}
 
-				normals[pTriangle[2]] = m_normals[pTriangleNormal[2]];
+				if (normals[pTriangle[2]].null()){
+
+					normals[pTriangle[2]] = m_normals[pTriangleNormal[2]];
+				}
 			}
 		}
-
 	}
 
-	if (!m_indexBufferNormal.empty()){
-		
-		m_normals.clear();
-		m_normals.swap(normals);
+	if (!m_hasNormalDerivatives){
+
+		if (!m_indexBufferNormal.empty()){
+
+			m_normals.clear();
+			m_normals.swap(normals);
+		}
 	}
-	
+
 	// Orthogonalize and normalize the vertex tangents.
 	for (int i = 0; i < m_numberOfVertices; i++){
 
@@ -1502,8 +1495,6 @@ void Model::generateTangents(){
 		tangents[i][0] -= m_normals[i][0] * nDotT;
 		tangents[i][1] -= m_normals[i][1] * nDotT;
 		tangents[i][2] -= m_normals[i][2] * nDotT;
-
-		
 
 		// Normalize the tangent.
 		Vector4f::normalize(tangents[i]);
@@ -1547,18 +1538,179 @@ void Model::generateTangents(){
 	tangents.clear();
 	bitangents.clear();
 
-	m_positions.clear();
-	m_normals.clear();
-	m_texels.clear();
-	m_indexBufferPosition.clear();
-	m_indexBufferTexel.clear();
-	m_indexBufferNormal.clear();
+	if (m_hasNormalDerivatives){
+
+		m_positions.clear();
+		m_normals.clear();
+		m_texels.clear();
+		m_indexBufferPosition.clear();
+		m_indexBufferTexel.clear();
+		m_indexBufferNormal.clear();
+
+	}else{
+
+		m_positions.clear();
 	
+	}
+}
 
-	/*for (int j = 0; j < m_numberOfMeshes; j++){
-		meshes[j]->generateTangents();
-	}*/
+void Model::generateNormalDerivatives(){
 
+	if (m_hasNormalDerivatives){ std::cout << "Normal-Derivatives already generated!" << std::endl; return; }
+	if (!m_hasTexels){ std::cout << "TextureCoords needed!" << std::endl; return; }
+	if (!m_hasNormals){
+		generateNormals();
+		std::cout << "Normals generated!" << std::endl;
+	}
+
+	Vector3f normal0;
+	Vector3f normal1;
+	Vector3f normal2;
+
+	Vector3f edge1;
+	Vector3f edge2;
+
+	Vector2f texEdge1;
+	Vector2f texEdge2;
+
+	Vector3f normal;
+	Vector3f normalDu;
+	Vector3f normalDv;
+
+	const unsigned int *pTriangle = 0;
+	const unsigned int *pTriangleTex = 0;
+	const unsigned int *pTriangleNormal = 0;
+
+	float det = 0.0f;
+
+	std::vector<Vector3f> normals;
+	std::vector<Vector3f> normalsDu;
+	std::vector<Vector3f> normalsDv;
+
+	normalsDu = std::vector<Vector3f>(m_numberOfVertices);
+	normalsDv = std::vector<Vector3f>(m_numberOfVertices);
+
+	if (!m_indexBufferNormal.empty()){
+
+		normals = std::vector<Vector3f>(m_numberOfVertices);
+	}
+
+
+	for (int i = 0; i < m_numberOfTriangles; i++){
+
+		pTriangle = &m_indexBufferPosition[i * 3];
+		pTriangleNormal = &m_indexBufferNormal[i * 3];
+		pTriangleTex = &m_indexBufferTexel[i * 3];
+
+		normal0 = m_positions[pTriangleNormal[0]];
+		normal1 = m_positions[pTriangleNormal[1]];
+		normal2 = m_positions[pTriangleNormal[2]];
+
+
+		// Calculate the triangle face normalDu and normalDv.
+		edge1 = normal1 - normal0;
+		edge2 = normal2 - normal0;
+
+		texEdge1 = m_texels[pTriangleTex[1]] - m_texels[pTriangleTex[0]];
+		texEdge2 = m_texels[pTriangleTex[2]] - m_texels[pTriangleTex[0]];
+
+		det = texEdge1[0] * texEdge2[1] - texEdge2[0] * texEdge1[1];
+
+		if (fabs(det) < 1e-6f){
+
+			normalDu[0] = 1.0f;
+			normalDu[1] = 0.0f;
+			normalDu[2] = 0.0f;
+
+			normalDv[0] = 0.0f;
+			normalDv[1] = 1.0f;
+			normalDv[2] = 0.0f;
+
+		}else{
+
+			det = 1.0f / det;
+			normalDu = (edge1 * texEdge2[1] - edge2 * texEdge1[1]) * det;
+			normalDv = ((edge2 * texEdge1[0]) - (edge1 * texEdge2[0])) * det;		
+		}
+
+		// Accumulate the normalsDu and normalsDv
+		normalsDu[pTriangle[0]] = normalsDu[pTriangle[0]] + normalDu;
+		normalsDu[pTriangle[1]] = normalsDu[pTriangle[1]] + normalDu;
+		normalsDu[pTriangle[2]] = normalsDu[pTriangle[2]] + normalDu;
+
+		normalsDv[pTriangle[0]] = normalsDv[pTriangle[0]] + normalDv;
+		normalsDv[pTriangle[1]] = normalsDv[pTriangle[1]] + normalDv;
+		normalsDv[pTriangle[2]] = normalsDv[pTriangle[2]] + normalDv;
+
+		//sort the normals
+		//the normals maybe sorted during the generateTangents function
+		if (!m_hasTangents){
+
+			//this step isn't necessary if the normals are generated an not from the obj-file
+			if (!m_indexBufferNormal.empty()){
+
+				pTriangleNormal = &m_indexBufferNormal[i * 3];
+
+				if (normals[pTriangle[0]].null()){
+
+					normals[pTriangle[0]] = m_normals[pTriangleNormal[0]];
+				}
+
+				if (normals[pTriangle[1]].null()){
+
+					normals[pTriangle[1]] = m_normals[pTriangleNormal[1]];
+				}
+
+				if (normals[pTriangle[2]].null()){
+
+					normals[pTriangle[2]] = m_normals[pTriangleNormal[2]];
+				}
+			}
+		}
+	}
+
+
+	if (!m_hasTangents){
+
+		if (!m_indexBufferNormal.empty()){
+
+			m_normals.clear();
+			m_normals.swap(normals);
+		}
+	}
+
+	//Normalize the Normal-Derivatives.
+	for (int j = 0; j < m_numberOfMeshes; j++){
+
+		for (int i = 0; i < meshes[j]->m_numberOfTriangles; i++){
+
+			pTriangle = &meshes[j]->m_indexBuffer[i * 3];
+
+			Vector3f::normalize(normalsDu[pTriangle[0]]); Vector3f::normalize(normalsDu[pTriangle[1]]); Vector3f::normalize(normalsDu[pTriangle[2]]);
+			Vector3f::normalize(normalsDv[pTriangle[0]]); Vector3f::normalize(normalsDv[pTriangle[1]]); Vector3f::normalize(normalsDv[pTriangle[2]]);
+
+			meshes[j]->m_triangles[i]->setTangents(normalsDu[pTriangle[0]], normalsDu[pTriangle[1]], normalsDu[pTriangle[2]]);
+			meshes[j]->m_triangles[i]->setBiTangents(normalsDv[pTriangle[0]], normalsDv[pTriangle[1]], normalsDv[pTriangle[2]]);
+		}
+	}
+
+	m_hasNormals = true;
+	m_hasNormalDerivatives = true;
+
+	normals.clear();
+	normalsDu.clear();
+	normalsDv.clear();
+
+	if (m_hasTangents){
+
+		m_positions.clear();
+		m_normals.clear();
+		m_texels.clear();
+		m_indexBufferPosition.clear();
+		m_indexBufferTexel.clear();
+		m_indexBufferNormal.clear();
+
+	}
 }
 
 void Model::generateTangents2(){

@@ -8,6 +8,7 @@
 
 #include "Primitive.h"
 #include "Model.h"
+#include "MeshTorus.h"
 #include "Bitmap.h"
 
 #include "scene.h"
@@ -111,7 +112,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					   //////////////////set up objects/////////////////////////
 					   Model* model = new Model();
 					   //filename,rotation, translation, cull backface, smooth shading
-					   model->loadObject("objs/statue/statue.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 2.0, true, true);
+					   model->loadObject("objs/Statue/statue.obj", Vector3f(1.0, 0.0, 0.0), 0.0, Vector3f(0.0, 0.0, 0.0), 2.0, true, true);
 					   model->generateTangents();
 					   model->buildKDTree();
 
@@ -119,9 +120,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					   reflective->setReflectionColor(1.0);
 					   reflective->setFrensel(0.4);
 
-					   primitive::Rectangle* mirror = new primitive::Rectangle(Vector3f(-12.0, 0.0, -5.0), Vector3f(30.0, 0.0, 0.0), Vector3f(0.0, 20.0, 0.0));
-					   mirror->setColor(Color(0.4, 0.4, 0.4));
-					   mirror->setMaterial(reflective);
+					   primitive::Rectangle* rectangle = new primitive::Rectangle(Vector3f(-12.0, 0.0, -5.0), Vector3f(30.0, 0.0, 0.0), Vector3f(0.0, 20.0, 0.0));
+					   rectangle->setColor(Color(0.4, 0.4, 0.4));
+					   rectangle->setMaterial(reflective);
 
 					   RectangleChecker* rectangleChecker = new RectangleChecker();
 					   rectangleChecker->setNumXCheckers(4);
@@ -131,7 +132,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					   rectangleChecker->setColor1(Color(1.0, 1.0, 1.0));
 					   rectangleChecker->setColor2(Color(0.0, 0.0, 0.0));
 					   rectangleChecker->setLineColor(Color(1.0, 1.0, 0.0));
-					   rectangleChecker->setAttributes(Vector3f(-12.0, 0.0, -5.0), Vector3f(30.0, 0.0, 0.0), Vector3f(0.0, 0.0, 30.0));
+					   rectangleChecker->setMapping(new RectangularMap(Vector3f(-12.0, 0.0, -5.0), Vector3f(30.0, 0.0, 0.0), Vector3f(0.0, 0.0, 30.0)));
 
 					   primitive::Rectangle* bottom = new primitive::Rectangle(Vector3f(-12.0, 0.0, -5.0), Vector3f(30.0, 0.0, 0.0), Vector3f(0.0, 0.0, 30.0));
 					   bottom->setColor(Color(0.4, 0.4, 0.4));
@@ -139,7 +140,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					   bottom->setTexture(rectangleChecker);
 
 
-					   scene->addPrimitive(mirror);
+					   scene->addPrimitive(rectangle);
 					   scene->addPrimitive(model);
 					   scene->addPrimitive(bottom);
 

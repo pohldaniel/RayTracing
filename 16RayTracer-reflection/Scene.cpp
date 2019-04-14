@@ -11,6 +11,8 @@ Scene::Scene() {
 	m_maximumDepth = 0;
 	m_ambient = std::unique_ptr<AmbientLight>(new AmbientLight());
 
+	
+
 	try {
 
 		m_bitmap = std::unique_ptr<Bitmap>( new Bitmap(m_vp.vres, m_vp.hres, 24));
@@ -30,6 +32,8 @@ Scene::Scene(const ViewPlane &vp, const Color &background){
 	m_bitmap = NULL;
 	m_scene = std::shared_ptr<Scene>(this);
 	m_maximumDepth = 0;
+
+
 
 	try {
 
@@ -113,7 +117,7 @@ Hit Scene::hitObjects(Ray& _ray)  {
 			m_primitive = m_primitives[j];
 			ray = hit.transformedRay;
 			hitObject = true;
-
+			
 		}
 
 
@@ -121,12 +125,12 @@ Hit Scene::hitObjects(Ray& _ray)  {
 
 	if (hitObject){
 
+			hit.t = tmin;
 			hit.hitPoint = ray.origin + ray.direction * tmin;
 			hit.color = m_primitive->getColor(hit.hitPoint);
 			hit.normal = m_primitive->getNormal(hit.hitPoint);
 			hit.tangent = m_primitive->getTangent(hit.hitPoint);
 			hit.bitangent = m_primitive->getBiTangent(hit.hitPoint);
-
 			//needed for normal mapping and texturing traiangle meshes
 			std::pair <float, float> uv = m_primitive->getUV(hit.hitPoint);
 			hit.u = uv.first;
@@ -136,8 +140,7 @@ Hit Scene::hitObjects(Ray& _ray)  {
 				
 				if (m_primitive->getMaterial()->m_reflective){
 	
-					m_lastColor = static_cast<Phong>(m_primitive->getMaterial()).shade(hit);
-					hit.color = m_lastColor + m_primitive->getMaterial()->shade(hit);
+					hit.color =  m_primitive->getMaterial()->shade(hit);
 					
 				}else{
 					
@@ -149,17 +152,18 @@ Hit Scene::hitObjects(Ray& _ray)  {
 				hit.color = m_primitive->getColor(hit.hitPoint);
 				
 			}
-		}
-		
+	}
+	
 	return hit;
 }
 
 Color Scene::traceRay(Ray& ray){
 	
 	ray.depth++;
-
+	//std::cout << ray.depth << std::endl;
 	if ((ray.depth) == m_maximumDepth + 1){
-		return m_lastColor;
+
+		return    Color(0.0, 0.0, 0.0);
 
 	}else{
 

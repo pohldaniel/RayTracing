@@ -45,18 +45,54 @@ private:
 	MapType m_mapType;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
+class RectangularMap : public Mapping {
+
+public:
+	
+	RectangularMap(const Vector3f& pos, const Vector3f& a, const Vector3f& b);
+	~RectangularMap();
+
+	std::pair<float, float> getUV(const Vector3f& pos);
+
+private:
+
+	Vector3f		m_pos, m_a, m_b;   		// attributes needed for texturing a non generic object
+	float			m_sqA, m_sqB;			//
+
+};
+//////////////////////////////////////////////////////////////////////////////////////////////////
+class DiskMap : public Mapping {
+
+public:
+
+	DiskMap(const Vector3f& pos, const float outerRadius);
+	DiskMap(const Vector3f& pos, const float outerRadius, const float innerRadius);
+	DiskMap(const float outerRadius);
+	DiskMap(const float outerRadius, const float innerRadius);
+	~DiskMap();
+
+	std::pair<float, float> getUV(const Vector3f& pos);
+
+private:
+
+	float m_innerRadius, m_outerRadius;	// attributes needed for texturing a non generic object
+	Vector3f m_pos;
+
+};
+//////////////////////////////////////////////////////////////////////////////////////////////////
 class Texture{
 
 public:
 	
 	Texture();
-	~Texture();
+	virtual ~Texture();
 
 	bool getProcedural();
+	void setMapping(Mapping* mapping);
 
 protected:
 	
-	
+	std::unique_ptr<Mapping> m_mapping;
 	bool m_procedural;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,13 +101,13 @@ class ImageTexture : public Texture{
 public:
 	ImageTexture();
 	ImageTexture(const char* path);
-	~ImageTexture();
+	virtual ~ImageTexture();
 
 	Color getTexel(const float u, const float v, const Vector3f& pos);
 	Color getSmoothTexel(const float a_u, const float a_v);
 
 	void setUVScale(const float uscale, const float vscale);
-	void setMapping(Mapping* mapping);
+	
 
 protected:
 	int m_width, m_height, m_padWidth;
@@ -80,7 +116,7 @@ protected:
 
 private:
 
-	std::unique_ptr<Mapping> m_mapping;
+	
 	float m_uscale, m_vscale;
 	
 };
@@ -98,13 +134,10 @@ class ProceduralTexture : public Texture{
 
 public:
 	ProceduralTexture();
-	~ProceduralTexture();
+	virtual ~ProceduralTexture();
 
 	virtual Color getColor(const Vector3f& pos) = 0;
 
-private:
-
-	Mapping* m_mapping;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class CheckerTexture : public ProceduralTexture{
@@ -277,7 +310,7 @@ public:
 	void setNumZCheckers(const int numZ);
 	void setXLineWidth(const float width);
 	void setZLineWidth(const float width);
-	void setAttributes(Vector3f pos, Vector3f a, Vector3f b);
+	
 
 private:
 
@@ -286,13 +319,9 @@ private:
 	float	m_XLineWidth;			// width of the horizontal lines as a fraction of the checker width
 	float	m_ZLineWidth;			// width of the vertical lines as a fraction of the checker width
 
-	Vector3f		m_pos;   		// attributes needed for texturing a non generic object
-	Vector3f		m_a;			//
-	Vector3f		m_b;			// 
-	float			m_sqA;			//
-	float			m_sqB;			//
+	
 
-	bool m_generic;
+	
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class TorusChecker : public CheckerTexture {

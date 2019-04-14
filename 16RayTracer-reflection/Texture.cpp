@@ -65,8 +65,80 @@ void LightProbe::setMapType(MapType mapType){
 	m_mapType = mapType;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
+RectangularMap::RectangularMap(const Vector3f& pos, const Vector3f& a, const Vector3f& b){
+
+	m_pos = pos;
+	m_a = a;
+	m_b = b;
+	m_sqA = a.sqMagnitude();
+	m_sqB = b.sqMagnitude();
+}
+
+RectangularMap::~RectangularMap(){}
+
+std::pair<float, float> RectangularMap::getUV(const Vector3f& pos){
+
+	Vector3f transformedPos = pos - m_pos;
+	float v = Vector3f::dot(m_b, transformedPos) * (1.0 / m_sqB);
+	float u = 1.0 - Vector3f::dot(m_a, transformedPos) * (1.0 / m_sqA);
+
+	return std::make_pair(u, v);
+}
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+DiskMap::DiskMap(const Vector3f& pos, const float outerRadius){
+
+	m_pos = pos;
+	m_outerRadius = outerRadius;
+	m_innerRadius = 0.0;
+}
+
+DiskMap::DiskMap(const Vector3f& pos, const float outerRadius, const float innerRadius){
+
+	m_pos = pos;
+	m_outerRadius = outerRadius;
+	m_innerRadius = innerRadius;
+}
+
+DiskMap::DiskMap(const float outerRadius){
+
+	m_pos = Vector3f(0.0, 0.0, 0.0);
+	m_outerRadius = outerRadius;
+	m_innerRadius = 0.0;
+}
+
+DiskMap::DiskMap(const float outerRadius, const float innerRadius){ 
+
+	m_pos = Vector3f(0.0, 0.0, 0.0);
+	m_outerRadius = outerRadius;
+	m_innerRadius = innerRadius;
+}
+
+DiskMap::~DiskMap(){}
+
+std::pair<float, float> DiskMap::getUV(const Vector3f& pos){
+
+	Vector3f transformedPos = pos - m_pos;
+
+	float x = transformedPos[0];
+	float z = transformedPos[2];
+
+	float len = sqrt(x * x + z * z);
+	float phi = atan2(z, x) + 0.5 * PI;
+
+
+	// v(m_innerRadius) = 0 and  v(m_outerRadius ) = 1
+	float v = (len - m_innerRadius) / (m_outerRadius - m_innerRadius);
+
+	// map phi from [-pi, pi] to [0, 1]
+	float u = 1.0 - (phi + PI) / TWO_PI;
+	return std::make_pair(u, v);
+
+}
+///////////////////////////////////////////////////////////////////////////////////////////////
 Texture::Texture(){
 
+	m_mapping = NULL;
 }
 
 Texture::~Texture(){
@@ -77,8 +149,14 @@ bool Texture::getProcedural(){
 
 	return m_procedural;
 }
+void Texture::setMapping(Mapping* mapping){
+
+	m_mapping = std::unique_ptr<Mapping>(mapping);
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
-ImageTexture::ImageTexture(){
+ImageTexture::ImageTexture() : Texture(){
 
 	m_bitmap = std::unique_ptr<Bitmap>(new Bitmap());
 	m_bitmap->createNullBitmap(200);
@@ -90,10 +168,10 @@ ImageTexture::ImageTexture(){
 	m_vscale = 1.0;
 
 	m_procedural = false;
-	m_mapping = NULL;
+	
 }
 
-ImageTexture::ImageTexture(const char* path){
+ImageTexture::ImageTexture(const char* path) : Texture(){
 
 	m_bitmap = std::unique_ptr<Bitmap>(new Bitmap());
 
@@ -110,7 +188,7 @@ ImageTexture::ImageTexture(const char* path){
 	m_vscale = 1.0;
 
 	m_procedural = false;
-	m_mapping = NULL;
+	
 }
 
 ImageTexture::~ImageTexture(){
@@ -124,11 +202,6 @@ void ImageTexture::setUVScale(const float uscale, const float vscale){
 	m_vscale = vscale;
 }
 
-void ImageTexture::setMapping(Mapping* mapping){
-
-	m_mapping = std::unique_ptr<Mapping>(mapping);
-
-}
 
 Color ImageTexture::getTexel(const float a_u, const float a_v, const Vector3f& pos){
 
@@ -222,7 +295,7 @@ BlurTexture::~BlurTexture(){
 
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
-ProceduralTexture::ProceduralTexture(){
+ProceduralTexture::ProceduralTexture() : Texture(){
 	m_procedural = true;
 }
 
@@ -620,35 +693,27 @@ void ConeChecker::setVerticalLineWidth(const float width){
 ///////////////////////////////////////////////////////////////////////////////////////////////
 RectangleChecker::RectangleChecker() : CheckerTexture(){
 
-	m_generic = true;
+	
 }
 
 RectangleChecker::~RectangleChecker(){}
 
-void RectangleChecker::setAttributes(Vector3f pos, Vector3f a, Vector3f b){
 
-	m_pos = pos;
-	m_a = a;
-	m_b = b;
-	m_sqA = a.sqMagnitude();
-	m_sqB = b.sqMagnitude();
-
-	m_generic = false;
-}
 
 Color RectangleChecker::getColor(const Vector3f& pos){
 
 	float u, v;
 
-	if (m_generic){
-		u = (pos[0] + 1.0) * 0.5;
-		v = (pos[2] + 1.0) * 0.5;
+	if (m_mapping){
 		
+		std::pair <float, float> uv = m_mapping->getUV(pos);
+		u = uv.first;
+		v = uv.second;
+
 	}else{
 
-		Vector3f transformedPos = pos - m_pos;
-		v = Vector3f::dot(m_b, transformedPos) * (1.0 / m_sqB);
-		u = 1.0 - Vector3f::dot(m_a, transformedPos) * (1.0 / m_sqA);
+		u = (pos[0] + 1.0) * 0.5;
+		v = (pos[2] + 1.0) * 0.5;
 	}
 
 

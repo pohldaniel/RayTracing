@@ -1,8 +1,6 @@
 #include <array>
 #include "Model.h"
 
-
-
 bool BBox::intersect(const Ray& a_ray) {
 	double ox = a_ray.origin[0]; double oy = a_ray.origin[1]; double oz = a_ray.origin[2];
 	double dx = a_ray.direction[0]; double dy = a_ray.direction[1]; double dz = a_ray.direction[2];
@@ -134,6 +132,7 @@ std::shared_ptr<Material> Primitive::getMaterial(){
 void Primitive::setColor(Color color){
 
 	m_color = color;
+
 	
 }
 
@@ -157,6 +156,15 @@ Color Primitive::getColor(const Vector3f& pos){
 	}
 }
 
+Vector3f Primitive::getNormalDu(const Vector3f& pos){
+
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+Vector3f Primitive::getNormalDv(const Vector3f& pos){
+
+	return Vector3f(0.0, 0.0, 0.0);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 Instance::Instance(Primitive *primitive){
@@ -373,6 +381,10 @@ void CompoundedObject::hit(Hit &hit){
 	//it will be necessary to store the transformation
 	Ray ray;
 	
+
+	//std::cout << hit.transformedRay.direction[0] << "  " << hit.transformedRay.direction[1] << "  " << hit.transformedRay.direction[2] << std::endl;
+
+
 	for (unsigned int i = 0; i < m_primitives.size(); i++){
 
 		hitCompoundenObject.transformedRay = hit.transformedRay;
@@ -555,6 +567,7 @@ Triangle::Triangle(const Vector3f &a_V1,
 	m_smooth = smooth;
 	m_hasNormals = false;
 	m_hasTangents = false;
+	m_hasNormalDerivatives = false;
 	m_edge1 = m_b - m_a;
 	m_edge2 = m_c - m_a;
 
@@ -737,13 +750,64 @@ Vector3f Triangle::getBiTangent(const Vector3f& pos){
 
 	return Vector3f(0.0, 0.0, 0.0);
 }
+
+Vector3f Triangle::getNormalDu(const Vector3f& pos){
+
+	if (m_hasNormalDerivatives){
+
+		Vector3f apos = Triangle::m_a - pos;
+		Vector3f bpos = Triangle::m_b - pos;
+		Vector3f cpos = Triangle::m_c - pos;
+
+		//first triangle
+		float d1 = Vector3f::cross(bpos, cpos).magnitude() / abc;
+
+		//second triangle
+		float d2 = Vector3f::cross(cpos, apos).magnitude() / abc;
+
+		//third triangle
+		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
+
+		return  (m_nDu1 * d1 + m_nDu2 * d2 + m_nDu3 * d3).normalize();
+
+	}else{
+
+		return Vector3f(0.0, 0.0, 0.0);
+	}
+}
+
+Vector3f Triangle::getNormalDv(const Vector3f& pos){
+
+	if (m_hasNormalDerivatives){
+
+		Vector3f apos = Triangle::m_a - pos;
+		Vector3f bpos = Triangle::m_b - pos;
+		Vector3f cpos = Triangle::m_c - pos;
+
+		//first triangle
+		float d1 = Vector3f::cross(bpos, cpos).magnitude() / abc;
+
+		//second triangle
+		float d2 = Vector3f::cross(cpos, apos).magnitude() / abc;
+
+		//third triangle
+		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
+
+		return  (m_nDv1 * d1 + m_nDv2 * d2 + m_nDv3 * d3).normalize();
+
+	}else{
+
+		return Vector3f(0.0, 0.0, 0.0);
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 Sphere::Sphere() : Primitive(){
 
 	m_centre = Vector3f(0.0, 0.0, 0.0);
 	m_sqRadius = 1.0;
 	m_radius = 1.0;
-	m_rRadius = 1.0f;
+	m_invRadius = 1.0f;
 	calcBounds();
 }
 
@@ -752,7 +816,7 @@ Sphere::Sphere(const Vector3f& a_centre, float a_radius) : Primitive(){
 	m_centre = a_centre;
 	m_sqRadius = a_radius * a_radius;
 	m_radius = a_radius;
-	m_rRadius = 1.0f / a_radius;
+	m_invRadius = 1.0f / a_radius;
 	calcBounds();
 }
 
@@ -784,7 +848,6 @@ void Sphere::hit(Hit &hit) {
 
 	}
 
-
 	if (result > 0.0){
 
 		hit.t = result;
@@ -806,12 +869,16 @@ void Sphere::calcBounds(){
 
 std::pair <float, float>  Sphere::getUV(const Vector3f& pos){
 
-	// map phi from [-pi, pi] to [0, 1]
-	float phi = atan2(pos[2], pos[0]) + 0.5 * PI;
-	// next, map theta and phi to (u, v) in [0, 1] X [0, 1]
-	float u = 1.0 - (phi + PI) / TWO_PI;
+	//transform the hitPoint to the local system of the rectangle (pos - m_pos)
+	Vector3f transformedPos = (pos - m_centre) * m_invRadius;
 
-	float theta = acos(pos[1]);
+	// map phi from [-pi, pi] to [0, 2pi]  (and rotate the texture 90 degree)
+	float phi = atan2(transformedPos[2], transformedPos[0]) + 1.5 * PI;
+	// map  phi to  [0, 1]
+	float u = 1.0 - (phi * invTWO_PI);
+
+	float theta = acos(transformedPos[1]);
+	//theta is in [0, pi] =>  map it to [0, 1]
 	float v = 1.0 - theta * invPI;
 
 	return std::make_pair(u, v);
@@ -820,7 +887,9 @@ std::pair <float, float>  Sphere::getUV(const Vector3f& pos){
 
 Vector3f Sphere::getNormal(const Vector3f& a_pos){
 
-	return  (a_pos - m_centre) * m_rRadius;
+	//N = dp/dphi x dp/dtheta		<==>		N = dp/du x dp/dv
+
+	return  (a_pos - m_centre) * m_invRadius;
 }
 
 //x= r* sin(theta) * cos(phi)
@@ -829,22 +898,102 @@ Vector3f Sphere::getNormal(const Vector3f& a_pos){
 
 Vector3f Sphere::getTangent(const Vector3f& pos){
 
-	Vector3f vp = (pos - m_centre) * m_rRadius;
-	float phi = atan2(vp[2], vp[0]);
-	if (phi < 0.0) phi += TWO_PI;
-		
+	//dp/dphi		<==>		dp/du
+
+	//transform the hitPoint to the local system of the rectangle (pos - m_pos)
+	Vector3f transformedPos = (pos - m_centre) * m_invRadius;
+
+	float phi = atan2(transformedPos[2], transformedPos[0]);
+	
 	return Vector3f(-sinf(phi), 0.0, cosf(phi));
+
+	//second
+	//notice: cosPhi = transformedPos[0] ,	sinPhi = transformedPos[2]
+	/*float cosPhi = transformedPos[0];
+	float sinPhi = transformedPos[2];
+
+	return Vector3f(-sinPhi, 0.0, cosPhi);*/
 }
 
 Vector3f Sphere::getBiTangent(const Vector3f& pos){
 
-	Vector3f vp = (pos - m_centre) * m_rRadius;
+	//dp/dtheta		<==>		dp/dv
 
-	float theta = acos(vp[1]);
-	float phi = atan2(vp[2], vp[0]);
+	//transform the hitPoint to the local system of the rectangle (pos - m_pos)
+	Vector3f transformedPos = (pos - m_centre) * m_invRadius;
+
+	float theta = acos(transformedPos[1]);
+	float phi = atan2(transformedPos[2], transformedPos[0]);
 	
-	return Vector3f(cosf(theta)*cosf(phi), -sinf(theta), cosf(theta)*sinf(phi));	
+	return Vector3f(cosf(theta)*cosf(phi), -sinf(theta), cosf(theta)*sinf(phi));
+
+	//second
+	//notice: cosPhi = transformedPos[0] ,	sinPhi = transformedPos[2], cosTheta = transformedPos[1]
+	/*float cosPhi = transformedPos[0];
+	float sinPhi = transformedPos[2];
+	float cosTheta = transformedPos[1];
+
+	return Vector3f(transformedPos[1] * transformedPos[0], -sinf(theta), transformedPos[1] * transformedPos[2]);*/
 }
+
+//x= -r* sin(theta) * cos(phi)
+//y= -r* cos(theta)
+//z= -r* sin(theta) * sin(phi)
+
+Vector3f Sphere::getNormalDu(const Vector3f& pos){
+
+	//transform the hitPoint to the local system of the rectangle (pos - m_pos)
+	Vector3f transformedPos = (pos - m_centre) * m_invRadius;
+
+	Vector3f d2Pduu = Vector3f(-transformedPos[0], 0.0, -transformedPos[2]);
+	Vector3f d2Pduv = Vector3f(-transformedPos[2], 0.0, transformedPos[0]);
+	Vector3f d2Pdvv = -Vector3f(transformedPos[0], transformedPos[1], transformedPos[2]);
+	
+	Vector3f tangent = getTangent(pos);
+	Vector3f bitangent = getBiTangent(pos);
+
+	float E = Vector3f::dot(tangent, tangent);
+	float F = Vector3f::dot(tangent, bitangent);
+	float G = Vector3f::dot(bitangent, bitangent);
+
+	Vector3f normal = getNormal(pos);
+
+	float e = Vector3f::dot(normal, d2Pduu);
+	float f = Vector3f::dot(normal, d2Pduv);
+	float g = Vector3f::dot(normal, d2Pdvv);
+
+	float invEGF2 = 1 / (E * G - F * F);
+
+	return (f * F - e * G) * invEGF2 * tangent + (e * F - f * E) * invEGF2 * bitangent;	
+}
+
+Vector3f Sphere::getNormalDv(const Vector3f& pos){
+
+	//transform the hitPoint to the local system of the rectangle (pos - m_pos)
+	Vector3f transformedPos = (pos - m_centre) * m_invRadius;
+
+	Vector3f d2Pduu = Vector3f(-transformedPos[0], 0.0, -transformedPos[2]);
+	Vector3f d2Pduv = Vector3f(-transformedPos[2], 0.0, transformedPos[0]);
+	Vector3f d2Pdvv = -Vector3f(transformedPos[0], transformedPos[1], transformedPos[2]);
+
+	Vector3f tangent = getTangent(pos);
+	Vector3f bitangent = getBiTangent(pos);
+
+	float E = Vector3f::dot(tangent, tangent);
+	float F = Vector3f::dot(tangent, bitangent);
+	float G = Vector3f::dot(bitangent, bitangent);
+
+	Vector3f normal = getNormal(pos);
+
+	float e = Vector3f::dot(normal, d2Pduu);
+	float f = Vector3f::dot(normal, d2Pduv);
+	float g = Vector3f::dot(normal, d2Pdvv);
+
+	float invEGF2 = 1 / (E * G - F * F);
+
+	return (g * F - f * G) * invEGF2 * tangent + (f * F - g * E) * invEGF2 * bitangent;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 Plane::Plane() :Primitive(){
 
@@ -1265,9 +1414,9 @@ void Torus::calcBounds(){
 
 std::pair <float, float>  Torus::getUV(const Vector3f& pos){
 
-	float phi = atan2(pos[2], pos[0]) + 1.5 * PI;
+	float mainAngle = atan2(pos[2], pos[0]) + 1.5 * PI;
 	// map phi from [-pi, pi] to [0, 1]
-	float u = 1.0 - (phi / TWO_PI);
+	float u = 1.0 - (mainAngle / TWO_PI) ;
 
 
 	// Determine its angle from the x-axis.
@@ -1275,80 +1424,79 @@ std::pair <float, float>  Torus::getUV(const Vector3f& pos){
 
 	// Now rotate about the x-axis to get the point P into the x-z plane.
 	float x = len - m_radius;
-	float theta = atan2(pos[1], x) + PI;
+	float tubeAngle = atan2(pos[1], x) + PI;
 	// map thetafrom [-pi, pi] to [0, 1]
-	float v = (theta / TWO_PI);
+	float v = (tubeAngle / TWO_PI);
 
-	return std::make_pair(u, v);
+	return std::make_pair(u , v );
 }
 
 
-Vector3f Torus::getNormal(const Vector3f& a_pos){
+Vector3f Torus::getNormal(const Vector3f& pos){
 
 	// calculate the normal like http://cosinekitty.com/raytrace/chapter13_torus.html
 	Vector3f normal;
-	float dist = m_radius / sqrtf(a_pos[0] * a_pos[0] + a_pos[2] * a_pos[2]);
+	float dist = m_radius / sqrtf(pos[0] * pos[0] + pos[2] * pos[2]);
 
 	if (dist > 0.0001){
 
-		normal[0] = a_pos[0] * (1 - dist);
-		normal[1] = a_pos[1];
-		normal[2] = a_pos[2] * (1 - dist);
+		normal[0] = pos[0] * (1 - dist);
+		normal[1] = pos[1];
+		normal[2] = pos[2] * (1 - dist);
 
 	}else{
 
-		normal[0] = a_pos[0];
-		normal[1] = a_pos[1];
-		normal[2] = a_pos[2];
+		normal[0] = pos[0];
+		normal[1] = pos[1];
+		normal[2] = pos[2];
 	}
-	//calculate the transpose of invT with the normal
+	
 
 	return normal.normalize();
 	
-	//return (invT.transpose() * Vector4f(normal, 0.0)).normalize();
-	//return (T * Vector4f(normal, 0.0)).normalize();
-
 	// calculate the normal with the gradient df(x)/dx
+	/*float mainAngle = atan2(pos[2], pos[0]) ;
+	float len = sqrt(pos[2] * pos[2] + pos[0] * pos[0]);
 
-	/*Vector3f normal;
+	// Now rotate about the x-axis to get the point P into the x-z plane.
+	float x = len - m_radius;
+	float tubeAngle = atan2(pos[1], x) ;
 
-	float param_squared = m_radius * m_radius + m_tubeRadius * m_tubeRadius;
-	float sum_squared = a_pos[0] * a_pos[0] + a_pos[1] * a_pos[1] + a_pos[2] * a_pos[2];
+	float sinMainSegment = sin(mainAngle);
+	float cosMainSegment = cos(mainAngle);
 
-	normal[0] =  a_pos[0] * (sum_squared - param_squared);
-	normal[1] = a_pos[1] * (sum_squared - param_squared + m_radius * m_radius);
-	normal[2] =  a_pos[2] * (sum_squared - param_squared );
+	float sinTubeSegment = sin(tubeAngle);
+	float cosTubeSegment = cos(tubeAngle);
 
-	
-	
-	return normal.normalize();*/
-	
+	Vector3f normal = Vector3f(cosMainSegment*cosTubeSegment, sinTubeSegment, sinMainSegment*cosTubeSegment);
 
-	//return (invT.transpose() * Vector4f(normal, 0.0)).normalize();
-	//return (T * Vector4f(normal, 0.0)).normalize();
-
-	
+	return normal;*/
+		
 }
 
 Vector3f Torus::getTangent(const Vector3f& pos){
 
-	float phi = 1.0 - ((atan2(pos[0], pos[2]) + 1.5 * PI) / TWO_PI);
+	float mainAngle = atan2(pos[2], pos[0]);
 	float len = sqrt(pos[2] * pos[2] + pos[0] * pos[0]);
-
-	
 
 	// Now rotate about the x-axis to get the point P into the x-z plane.
 	float x = len - m_radius;
-	float theta = ((atan2(pos[1], x) + PI) / TWO_PI);
+	float tubeAngle = atan2(pos[1], x);
 
-	return Vector3f(-sinf(theta)*cosf(phi), cosf(theta), -sinf(theta)*sinf(phi));
+	float sinMainSegment = sinf(mainAngle);
+	float cosMainSegment = cosf(mainAngle);
+
+	float sinTubeSegment = sinf(tubeAngle);
+	float cosTubeSegment = cosf(tubeAngle);
+
+	return Vector3f(-sinTubeSegment *cosMainSegment, cosTubeSegment, -sinTubeSegment *sinMainSegment);
 	
 }
 
 Vector3f Torus::getBiTangent(const Vector3f& pos){
 
-	float phi = 1.0 - ((atan2(pos[0], pos[2]) + 1.5 * PI) / TWO_PI);
-	return Vector3f(-sinf(phi), 0.0, cosf(phi));
+	float mainAngle = atan2(pos[2], pos[0]);
+	return Vector3f(-sinf(mainAngle), 0.0, cosf(mainAngle));
 	
 }
 
@@ -1526,7 +1674,6 @@ Rectangle::Rectangle() : Primitive(){
 	m_lenB = 2.0;
 	m_sqA = 4.0;
 	m_sqB = 4.0;
-
 	m_area = 4.0;
 	m_invArea = 0.25;
 
@@ -1544,15 +1691,11 @@ Rectangle::Rectangle(Vector3f pos, Vector3f a, Vector3f b) : Primitive(){
 	m_lenB = b.magnitude();
 	m_sqA = a.sqMagnitude();
 	m_sqB = b.sqMagnitude();
-
-
-
 	m_area = m_lenA * m_lenB;
 	m_invArea = 1.0 / m_area;
 
 	m_normal = Vector3f::cross(a, b).normalize();
 
-	//std::cout << m_normal[0] << "  " << m_normal[1] << "  " << m_normal[2] << std::endl;
 	m_v = m_b.normalize();
 	m_lenV = m_v.magnitude();
 
@@ -1573,14 +1716,9 @@ void Rectangle::calcBounds(){
 
 	double delta = 0.0001;
 
+	box.m_pos = m_pos - Vector3f(delta, delta, -delta);
+	box.m_size = m_a + m_b + Vector3f(delta, delta, +delta);
 	
-
-	box.m_pos = m_pos - Vector3f(delta, delta, delta);
-	box.m_size = m_a + m_b + Vector3f(delta, delta, delta);
-
-	//std::cout << box.m_pos[0] << "  " << box.m_pos[1] << "  " << box.m_pos[2] << std::endl;
-	//std::cout << box.m_size[0] << "  " << box.m_size[1] << "  " << box.m_size[2] << std::endl;
-
 	Rectangle::bounds = false;
 }
 
@@ -1635,7 +1773,6 @@ Vector3f Rectangle::getBiTangent(const Vector3f& a_pos){
 std::pair <float, float> Rectangle::getUV(const Vector3f& pos){
 
 	//transform the hitPoint to the local system of the rectangle (pos - m_pos)
-
 	Vector3f transformedPos = pos - m_pos;
 
 	float v = Vector3f::dot(m_b, transformedPos) * (1.0 / m_sqB);
@@ -1643,7 +1780,6 @@ std::pair <float, float> Rectangle::getUV(const Vector3f& pos){
 
 	
 	return std::make_pair(1.0 - u,  v);
-
 
 	//return std::make_pair((pos[0] - m_pos[0]) * (1.0 / (m_lenB)), 1.0 - (pos[2] - m_pos[2]) * (1.0 / (m_lenA )));
 }

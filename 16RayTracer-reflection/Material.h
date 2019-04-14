@@ -14,7 +14,8 @@ class Material{
 	friend class Model;
 	friend class Mesh;
 	friend class Scene;
-	
+	friend class Reflective;
+
 public:
 	Material();
 	Material(const Color &ambient, const Color &diffuse, const Color &specular, const int shinies);
@@ -34,12 +35,20 @@ public:
 
 	virtual Color shade(Hit &hit) = 0;
 
+	void setNormalTexture(ImageTexture* normalMap);
+
+	Vector3f Bump(Hit &hit);
+
 protected:
 	Color m_ambient;
 	Color m_diffuse;
 	Color m_specular;
 	int m_shinies;
 	bool m_reflective;
+
+	std::shared_ptr<ImageTexture> m_normalMap;
+
+	Matrix4f getTBN(const Hit &hit);
 
 private:
 	std::string colorMapPath;
@@ -62,31 +71,6 @@ private:
 	float calcDiffuse(const Hit &hit, const Vector3f &w_0, const Vector3f &w_i);
 	float calcSpecular(const Hit &hit, const Vector3f &w_0, const Vector3f &w_i);
 };
-
-
-class NormalMap : public Material{
-
-	
-
-public:
-
-	NormalMap();
-	NormalMap(const Color &ambient, const Color &diffuse, const Color &specular, const int shinies);
-	NormalMap(const std::shared_ptr<Material> material);
-	NormalMap(const char* path);
-	~NormalMap();
-
-	Color shade(Hit &hit);
-	void setNormalMap(std::shared_ptr<ImageTexture> normalMap);
-
-protected:
-	std::shared_ptr<ImageTexture> m_normalMap;
-	float calcDiffuse(const Hit &hit, const Vector3f &w_0, const Vector3f &w_i);
-	float calcSpecular(const Hit &hit, const Vector3f &w_0, const Vector3f &w_i);
-
-	Matrix4f getTBN(const Hit &hit);
-};
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class Matte : public Material{
@@ -127,6 +111,7 @@ public:
 private:
 	Color m_reflectionColor;
 	float m_frensel;
+	std::shared_ptr<Phong> m_phong;
 };
 
 #endif

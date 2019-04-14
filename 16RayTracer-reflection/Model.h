@@ -41,6 +41,7 @@ public:
 
 	void generateNormals();
 	void generateTangents();
+	void generateNormalDerivatives();
 
 	void generateTangents2();
 	void generateNormals2();
@@ -66,7 +67,8 @@ private:
 	bool m_hasTexels;
 	bool m_hasNormals;
 	bool m_hasTangents;
-	bool m_hasColor;
+	bool m_hasNormalDerivatives;
+	bool m_defaultColor;
 	bool m_hasMaterials;
 
 	int  m_numberOfVertices;

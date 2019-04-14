@@ -1,0 +1,115 @@
+			   		   //////////////////set up camera/////////////////////////
+					   Vector3f camPos(0.0, 0.0, 400.0);
+					   Vector3f target(0.0, 0.0, 0.0);
+					   Vector3f up(0, 1.0, 0.0);
+					   Pinhole *pinhole = new Pinhole(camPos, target, up, new Regular(16, 1));
+					   pinhole->setViewPlaneDistance(200.0);
+					   //////////////////set up scene/////////////////////////
+					   scene = new Scene(ViewPlane(400, 400, 1.0), Color(0.0, 0.0, 0.0));
+					   scene->setDepth(1);
+					   //////////////////set up light/////////////////////////
+					   scene->addLight(new Light(Vector3f(-400.0, 400.0, 400.0), Color(0.2, 0.2, 0.2), Color(1.5, 1.5, 1.5), Color(0.2, 0.2, 0.2)));
+					   scene->addLight(new Light(Vector3f(400.0, -400.0, 400.0), Color(0.2, 0.2, 0.2), Color(1.5, 1.5, 1.5), Color(0.2, 0.2, 0.2)));
+					   //////////////////set up objects/////////////////////////
+
+					   Reflective *reflective = new Reflective(Color(0.1, 0.1, 0.1), Color(0.4, 0.4, 0.4), Color(0.2, 0.2, 0.2), 50);
+					   reflective->setReflectionColor(1.0);
+					   reflective->setFrensel(0.4);
+
+					   ImageTexture *front = new ImageTexture("skyboxes/morning/01_morning_front.bmp");
+					   ImageTexture *back = new ImageTexture("skyboxes/morning/02_morning_back.bmp");
+					   ImageTexture *top = new ImageTexture("skyboxes/morning/03_morning_top.bmp");
+					   ImageTexture *bottom = new ImageTexture("skyboxes/morning/04_morning_bottom.bmp");
+					   ImageTexture *right = new ImageTexture("skyboxes/morning/05_morning_right.bmp");
+					   ImageTexture *left = new ImageTexture("skyboxes/morning/06_morning_left.bmp");
+
+					   // box
+					   Box* box = new Box(Vector3f(-500.0, -500.0, 500.0), Vector3f(1000.0, 1000.0, -1000.0));
+					   box->setTexture(front, Box::Components::FrontFace);
+					   box->setTexture(back, Box::Components::BackFace);
+					   box->setTexture(top, Box::Components::TopFace);
+					   box->setTexture(bottom, Box::Components::BottomFace);
+					   box->setTexture(right, Box::Components::RightFace);
+					   box->setTexture(left, Box::Components::LeftFace);
+					   box->flipNormals();
+
+					   Sphere* sphere = new Sphere(Vector3f(0.0, 0.0, 0.0), 250);
+					   sphere->setColor(Color(0.2, 0.6, 0.4));
+					   sphere->setMaterial(reflective);
+
+					   scene->addPrimitive(sphere);
+					   scene->addPrimitive(box);
+					   pinhole->renderScene(*scene);
+
+					   InvalidateRect(hWnd, 0, true);
+					   return 0;
+//////////////////////////////////////////////////////second Image
+/* change inside scene.cpp
+ *
+ * if (m_primitive->getMaterial()->m_reflective){
+ *	
+ *					m_lastColor = static_cast<Phong>(m_primitive->getMaterial()).shade(hit);
+ *					
+ *					hit.color = m_lastColor +  m_primitive->getMaterial()->shade(hit);
+ *					
+ * }
+ *  
+ *change inside material.cpp reflective 
+ * 
+ *return brdf * hit.scene->traceRay(hit.originalRay) * Vector3f::dot(incidentRay, hit.normal);
+ */
+					   //////////////////set up camera/////////////////////////
+					   Vector3f camPos(400.0, 200.0, 400.0);
+					   Vector3f target(0.0, -150.0, 0.0);
+					   Vector3f up(0, 1.0, 0.0);
+					   Pinhole *pinhole = new Pinhole(camPos, target, up, new Regular(16, 1));
+					   pinhole->setViewPlaneDistance(200.0);
+					   //////////////////set up scene/////////////////////////
+					   scene = new Scene(ViewPlane(400, 400, 1.0), Color(0.0, 0.0, 0.0));
+					   scene->setDepth(5);
+					   //////////////////set up light/////////////////////////
+					   scene->addLight(new Light(Vector3f(-400.0, 400.0, 400.0), Color(0.2, 0.2, 0.2), Color(1.5, 1.5, 1.5), Color(0.2, 0.2, 0.2)));
+					   scene->addLight(new Light(Vector3f(400.0, -400.0, 400.0), Color(0.2, 0.2, 0.2), Color(1.5, 1.5, 1.5), Color(0.2, 0.2, 0.2)));
+					   //////////////////set up objects/////////////////////////
+
+					   Reflective *reflective = new Reflective(Color(0.1, 0.1, 0.1), Color(0.4, 0.4, 0.4), Color(0.2, 0.2, 0.2), 50);
+					   reflective->setReflectionColor(1.0);
+					   reflective->setFrensel(0.4);
+
+					   ImageTexture *front = new ImageTexture("skyboxes/morning/01_morning_front.bmp");
+					   ImageTexture *back = new ImageTexture("skyboxes/morning/02_morning_back.bmp");
+					   ImageTexture *top = new ImageTexture("skyboxes/morning/03_morning_top.bmp");
+					   ImageTexture *bottom = new ImageTexture("skyboxes/morning/04_morning_bottom.bmp");
+					   ImageTexture *right = new ImageTexture("skyboxes/morning/05_morning_right.bmp");
+					   ImageTexture *left = new ImageTexture("skyboxes/morning/06_morning_left.bmp");
+
+					   // box
+					   Box* box = new Box(Vector3f(-500.0, -500.0, 500.0), Vector3f(1000.0, 1000.0, -1000.0));
+					   box->setTexture(front, Box::Components::FrontFace);
+					   box->setTexture(back, Box::Components::BackFace);
+					   box->setTexture(top, Box::Components::TopFace);
+					   box->setTexture(bottom, Box::Components::BottomFace);
+					   box->setTexture(right, Box::Components::RightFace);
+					   box->setTexture(left, Box::Components::LeftFace);
+
+					   //second Image
+					   box->setMaterial(reflective, Box::Components::FrontFace);
+					   box->setMaterial(reflective, Box::Components::BackFace);
+					   box->setMaterial(reflective, Box::Components::TopFace);
+					   box->setMaterial(reflective, Box::Components::BottomFace);
+					   box->setMaterial(reflective, Box::Components::RightFace);
+					   box->setMaterial(reflective, Box::Components::LeftFace);
+
+					   box->flipNormals();
+
+					   Sphere* sphere = new Sphere(Vector3f(0.0, 0.0, 0.0), 250);
+					   sphere->setColor(Color(0.2, 0.6, 0.4));
+					   sphere->setMaterial(reflective);
+
+					   scene->addPrimitive(sphere);
+					   scene->addPrimitive(box);
+					   pinhole->renderScene(*scene);
+
+					   InvalidateRect(hWnd, 0, true);
+					   return 0;
+  

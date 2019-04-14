@@ -60,6 +60,7 @@ class Primitive {
 	friend class Model;
 	friend class CompoundedObject;
 	friend class Instance;
+	friend class MeshTorus;
 
 public:
 	Primitive();
@@ -69,6 +70,9 @@ public:
 	virtual Vector3f getNormal(const Vector3f& pos) = 0;
 	virtual Vector3f getTangent(const Vector3f& pos) = 0;
 	virtual Vector3f getBiTangent(const Vector3f& pos) = 0;
+	
+
+
 	virtual std::pair <float, float> getUV(const Vector3f& a_pos) = 0;
 
 	virtual BBox& getBounds();
@@ -79,6 +83,8 @@ public:
 	virtual void setColor(Color color);
 	virtual Color getColor(const Vector3f& pos);
 	
+	virtual Vector3f getNormalDu(const Vector3f& pos);
+	virtual Vector3f getNormalDv(const Vector3f& pos);
 
 protected:
 
@@ -186,6 +192,8 @@ public:
 	Vector3f getBiTangent(const Vector3f& pos);
 	std::pair <float, float> getUV(const Vector3f& a_pos);
 
+	Vector3f getNormalDu(const Vector3f& pos);
+	Vector3f getNormalDv(const Vector3f& pos);
 
 	void setUV(const Vector2f &uv1, const Vector2f &uv2, const Vector2f &uv3){
 
@@ -201,7 +209,7 @@ public:
 	}
 
 	
-	void setTangents(const Vector4f &t1, const Vector4f &t2, const Vector4f &t3){
+	void setTangents(const Vector3f &t1, const Vector3f &t2, const Vector3f &t3){
 		
 		m_t1 = t1; m_t2 = t2; m_t3 = t3;
 		m_hasTangents = true;
@@ -210,11 +218,20 @@ public:
 	void setBiTangents(const Vector3f &bt1, const Vector3f &bt2, const Vector3f &bt3){
 
 		m_bt1 = bt1; m_bt2 = bt2; m_bt3 = bt3;
-		//m_hasBiTangents = true;
+	}
+
+	void setNormalDu(const Vector3f &nDu1, const Vector3f &nDu2, const Vector3f &nDu3){
+
+		m_nDu1 = nDu1; m_nDu2 = nDu2; m_nDu3 = nDu3;
+		m_hasNormalDerivatives = true;
+	}
+
+	void setNormalDv(const Vector3f &nDv1, const Vector3f &nDv2, const Vector3f &nDv3){
+
+		m_nDv1 = nDv1; m_nDu2 = nDv2; m_nDu3 = nDv3;
 	}
 
 
-	
 private:
 
 	Vector3f m_a, m_b, m_c;
@@ -228,11 +245,14 @@ private:
 	Vector3f m_n1, m_n2, m_n3;
 	Vector3f m_t1, m_t2, m_t3;
 	Vector3f m_bt1, m_bt2, m_bt3;
+	Vector3f m_nDu1, m_nDu2, m_nDu3;
+	Vector3f m_nDv1, m_nDv2, m_nDv3;
 
 	float abc;
 	
 	bool m_hasNormals;
 	bool m_hasTangents;
+	bool m_hasNormalDerivatives;
 	bool m_hasTextureCoords;
 	bool m_cull;
 	bool m_smooth;
@@ -326,10 +346,13 @@ public:
 	Vector3f getBiTangent(const Vector3f& pos);
 	std::pair <float, float> getUV(const Vector3f& pos);
 
+	Vector3f getNormalDu(const Vector3f& pos);
+	Vector3f getNormalDv(const Vector3f& pos);
+
 private:
 
 	Vector3f m_centre;
-	float m_sqRadius, m_radius, m_rRadius;
+	float m_sqRadius, m_radius, m_invRadius;
 
 	void calcBounds();
 

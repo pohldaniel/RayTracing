@@ -1,5 +1,9 @@
 
 # RayTracer for educational purposes only
+Output from 17RayTracer-areaLight
+
+![AreaLight](https://user-images.githubusercontent.com/30089026/71556624-54101a80-2a3b-11ea-9009-77e923b7548a.jpg)
+
 Output from 16RayTracer-reflection
 ![reflective](https://user-images.githubusercontent.com/30089026/55880893-ecaaf580-5ba1-11e9-813d-d63b8d535a07.png)
 

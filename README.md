@@ -1,5 +1,10 @@
 
 # RayTracer for educational purposes only
+
+Output from 18RayTracer-pathTracer
+
+![pathTracer](https://user-images.githubusercontent.com/30089026/71934091-fa7abf00-31a3-11ea-83c0-3e8f38d9f3a8.jpg)
+
 Output from 17RayTracer-areaLight
 
 ![AreaLight](https://user-images.githubusercontent.com/30089026/71556624-54101a80-2a3b-11ea-9009-77e923b7548a.jpg)

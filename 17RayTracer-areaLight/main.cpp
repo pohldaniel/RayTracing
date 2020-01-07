@@ -100,8 +100,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 
 	case WM_CREATE:{
-					   Sampler* sampler = new MultiJittered(1, 83);
-					   //Sampler* sampler = new MultiJittered(100, 83);
+					   //int numSamples = 10;
+					   int numSamples = 100;
+
+					   Sampler* sampler = new MultiJittered(numSamples, 83);
 
 					   Vector3f camPosPinhole(-20.0, 10.0, 20.0);
 					   Vector3f targetPinhole(0.0, 2.0, 0.0);
@@ -128,7 +130,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					   primitive::Rectangle* rectangle = new primitive::Rectangle(p0, a, b);
 					   rectangle->setMaterial(emissiveMat);
-					   rectangle->setSampler(new MultiJittered(1, 83));
+					   rectangle->setSampler(new MultiJittered(numSamples, 83));
 					   rectangle->setColor(Color(1.0, 1.0, 1.0));
 
 					   AreaLight* areaLight = new AreaLight;

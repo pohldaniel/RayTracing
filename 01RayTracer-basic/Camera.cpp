@@ -19,9 +19,7 @@ Camera::Camera()
 }
 
 
-Camera::Camera(Vector3f &eye, Vector3f &xAxis, Vector3f &yAxis, Vector3f &zAxis)
-{
-
+Camera::Camera(Vector3f &eye, Vector3f &xAxis, Vector3f &yAxis, Vector3f &zAxis){
 
 	m_eye = eye;
 	m_xAxis = xAxis;
@@ -34,8 +32,7 @@ Camera::Camera(Vector3f &eye, Vector3f &xAxis, Vector3f &yAxis, Vector3f &zAxis)
 }
 
 
-Camera::~Camera()
-{
+Camera::~Camera(){
 }
 
 
@@ -55,8 +52,7 @@ void Camera::updateView()
 }
 
 
-void Camera::move(float dx, float dy, float dz)
-{
+void Camera::move(float dx, float dy, float dz){
 	// Moves the camera by dx world units to the left or right; dy
 	// world units upwards or downwards; and dz world units forwards
 	// or backwards.
@@ -68,8 +64,7 @@ void Camera::move(float dx, float dy, float dz)
 }
 
 
-void Camera::rotate(float yaw, float pitch)
-{
+void Camera::rotate(float yaw, float pitch){
 	// Rotates the camera
 
 	rotateFirstPerson(pitch, yaw);

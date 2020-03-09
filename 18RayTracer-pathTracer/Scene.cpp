@@ -1,9 +1,8 @@
 #include <iostream>
-#include <random>
-#include <ctime>
+
 #include "scene.h"
 
-Scene::Scene() {
+Scene::Scene() : m_generator(std::random_device()()), m_distribution(0.0, 1.0){
 
 	m_vp = ViewPlane();
 	m_background = Color(0.0, 0.0, 0.0);
@@ -22,7 +21,7 @@ Scene::Scene() {
 	std::srand(std::time(NULL));
 }
 
-Scene::Scene(const ViewPlane &vp, const Color &background){
+Scene::Scene(const ViewPlane &vp, const Color &background) : m_generator(std::random_device()()), m_distribution(0.0, 1.0){
 
 	m_vp = vp;
 	m_background = background;
@@ -54,8 +53,6 @@ void Scene::setAmbientLight(AmbientLight *ambient){
 }
 
 void Scene::setPixel(const int x, const int y, Color& color)const {
-
-	//std::cout << color.r << "  " << color.g << "  " << color.b << std::endl;
 
 	color.clamp();
 
@@ -94,6 +91,11 @@ ViewPlane Scene::getViewPlane(){
 
 Hit Scene::hitObjects(Ray& _ray)  {
 	
+	if (m_tracer == Tracer::PathTracerIt){
+		
+		return pathTracerIt(_ray);
+	}
+
 	float	 tmin = FLT_MAX;
 	Hit		 hit;
 	
@@ -153,6 +155,9 @@ Hit Scene::hitObjects(Ray& _ray)  {
 						//and the recursion will break with a color != Color(0.0, 0.0, 0.0)
 						hit.color = m_primitive->getMaterial()->shadePath(hit);
 						break;
+					case PathTracerIt:
+						hit.color = pathTracerIt(_ray).color;
+						break;
 				}
 
 			}else{
@@ -188,4 +193,115 @@ Color Scene::traceRay(Ray& ray, Color pathWeight){
 
 		return hitObjects(ray).color;
 	}
+}
+
+void Scene::setSampler(Sampler* sampler){
+
+	m_sampler = std::shared_ptr<Sampler>(sampler);
+}
+
+Vector3f Scene::sampleDirection(Vector3f& normal) {
+
+	Vector3f w = normal;
+	Vector3f v = Vector3f::cross(Vector3f(0.0034f, 1.0, 0.0071), w);
+	Vector3f::normalize(v);
+	Vector3f u = Vector3f::cross(v, w);
+
+	Vector3f sp = m_sampler->sampleHemisphere();
+
+	return u*sp[0] + v*sp[1] + w*sp[2];
+}
+
+Vector3f Scene::sampleDirection2(Vector3f& normal){
+
+	Vector3f nt = std::fabs(normal[0]) > std::fabs(normal[1]) ? Vector3f(normal[2], 0, -normal[0]).normalize() : Vector3f(0, -normal[2], normal[1]).normalize();
+	Vector3f nb = Vector3f::cross(normal, nt);
+
+	float r1 = m_distribution(m_generator);
+	float phi = 2 * PI * m_distribution(m_generator);
+	float sinTheta = sqrtf(1 - r1 * r1);
+	float x = sinTheta * cosf(phi);
+	float z = sinTheta * sinf(phi);
+
+	return Vector3f(nb * x + normal * r1 + nt * z);
+}
+
+float PdfW(Vector3f& normal, Vector3f& sampledDirection){
+
+	return max(1e-6f, max(0, Vector3f::dot(normal, sampledDirection)) / PI);
+}
+
+
+
+Hit Scene::pathTracerIt(Ray& primaryRay){
+
+	Ray ray = primaryRay;
+	
+	float	 tmin = FLT_MAX;
+	Hit		 hit;
+
+	hit.color = m_background;
+	hit.scene = m_scene;
+	hit.originalRay = ray;
+	m_primitive = NULL;
+	bool hitObject = false;
+
+	float cosAtCamera = Vector3f::dot(ray.direction, Vector3f(0.0, 0.0, 1.0).normalize());
+	Color pathWeight = Color(1.0, 1.0, 1.0) ;
+	Color hitColor;
+	
+
+	int maxPathLength = m_maximumDepth;
+	for (int i = 0; i < maxPathLength; i++){
+
+		for (unsigned int j = 0; j < m_primitives.size(); j++){
+			hit.transformedRay = ray;
+			m_primitives[j]->hit(hit);
+
+			if (hit.hitObject && hit.t < tmin) {
+				tmin = hit.t;
+				m_primitive = m_primitives[j];
+				hitObject = true;
+			}
+		}
+
+		if (!hitObject){
+			
+			hit.color = m_background;
+			break;
+
+		}else{
+
+			hit.t = FLT_MAX;
+			hit.hitPoint = ray.origin + ray.direction * tmin;
+			hit.normal = m_primitive->getNormal(hit.hitPoint);
+			hitColor = m_primitive->getColor(hit.hitPoint);
+			
+			AreaLight* light = static_cast<AreaLight*>(m_lights[0].get());
+			
+			if (light->m_primitive == m_primitive ){
+				
+				hit.color = pathWeight * hitColor * (1.0 / light->pdf(hit));
+				break;
+			}
+
+			/*float continuationPdf = min(1, hitColor.Max());
+			if (m_distribution(m_generator) >= continuationPdf){
+
+				hit.color = m_background; // Absorbation
+				break;
+			}*/
+			
+			Vector3f newDirection = sampleDirection(hit.normal);
+			float pdf = max(1e-6f, max(0, Vector3f::dot(hit.normal, newDirection)) * invPI);
+			float lambert = Vector3f::dot(hit.normal, newDirection);
+			pathWeight = pathWeight * hitColor *  (lambert / pdf) * invPI  * 0.6;
+			ray = Ray(hit.hitPoint, newDirection);
+
+		}
+
+	}
+	
+	
+	return hit;
 }

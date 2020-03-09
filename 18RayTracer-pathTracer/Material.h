@@ -3,6 +3,8 @@
 
 #include <memory>
 #include <string>
+#include <random>
+#include <ctime>
 
 #include "Vector.h"
 #include "Color.h"
@@ -61,7 +63,10 @@ protected:
 	std::shared_ptr<Sampler> m_sampler;
 
 	Matrix4f getTBN(const Hit &hit);
+
 	float randFloat();
+	std::default_random_engine m_generator;
+	std::uniform_real_distribution<float> m_distribution;
 
 private:
 	std::string colorMapPath;
@@ -105,11 +110,11 @@ public:
 private:
 
 	Vector3f sampleDirection(Vector3f& normal);
+	Vector3f sampleDirection2(Vector3f& normal);
 
 	float m_kd;
 	float m_ka;
 
-	
 	
 };
 ////////////////////////////////////////////////////SVMatte/////////////////////////////////////////////////////////////////

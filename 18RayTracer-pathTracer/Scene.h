@@ -5,6 +5,9 @@
 #include <iostream>
 #include <memory>
 #include <cmath>
+#include <random>
+#include <ctime>
+
 
 #include "ViewPlane.h"
 #include "Bitmap.h"
@@ -23,7 +26,7 @@ class Scene {
 
 public:
 
-	enum Tracer { Whitted, AreaLighting, PathTracer};
+	enum Tracer { Whitted, AreaLighting, PathTracer, PathTracerIt};
 
 	Scene();
 	Scene(const ViewPlane &vp, const Color &background);
@@ -32,12 +35,12 @@ public:
 	
 	void addLight(Light* light);
 	Hit hitObjects(Ray& ray);
-	
+	Hit pathTracerIt(Ray& primaryRay);
+
 	Color traceRay(Ray& ray);
 	Color traceRay(Ray& ray, Color pathWeight);
 	
 
-	void setViewPlane(const ViewPlane &vp);
 	void setPixel(const int x, const int y, Color& color) const;
 	void setDepth(int depth);
 	void setAmbientLight(AmbientLight *ambient);
@@ -45,7 +48,9 @@ public:
 
 	std::shared_ptr<Bitmap> getBitmap();
 	ViewPlane getViewPlane();
-	
+
+	void setSampler(Sampler* sampler);
+
 private:
 
 	std::shared_ptr<Primitive> m_primitive;
@@ -61,6 +66,13 @@ private:
 	int m_maximumDepth;
 	Tracer m_tracer;
 
+
+	std::shared_ptr<Sampler> m_sampler;
+	std::default_random_engine m_generator;
+	std::uniform_real_distribution<float> m_distribution;
+	Vector3f Scene::sampleDirection(Vector3f& normal);
+	Vector3f Scene::sampleDirection2(Vector3f& normal);
+	
 };
 
 #endif // _SCENE_H

@@ -1,8 +1,7 @@
-#include <random>
 #include "Material.h"
 #include "Scene.h"
 
-Material::Material(){
+Material::Material() : m_generator(std::random_device()()), m_distribution(0.0, 1.0){
 	
 	m_shinies = 20;
 	m_ambient = Color(1.0, 1.0, 1.0);
@@ -12,9 +11,11 @@ Material::Material(){
 
 	colorMapPath = "";
 	bumpMapPath = "";
+
+	std::srand(std::time(NULL));
 }
 
-Material::Material(const Color &ambient, const Color &diffuse, const Color &specular, const int shinies = 20){
+Material::Material(const Color &ambient, const Color &diffuse, const Color &specular, const int shinies = 20) : m_generator(std::random_device()()),  m_distribution(0.0, 1.0){
 
 	m_ambient = ambient;
 	m_diffuse = diffuse;
@@ -24,6 +25,8 @@ Material::Material(const Color &ambient, const Color &diffuse, const Color &spec
 
 	colorMapPath = "";
 	bumpMapPath = "";
+
+	std::srand(std::time(NULL));
 }
 
 Material::Material(const std::shared_ptr<Material> material) : m_ambient(material->m_ambient),
@@ -197,6 +200,8 @@ Color Phong::shade(Hit &hit){
 Matte::Matte() : Material(){
 	m_ka = 1.0;
 	m_kd = 1.0;
+
+	
 }
 
 Matte::Matte(const Color &ambient, const Color &diffuse, const Color &specular) : Material(ambient, diffuse, specular){
@@ -233,6 +238,20 @@ Vector3f Matte::sampleDirection(Vector3f& normal){
 	Vector3f sp = m_sampler->sampleHemisphere();
 
 	return u*sp[0] + v*sp[1] + w*sp[2];
+}
+
+Vector3f Matte::sampleDirection2(Vector3f& normal){
+
+	Vector3f nt = std::fabs(normal[0]) > std::fabs(normal[1]) ? Vector3f(normal[2], 0, -normal[0]).normalize() : Vector3f(0, -normal[2], normal[1]).normalize();
+	Vector3f nb = Vector3f::cross(normal, nt);
+
+	float r1 = m_distribution(m_generator);
+	float phi = 2 * PI * m_distribution(m_generator);
+	float sinTheta = sqrtf(1 - r1 * r1);
+	float x = sinTheta * cosf(phi);
+	float z = sinTheta * sinf(phi);
+
+	return Vector3f(nb * x + normal * r1 + nt * z);
 }
 
 Color Matte::shade(Hit &hit){
@@ -344,7 +363,7 @@ Color Matte::shadePath(Hit &hit){
 
 	Vector3f newDirection = sampleDirection(hit.normal);
 	float lambert = Vector3f::dot(hit.normal, newDirection);
-	float pdf = Vector3f::dot(hit.normal, newDirection) * invPI;
+	float pdf = max(1e-6f, max(0, Vector3f::dot(hit.normal, newDirection)) * invPI);
 	Color f = hit.color * invPI * m_kd;
 	hit.originalRay.origin = hit.originalRay.origin + hit.originalRay.direction * hit.t;
 	hit.originalRay.direction = newDirection;
@@ -364,7 +383,7 @@ Color Matte::shadePath(Hit &hit, Color &pathWeight){
 
 	Vector3f newDirection = sampleDirection(hit.normal);
 	float lambert = Vector3f::dot(hit.normal, newDirection);
-	float pdf = Vector3f::dot(hit.normal, newDirection) * invPI;
+	float pdf = max(1e-6f, max(0, Vector3f::dot(hit.normal, newDirection)) * invPI);
 	Color f = hit.color * invPI * m_kd;
 	hit.originalRay.origin = hit.originalRay.origin + hit.originalRay.direction * hit.t;
 	hit.originalRay.direction = newDirection;

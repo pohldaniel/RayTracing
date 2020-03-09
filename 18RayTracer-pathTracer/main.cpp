@@ -113,9 +113,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					   pinhole->setViewPlaneDistance(400);
 					   //////////////////set up scene and light/////////////////////////
 					   scene = new Scene(ViewPlane(300, 300, 1.0), Color(0.0, 0.0, 0.0));
-					   scene->setTracer(Scene::Tracer::PathTracer);
-					   scene->setDepth(10);
-			
+					   scene->setTracer(Scene::Tracer::PathTracerIt);
+					   scene->setDepth(5);					
+					   scene->setSampler(samplerMatte);
 
 					   Emissive* emissiveMat = new Emissive();
 					   emissiveMat->setScaleRadiance(100.0);
@@ -209,7 +209,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					   primitive::Rectangle* shortSide1 = new primitive::Rectangle(p0, a, b);
 					   shortSide1->setMaterial(matte3);
 					   shortSide1->setColor(Color(1.0f, 1.0f, 1.0f));
-					   //shortSide1->flipNormal();
+					   shortSide1->flipNormal();
 					   scene->addPrimitive(shortSide1);
 
 					   // side 2
@@ -233,7 +233,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					   primitive::Rectangle* shortSide4 = new primitive::Rectangle(p0, a, b);
 					   shortSide4->setMaterial(matte3);
 					   shortSide4->setColor(Color(1.0f, 1.0f, 1.0f));
-					   //shortSide4->flipNormal();
+					   shortSide4->flipNormal();
 					   scene->addPrimitive(shortSide4);
 
 					   // tall box

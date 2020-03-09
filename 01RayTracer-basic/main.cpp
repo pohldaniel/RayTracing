@@ -37,8 +37,7 @@ enum DIRECTION {
 	DIR_FORCE_32BIT = 0x7FFFFFFF
 };
 // the main windows entry point
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
-{
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd){
 
 
 	AllocConsole();

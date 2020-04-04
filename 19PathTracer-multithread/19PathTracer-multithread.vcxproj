@@ -142,7 +142,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Bitmap.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="Hit.h" />
+    <ClInclude Include="KDTree.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="MeshSphere.h" />
+    <ClInclude Include="MeshSpiral.h" />
+    <ClInclude Include="MeshTorus.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="Primitive.h" />
+    <ClInclude Include="Ray.h" />
+    <ClInclude Include="RenderTask.h" />
     <ClInclude Include="SAABB.h" />
+    <ClInclude Include="Sampler.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="SMaterial.h" />
     <ClInclude Include="SOBB.h" />
     <ClInclude Include="SQuad.h" />
@@ -150,11 +166,33 @@
     <ClInclude Include="SSphere.h" />
     <ClInclude Include="STimer.h" />
     <ClInclude Include="STriangle.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="TVector3.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="Vector.h" />
+    <ClInclude Include="ViewPlane.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Bitmap.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Hit.cpp" />
+    <ClCompile Include="KDTree.cpp" />
+    <ClCompile Include="Light.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MeshSphere.cpp" />
+    <ClCompile Include="MeshSpiral.cpp" />
+    <ClCompile Include="MeshTorus.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Primitive.cpp" />
+    <ClCompile Include="Ray.cpp" />
+    <ClCompile Include="RenderTask.cpp" />
+    <ClCompile Include="Sampler.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="Vector.cpp" />
+    <ClCompile Include="ViewPlane.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

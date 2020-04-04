@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _STIMER_H
+#define _STIMER_H
 
 #include <stdio.h>
 #include <chrono>
@@ -100,3 +101,5 @@ struct STimer
     std::chrono::steady_clock::time_point   m_start;
     int                                     m_lastMessageLength;
 };
+
+#endif // _STIMER_H

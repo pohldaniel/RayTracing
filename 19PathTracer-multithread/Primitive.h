@@ -465,8 +465,8 @@ namespace primitive{
 		float			m_sqA;				// square of the length of side a
 		float			m_sqB;				// square of the length of side b
 
-		float			m_area;				// for rectangular lights
-		float			m_invArea;			// for rectangular lights
+		float			m_area;			// for rectangular lights
+		float			m_invArea;		// for rectangular lights
 
 		
 		Vector3f m_v;

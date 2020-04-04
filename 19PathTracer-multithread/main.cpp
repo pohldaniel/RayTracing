@@ -1,12 +1,17 @@
 #include <atomic>
 #include <vector>
 #include <thread>
+#include <windows.h> // for bitmap headers
+#include <iostream>
 #include <random>
 #include <chrono>
 #include <future>
+#include <mutex>
 
 #include "TVector3.h"
-#include "SMaterial.h"
+
+
+#include "RenderTask.h"
 #include "SAABB.h"
 #include "SOBB.h"
 #include "STriangle.h"
@@ -15,9 +20,22 @@
 #include "SRayHitInfo.h"
 #include "STimer.h"
 
-#include <windows.h> // for bitmap headers
-#include <iostream>
-#include <mutex>
+#include "Camera.h"
+
+POINT g_OldCursorPos;
+void ProcessInput(HWND hWnd);
+void setCursortoMiddle(HWND hwnd);
+
+enum DIRECTION {
+	DIR_FORWARD = 1,
+	DIR_BACKWARD = 2,
+	DIR_LEFT = 4,
+	DIR_RIGHT = 8,
+	DIR_UP = 16,
+	DIR_DOWN = 32,
+
+	DIR_FORCE_32BIT = 0x7FFFFFFF
+};
 
 
 #define FORCE_SINGLE_THREAD() 0
@@ -41,24 +59,30 @@ const float c_rayBounceEpsilon = 0.001f;
 
 // multithreaded rendering
 std::vector<TPixelRGBF32> g_pixels;
+unsigned char *g_pixels2 = NULL;
+
 std::vector<std::thread> threads;
 size_t numThreads;
 STimer timer;
 
 HBITMAP hbitmap;
-unsigned char *data;
+Projection *camera;
+
 void restartTask(HWND hWnd);
 std::mutex mutex;
 bool waitAllThreads = false;
 bool finishedAllThreads = false;
-std::condition_variable m_condVar;
+
 void RenderPixel(float u, float v, TPixelRGBF32& pixel);
 
+
 // camera parameters - assumes no roll (z axis rotation) and assumes that the camera isn't looking straight up
-const TVector3 c_cameraPos = { 278.0f, 273.0f, -800.0f };
-const TVector3 c_cameraLookAt = { 278.0f, 273.0f, 0.0f };
+TVector3 c_cameraPos = { 278.0f, 273.0f, -800.0f };
+TVector3 c_cameraLookAt = { 278.0f, 273.0f, 0.0f };
 float c_nearPlaneDistance = 0.1f;
-const float c_cameraVerticalFOV = 40.0f * c_pi / 180.0f;
+float c_cameraVerticalFOV = 40.0f * c_pi / 180.0f;
+
+RenderTask *renderTask;
 
 class Stoppable {
 
@@ -84,11 +108,11 @@ public:
 
 	// Task need to provide defination  for this function
 	// It will be called by thread function
-	virtual void run(STimer& timer, std::vector<TPixelRGBF32> & pixels) = 0;
+	virtual void run(STimer& timer, std::vector<TPixelRGBF32> & pixels, unsigned char*&data, int numThread) = 0;
 
 	// Thread function to be executed by thread
-	void operator()(STimer& timer, std::vector<TPixelRGBF32> & pixels) {
-		run(timer, pixels);
+	void operator()(STimer& timer, std::vector<TPixelRGBF32> & pixels, unsigned char*&data, int numThread) {
+		run(timer, pixels, data, numThread);
 	}
 
 	//Checks if thread is requested to stop
@@ -106,7 +130,7 @@ public:
 
 };
 
-class RenderTask : public Stoppable {
+class Render : public Stoppable {
 
 	int currentRowIndex = 0;
 	bool m_wait = false;
@@ -116,19 +140,20 @@ public:
 
 	int getCurrentRowIndex() { return currentRowIndex; }
 	void reset() { currentRowIndex = 0; m_finished = false;  m_wait = false; }
-	void setWaiting() { m_wait = true; }
+	void setWaiting() { m_wait = true;   }
 	void setFinished() { m_finished = true; }
 	bool isFinished() { return m_finished; }
 
 	// Function to be executed by thread function
-	void run(STimer& timer, std::vector<TPixelRGBF32> & pixels) {
+	void run(STimer& timer, std::vector<TPixelRGBF32> & pixels, unsigned char* &pixels2, int threadnum) {
 
 		// Check if thread is requested to stop ?
 		while (stopRequested() == false) {
 
-			mutex.lock();
+			mutex.lock();	
 			waitAllThreads = m_wait;
 			mutex.unlock();
+			
 
 			// each thread grabs a pixel at a time and renders it
 			currentRowIndex = min(currentRowIndex, c_imageHeight);
@@ -136,43 +161,61 @@ public:
 
 			bool firstThread = rowIndex == 0;
 			int lastPercent = -1;
+		
+			while (((rowIndex < c_imageHeight && !m_finished && !m_wait))) {
+				
+				for (size_t x = 0, k = 0; x < c_imageWidth; ++x, k = k + 3) {
 
-			while ((rowIndex < c_imageHeight && !m_wait && !m_finished)) {
-				for (size_t x = 0; x < c_imageWidth; ++x) {
-					// render the pixel by taking multiple samples and incrementally averaging them
-					for (size_t i = 0; i < c_samplesPerPixel; ++i) {
-
-						float jitterX = JITTER_AA() ? RandomFloat() : 0.5f;
-						float jitterY = JITTER_AA() ? RandomFloat() : 0.5f;
-						float u = ((float)x + jitterX) / (float)c_imageWidth;
-						float v = ((float)rowIndex + jitterY) / (float)c_imageHeight;
-
-						TPixelRGBF32 sample;
-						RenderPixel(u, v, sample);
-						pixels[rowIndex * c_imageWidth + x] += (sample - pixels[rowIndex * c_imageWidth + x]) / float(i + 1.0f);
+					if (m_wait) {
+						break;
 					}
+
+						// render the pixel by taking multiple samples and incrementally averaging them
+					for (size_t i = 0; i < c_samplesPerPixel; ++i) {							
+							float jitterX = JITTER_AA() ? RandomFloat() : 0.5f;
+							float jitterY = JITTER_AA() ? RandomFloat() : 0.5f;
+							float u = ((float)x + jitterX) ;
+							float v = ((float)rowIndex + jitterY) ;
+
+							TPixelRGBF32 sample;
+							RenderPixel(u, v, sample);
+							pixels[rowIndex * c_imageWidth + x] += (sample - pixels[rowIndex * c_imageWidth + x]) / float(i + 1.0f);
+					}
+
+					for (size_t j = 0; j < 3; j++) {
+
+							pixels2[rowIndex * c_imageWidth * 3 + k + j] = uint8(Clamp(powf(pixels[rowIndex * c_imageWidth + x][2 - j], 1.0f / 2.2f)* 255.0f, 0.0f, 255.0f));
+					}
+
 				}
 
 				// move to next row
 				rowIndex = currentRowIndex++;
 
 				// report our progress (from a single thread only)
-				if (firstThread) {
+				/*if (firstThread) {
+					if (m_wait) {
+					std::cout << "Hello from thread:  " << threadnum << std::endl;
+						break;
+					}
+
 					timer.ReportProgress(rowIndex, c_imageHeight);
-				}
+				}*/
 
 			}// rendering
+			
+			
 
 			mutex.lock();
 			finishedAllThreads = (currentRowIndex - 1) == c_imageHeight;
 			mutex.unlock();
 		}// stop requested
-
+		
 		 //std::cout << "Task End" << std::endl;
 	}// end run
 
 };
-RenderTask task;
+Render task;
 
 
 // the scene
@@ -214,11 +257,11 @@ const TVector3 c_rayMissColor = { 0.0f, 0.0f, 0.0f };
 const size_t c_numPixels = c_imageWidth * c_imageHeight;
 const float c_aspectRatio = float(c_imageWidth) / float(c_imageHeight);
 const float c_cameraHorizFOV = c_cameraVerticalFOV * c_aspectRatio;
-const float c_windowTop = tan(c_cameraVerticalFOV / 2.0f) * c_nearPlaneDistance;
-const float c_windowRight = tan(c_cameraHorizFOV / 2.0f) * c_nearPlaneDistance;
-const TVector3 c_cameraFwd = Normalize(c_cameraLookAt - c_cameraPos);
-const TVector3 c_cameraRight = Cross({ 0.0f, 1.0f, 0.0f }, c_cameraFwd);
-const TVector3 c_cameraUp = Cross(c_cameraFwd, c_cameraRight);
+const float c_windowTop = tan(c_cameraVerticalFOV / 2.0f) ;
+const float c_windowRight = tan(c_cameraHorizFOV / 2.0f) ;
+TVector3 c_cameraFwd = Normalize(c_cameraLookAt - c_cameraPos);
+TVector3 c_cameraRight = Cross({ 0.0f, 1.0f, 0.0f }, c_cameraFwd);
+TVector3 c_cameraUp = Cross(c_cameraFwd, c_cameraRight);
 
 //=================================================================================
 
@@ -289,17 +332,11 @@ TPixelRGBF32 L_in (const TPixelRGBF32& rayPos, const TPixelRGBF32& rayDir){
 //=================================================================================
 void RenderPixel (float u, float v, TPixelRGBF32& pixel){
 
-    // make (u,v) go from [-1,1] instead of [0,1]
-    u = u * 2.0f - 1.0f;
-    v = v * 2.0f - 1.0f;
+	TVector3 rayStart = { camera->getPosition()[0] ,camera->getPosition()[1] ,camera->getPosition()[2] };
+	TVector3 rayDir = { camera->rasterToCamera(u ,v )[0] ,camera->rasterToCamera(u,v)[1] ,camera->rasterToCamera(u,v)[2] };
+	
+	//std::cout << rayStart[0] << "  " << rayStart[1] << "  " << rayStart[2] << std::endl;
 
-    // find where the ray hits the near plane, and normalize that vector to get the ray direction.
-    TVector3 rayStart = c_cameraPos + c_cameraFwd * c_nearPlaneDistance;
-    rayStart += c_cameraRight * c_windowRight * u;
-    rayStart += c_cameraUp * c_windowTop * v;
-    TVector3 rayDir = Normalize(rayStart - c_cameraPos);
-
-    // our pixel is the amount of light coming in to the position on our near plane from the ray direction
     pixel = L_in(rayStart, rayDir);
 }
 
@@ -322,6 +359,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParma, LPARAM lParam);
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 
+	
+
+	
 	AllocConsole();
 	AttachConsole(GetCurrentProcessId());
 	freopen("CON", "w", stdout);
@@ -369,16 +409,40 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	ShowWindow(hwnd, SW_SHOW);
 	UpdateWindow(hwnd);
 
+
+	
+
+	Vector3f camPos(278.0f, 273.0f, -800.0f);
+	Vector3f target(278.0f, 273.0f, 0.0f);
+	Vector3f up(0, 1.0, 0.0);
+	camera = new Projection(camPos, target, up);
+
+	std::cout << c_cameraPos[0] << "  " << c_cameraPos[1] << "  " << c_cameraPos[2] << std::endl;
+	std::cout << c_cameraRight[0] << "  " << c_cameraRight[1] << "  " << c_cameraRight[2] << std::endl;
+	std::cout << c_cameraUp[0] << "  " << c_cameraUp[1] << "  " << c_cameraUp[2] << std::endl;
+	std::cout << c_cameraFwd[0] << "  " << c_cameraFwd[1] << "  " << c_cameraFwd[2] << std::endl;
+
+	
+
+	std::cout << camera->getPosition()[0] << "  " << camera->getPosition()[1] << "  " << camera->getPosition()[2] << std::endl;
+	std::cout << camera->getCamX()[0] << "  " << camera->getCamX()[1] << "  " << camera->getCamX()[2] << std::endl;
+	std::cout << camera->getCamY()[0] << "  " << camera->getCamY()[1] << "  " << camera->getCamY()[2] << std::endl;
+	std::cout << camera->getViewDirection()[0] << "  " << camera->getViewDirection()[1] << "  " << camera->getViewDirection()[2] << std::endl;
+
 	// report the params
 	numThreads = FORCE_SINGLE_THREAD() ? 1 : std::thread::hardware_concurrency();
 	printf("Rendering a %zux%zu image with %zu samples per pixel and %zu ray bounces.\n", c_imageWidth, c_imageHeight, c_samplesPerPixel, c_numBounces);
 	printf("Using %zu threads.\n", numThreads);
 	threads.resize(numThreads);
-
+	int i = 0;
 	for (std::thread& t : threads){
-
-		t = std::thread([&]() { task.run(std::ref(timer), std::ref(g_pixels));});
+		i++;
+		t = std::thread([&]() { task.run(std::ref(timer), std::ref(g_pixels), std::ref(g_pixels2), i);});
 	}
+
+	renderTask = new RenderTask();
+
+	
 
 	while (true) {
 
@@ -386,8 +450,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			if (msg.message == WM_QUIT) {
 				
 				task.setWaiting();
-				std::unique_lock<std::mutex> mlock(mutex);
-				m_condVar.wait(mlock, [] {return  !waitAllThreads; });
+				while (!waitAllThreads) {
+					std::this_thread::yield();
+				}
+
+
 				task.stop();
 				break;				
 			}
@@ -406,8 +473,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 				}
 
 			}else {
-				//std::this_thread::sleep_for(std::chrono::seconds(5));
-
+	
+				ProcessInput(hwnd);
 				PostMessage(hwnd, WM_APP_MY_THREAD_UPDATE, NULL, 0);
 				hdc = GetDC(hwnd);
 				SwapBuffers(hdc);
@@ -420,6 +487,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		t.join();		
 	}
 
+
 	return msg.wParam;
 }
 
@@ -428,12 +496,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 
 	HDC hdc, hmemdc;
 	PAINTSTRUCT ps;
-
+	POINT pt;
+	RECT rect;
 
 	switch (message){
 
 	case WM_CREATE: {
 		
+		GetClientRect(hWnd, &rect);
+		g_OldCursorPos.x = rect.right / 2;
+		g_OldCursorPos.y = rect.bottom / 2;
+		pt.x = rect.right / 2;
+		pt.y = rect.bottom / 2;
+		SetCursorPos(pt.x, pt.y);
+		// set the cursor to the middle of the window and capture the window via "SendMessage"
+		SendMessage(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, MAKELPARAM(pt.x, pt.y));
+
+		g_pixels.resize(c_numPixels);
+		g_pixels2 = (unsigned char*)LocalAlloc(LPTR, c_imageHeight *c_imageWidth * 3 * sizeof(unsigned char));
+		memset(g_pixels2, 0, c_imageHeight *c_imageWidth * 3 * sizeof(unsigned char));
+
 		BITMAPINFO* bmi = (BITMAPINFO*)LocalAlloc(LPTR, sizeof(BITMAPINFOHEADER));
 		bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 		bmi->bmiHeader.biWidth = (LONG)c_imageWidth;
@@ -447,38 +529,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 		bmi->bmiHeader.biClrUsed = 0;
 		bmi->bmiHeader.biClrImportant = 0;
 
-		data = (unsigned char*)LocalAlloc(LPTR, bmi->bmiHeader.biSizeImage);
-		hbitmap = CreateDIBSection(NULL, bmi, DIB_RGB_COLORS, (VOID**)&data, NULL, 0);
-
-		// allocate memory for our rendered image
-		g_pixels.resize(c_numPixels);
-
-		for (size_t i = 0; i < c_numPixels; ++i) {
-			g_pixels[i][0] = 0.0;
-			g_pixels[i][1] = 0.0;
-			g_pixels[i][2] = 0.0;
-		}
+		hbitmap = CreateDIBSection(NULL, bmi, DIB_RGB_COLORS, (VOID**)&g_pixels2, NULL, 0);
 
 		return 0;
 	}case WM_PAINT: {
 		
-		// convert from RGB F32 to BGR U8
-		for (size_t i = 0, j = 0; i < c_numPixels; ++i, j = j + 3) {
-			const TPixelRGBF32& src = g_pixels[i];
-
-
-			// apply gamma correction
-			TPixelRGBF32 correctedPixel;
-			correctedPixel[0] = powf(src[0], 1.0f / 2.2f);
-			correctedPixel[1] = powf(src[1], 1.0f / 2.2f);
-			correctedPixel[2] = powf(src[2], 1.0f / 2.2f);
-
-			// clamp and convert
-			data[j] = uint8(Clamp(correctedPixel[2] * 255.0f, 0.0f, 255.0f));
-			data[j + 1] = uint8(Clamp(correctedPixel[1] * 255.0f, 0.0f, 255.0f));
-			data[j + 2] = uint8(Clamp(correctedPixel[0] * 255.0f, 0.0f, 255.0f));
-		}
-
+		
 		hdc = BeginPaint(hWnd, &ps);
 
 		hmemdc = CreateCompatibleDC(NULL);
@@ -497,7 +553,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 
 		PostQuitMessage(0);
 		return 0;
+	case WM_LBUTTONDOWN:{	
+		// Capture the mouse
+		setCursortoMiddle(hWnd);
+		SetCapture(hWnd);
 
+	} break;
 	}case WM_KEYDOWN: {
 
 		switch (wParam) {
@@ -510,8 +571,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 			
 			restartTask(hWnd);
 			break;
-		}
-						
+		}case VK_RETURN: {
+			
+			break;
+		}case VK_SPACE: {
+
+			ReleaseCapture();
+			return 0;
+		}break;
 						
 
 			return 0;
@@ -547,19 +614,96 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam){
 void restartTask(HWND hWnd) {
 
 	task.setWaiting();
-	std::unique_lock<std::mutex> mlock(mutex);
-	m_condVar.wait(mlock, [] {return  !waitAllThreads; });
 
-	for (size_t i = 0; i < c_numPixels; ++i) {
-		g_pixels[i][0] = 0.0;
-		g_pixels[i][1] = 0.0;
-		g_pixels[i][2] = 0.0;
+	
+
+
+	while (!waitAllThreads) {
+		std::this_thread::yield();	
 	}
+
+	memset(g_pixels2, 0, c_imageHeight *c_imageWidth * 3 * sizeof(unsigned char));
+
+	/*for (int i = 0; i < c_imageHeight *c_imageWidth * 3; i++) {
+		if (g_pixels2[i] != 0) {
+			g_pixels2[i] = 0;
+			std::cout << g_pixels2[i] << std::endl;
+		}
+	}*/
+
 
 	InvalidateRect(hWnd, NULL, true);
 	task.reset();
 	waitAllThreads = false;
 	finishedAllThreads = false;
 	timer.Restart();
+
 }
 
+void ProcessInput(HWND hWnd){
+
+	static UCHAR pKeyBuffer[256];
+	ULONG        Direction = 0;
+	POINT        CursorPos;
+	float        X = 0.0f, Y = 0.0f;
+
+	// Retrieve keyboard state
+	if (!GetKeyboardState(pKeyBuffer)) return;
+
+	// Check the relevant keys
+	if (pKeyBuffer['W'] & 0xF0) Direction |= DIR_FORWARD;
+	if (pKeyBuffer['S'] & 0xF0) Direction |= DIR_BACKWARD;
+	if (pKeyBuffer['A'] & 0xF0) Direction |= DIR_LEFT;
+	if (pKeyBuffer['D'] & 0xF0) Direction |= DIR_RIGHT;
+	if (pKeyBuffer['E'] & 0xF0) Direction |= DIR_UP;
+	if (pKeyBuffer['Q'] & 0xF0) Direction |= DIR_DOWN;
+
+	// Now process the mouse (if the button is pressed)
+	if (GetCapture() == hWnd){
+
+		// Hide the mouse pointer
+		SetCursor(NULL);
+
+		// Retrieve the cursor position
+		GetCursorPos(&CursorPos);
+
+		// Calculate mouse rotational values
+		X = (float)(g_OldCursorPos.x - CursorPos.x) * 0.1;
+		Y = (float)(g_OldCursorPos.y - CursorPos.y) * 0.1;
+
+		// Reset our cursor position so we can keep going forever :)
+		SetCursorPos(g_OldCursorPos.x, g_OldCursorPos.y);
+
+		if (Direction > 0 || X != 0.0f || Y != 0.0f){
+
+			// Rotate camera
+			if (X || Y){
+				camera->rotate(X, Y);
+				//
+			} // End if any rotation
+
+			if (Direction){
+				float dx = 0, dy = 0, dz = 0;
+
+				if (Direction & DIR_FORWARD) dz = +20.2f;
+				if (Direction & DIR_BACKWARD) dz = -20.2f;
+				if (Direction & DIR_LEFT) dx = -20.2f;
+				if (Direction & DIR_RIGHT) dx = +20.2f;
+				if (Direction & DIR_UP) dy = +20.2f;
+				if (Direction & DIR_DOWN) dy = -20.2f;
+				
+				camera->move(dx, dy, dz);
+			}
+			restartTask(hWnd);
+		}// End if any movement
+	} // End if Captured
+}
+
+void setCursortoMiddle(HWND hwnd) {
+
+	RECT rect;
+
+	GetClientRect(hwnd, &rect);
+	SetCursorPos(rect.right / 2, rect.bottom / 2);
+
+}

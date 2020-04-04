@@ -78,7 +78,7 @@ inline bool RayIntersects (const TVector3& rayPos, const TVector3& rayDir, const
         float d0 = (b[0] > 0.5f) ? 1.0f - b[0] : b[0];
         float d1 = (b[1] > 0.5f) ? 1.0f - b[1] : b[1];
         float d2 = (b[2] > 0.5f) ? 1.0f - b[2] : b[2];
-        float mind = std::min(d0, std::min(d1, d2));
+        float mind = min(d0, min(d1, d2));
         if (mind < 0.02f)
             info.m_material = &c_outlineMaterial;
     #endif

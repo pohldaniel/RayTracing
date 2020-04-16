@@ -1,5 +1,8 @@
 
 # RayTracer for educational purposes only
+Output from 19PathTracer-multithread
+
+![Output19](https://user-images.githubusercontent.com/30089026/79400502-b1968b80-7f86-11ea-8bcb-010071ae74df.jpg)
 
 Output from 18RayTracer-pathTracer
 

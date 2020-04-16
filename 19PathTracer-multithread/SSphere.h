@@ -51,9 +51,9 @@ inline bool RayIntersects (const TVector3& rayPos, const TVector3& rayDir, const
     if (Dot(normal, rayDir) > 0.0f)
         normal *= -1.0f;
 
-    info.m_collisionTime = collisionTime;
+    /*info.m_collisionTime = collisionTime;
     info.m_intersectionPoint = rayPos + rayDir * collisionTime;
     info.m_material = &sphere.m_material;
-    info.m_surfaceNormal = normal;
+    info.m_surfaceNormal = normal;*/
     return true;
 }

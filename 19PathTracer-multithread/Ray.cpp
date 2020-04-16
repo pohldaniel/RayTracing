@@ -8,7 +8,7 @@ Ray::Ray(){
 	Ray::depth = 0;	
 }
 
-Ray::Ray(Vector3f &origin, Vector3f &direction){
+Ray::Ray(const Vector3f &origin, const Vector3f &direction){
 	Ray::origin = origin;
 	Ray::direction = direction;
 	Ray::depth = 0;

@@ -35,6 +35,8 @@ public:
 	
 	void addLight(Light* light);
 	Hit hitObjects(Ray& ray);
+	Hit hitObjects2(Ray& ray);
+
 	Hit pathTracerIt(Ray& primaryRay);
 
 	Color traceRay(Ray& ray);
@@ -51,7 +53,7 @@ public:
 
 	void setSampler(Sampler* sampler);
 
-private:
+
 
 	std::shared_ptr<Primitive> m_primitive;
 	std::vector<std::shared_ptr<Primitive>>	m_primitives;

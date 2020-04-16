@@ -14,6 +14,10 @@
 #include <cmath>
 
 #include "STimer.h"
+#include "Camera.h"
+#include "Vector.h"
+#include "Color.h"
+
 
 
 class Stoppable2 {
@@ -65,7 +69,7 @@ public:
 
 class RenderTask :  public Stoppable2 {
 
-
+	
 public:
 
 	float RandomFloat() {
@@ -86,6 +90,26 @@ public:
 		return dist(mt);
 	}
 
+
+	RenderTask::RenderTask() {
+
+		
+
+	}
+
+
+	
+
+	
+
+	
+
+	
+
+
+	
+
+
 	std::mutex mutex2;
 	bool waitAllThreads2;
 	bool finishedAllThreads2;
@@ -93,13 +117,13 @@ public:
 	const size_t c_imageHeight2 = 512;
 	const size_t c_samplesPerPixel2 = 100;
 
-	RenderTask();
+
 
 	int currentRowIndex = 0;
 	bool m_wait = false;
 	bool m_finished = false;
 
-
+	Projection *camera;
 
 	int getCurrentRowIndex() { return currentRowIndex; }
 	void reset() { currentRowIndex = 0; m_finished = false;  m_wait = false; }
@@ -107,8 +131,14 @@ public:
 	void setFinished() { m_finished = true; }
 	bool isFinished() { return m_finished; }
 
+
+
+
+	
+
+
 	// Function to be executed by thread function
-	void run(STimer& timer, unsigned char* &pixels2, int threadnum) {
+	void RenderTask::run(STimer& timer, unsigned char* &pixels2, int threadnum) {
 
 		// Check if thread is requested to stop ?
 		while (stopRequested() == false) {
@@ -127,7 +157,7 @@ public:
 
 			while (((rowIndex < c_imageHeight2 && !m_finished && !m_wait))) {
 
-				for (size_t x = 0, k = 0; x < c_imageWidth2; ++x, k = k + 3) {
+				for (size_t x = 0; x < c_imageWidth2; ++x) {
 
 					if (m_wait) {
 						break;
@@ -139,6 +169,9 @@ public:
 						float jitterY = 1 ? RandomFloat() : 0.5f;
 						float u = ((float)x + jitterX) / (float)c_imageWidth2;
 						float v = ((float)rowIndex + jitterY) / (float)c_imageHeight2;
+
+
+						
 
 						//TPixelRGBF32 sample;
 						//RenderPixel(u, v, sample);
@@ -155,15 +188,6 @@ public:
 				// move to next row
 				rowIndex = currentRowIndex++;
 
-				// report our progress (from a single thread only)
-				/*if (firstThread) {
-				if (m_wait) {
-				std::cout << "Hello from thread:  " << threadnum << std::endl;
-				break;
-				}
-
-				timer.ReportProgress(rowIndex, c_imageHeight);
-				}*/
 
 			}// rendering
 
@@ -174,9 +198,8 @@ public:
 			mutex2.unlock();
 		}// stop requested
 
-			 //std::cout << "Task End" << std::endl;
+		 //std::cout << "Task End" << std::endl;
 	}// end run
-
 
 };
 #endif // _RENDERTASK_H

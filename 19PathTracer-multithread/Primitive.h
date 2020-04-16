@@ -87,7 +87,7 @@ public:
 	virtual Color getColor(const Vector3f& pos);
 	
 	virtual Vector3f sample(void);
-	virtual float pdf(Hit &hit);
+	virtual float pdf(const Hit &hit);
 
 	BBox box;
 
@@ -99,6 +99,7 @@ protected:
 	std::shared_ptr<Material> m_material;
 	std::shared_ptr<Texture> m_texture;
 	Color m_color;
+	Vector3f m_normal;
 
 	void clip(int axis, float position, BBox& leftBoundingBox, BBox& rightBoundingBox);
 	virtual void calcBounds() = 0;
@@ -134,6 +135,7 @@ public:
 private:
 	Matrix4f T;
 	Matrix4f invT;
+	Matrix4f orientation;
 
 	std::shared_ptr<Primitive> m_primitive;
 
@@ -205,38 +207,31 @@ public:
 	std::pair <float, float> getUV(const Vector3f& a_pos);
 
 	void setUV(const Vector2f &uv1, const Vector2f &uv2, const Vector2f &uv3){
-
 		m_uv1 = uv1; m_uv2 = uv2; m_uv3 = uv3;
 		m_hasTextureCoords = true;
 	}
 
 	void setNormal(const Vector3f &n1, const Vector3f &n2, const Vector3f &n3){
-
 		m_n1 = n1; m_n2 = n2; m_n3 = n3;
-		m_hasNormals = true;
-		
+		m_hasNormals = true;		
 	}
 
 	
-	void setTangents(const Vector3f &t1, const Vector3f &t2, const Vector3f &t3){
-		
+	void setTangents(const Vector3f &t1, const Vector3f &t2, const Vector3f &t3){		
 		m_t1 = t1; m_t2 = t2; m_t3 = t3;
 		m_hasTangents = true;
 	}
 
 	void setBiTangents(const Vector3f &bt1, const Vector3f &bt2, const Vector3f &bt3){
-
 		m_bt1 = bt1; m_bt2 = bt2; m_bt3 = bt3;
 	}
 
 	void setNormalsDu(const Vector3f &nDu1, const Vector3f &nDu2, const Vector3f &nDu3){
-
 		m_nDu1 = nDu1; m_nDu2 = nDu2; m_nDu3 = nDu3;
 		m_hasNormalDerivatives = true;
 	}
 
 	void setNormalsDv(const Vector3f &nDv1, const Vector3f &nDv2, const Vector3f &nDv3){
-
 		m_nDv1 = nDv1; m_nDv2 = nDv2; m_nDv3 = nDv3;
 	}
 
@@ -247,9 +242,6 @@ private:
 	Vector3f m_edge1, m_edge2;
 	Vector2f m_uv1, m_uv2, m_uv3;
 	
-	//flat shading
-	Vector3f m_normal;
-
 	//smooth shading
 	Vector3f m_n1, m_n2, m_n3;
 	Vector3f m_t1, m_t2, m_t3;
@@ -289,7 +281,6 @@ public:
 private:
 
 	float distance;
-	Vector3f m_normal;
 	Vector3f m_u, m_v;
 
 	void calcBounds();
@@ -315,7 +306,6 @@ public:
 private:
 
 	Vector3f m_center;
-	Vector3f m_normal;
 	float m_radius;
 	float m_sqRadius;
 
@@ -342,7 +332,6 @@ public:
 private:
 
 	Vector3f m_center;
-	Vector3f m_normal;
 	float m_outerRadius;
 	float m_innerRadius;
 	float m_sqOuterRadius;
@@ -428,53 +417,98 @@ private:
 	Sides side = Sides::None;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
-namespace primitive{
+class AABB : public Primitive {
 
-	class Rectangle : public Primitive{
+public:
+	AABB();
+	AABB(Vector3f pos, Vector3f size);
+	~AABB();
+
+	void hit(Hit &hit);
+	bool shadowHit(Ray &ray, float &hitParameter);
+	Vector3f getNormal(const Vector3f& pos);
+	Vector3f getTangent(const Vector3f& pos);
+	Vector3f getBiTangent(const Vector3f& pos);
+	Vector3f getNormalDu(const Vector3f& pos);
+	Vector3f getNormalDv(const Vector3f& pos);
+	std::pair <float, float> getUV(const Vector3f& a_pos);
+
+private:
+
+	void calcBounds();
+
+	Vector3f m_pos;
+	Vector3f m_size;
+};
+//////////////////////////////////////////////////////////////////////////////////////////////////
+class Quad : public Primitive{
 
 
-	public:
-		Rectangle();
-		Rectangle(Vector3f pos, Vector3f a, Vector3f b);
-		~Rectangle();
+public:
+	Quad();
+	Quad(Vector3f pos, Vector3f a, Vector3f b);
+	~Quad();
 
-		void hit(Hit &hit);
-		bool shadowHit(Ray &ray, float &hitParameter);
-		Vector3f getNormal(const Vector3f& pos);
-		Vector3f getTangent(const Vector3f& pos);
-		Vector3f getBiTangent(const Vector3f& pos);
-		Vector3f getNormalDu(const Vector3f& pos);
-		Vector3f getNormalDv(const Vector3f& pos);
-		std::pair <float, float> getUV(const Vector3f& a_pos);
+	void hit(Hit &hit);
+	bool shadowHit(Ray &ray, float &hitParameter);
+	Vector3f getNormal(const Vector3f& pos);
+	Vector3f getTangent(const Vector3f& pos);
+	Vector3f getBiTangent(const Vector3f& pos);
+	Vector3f getNormalDu(const Vector3f& pos);
+	Vector3f getNormalDv(const Vector3f& pos);
+	std::pair <float, float> getUV(const Vector3f& a_pos);
 
-		void flipNormal();
+	void flipNormal();
 
-		void setSampler(Sampler* sampler);
-		Vector3f sample();
-		float pdf(Hit &hit);		
-	private:
+	void setSampler(Sampler* sampler);
+	Vector3f sample();
+	float pdf(const Hit &hit);
+private:
 
-		void calcBounds();
+	void calcBounds();
 
-		Vector3f m_normal;
-		Vector3f		m_pos;   			// corner vertex 
-		Vector3f		m_a;				// side
-		Vector3f		m_b;				// side
-		float           m_lenA;
-		float           m_lenB;
-		float			m_sqA;				// square of the length of side a
-		float			m_sqB;				// square of the length of side b
+	Vector3f		m_pos;   			// corner vertex 
+	Vector3f		m_a;				// side
+	Vector3f		m_b;				// side
+	float           m_lenA;
+	float           m_lenB;
+	float			m_sqA;				// square of the length of side a
+	float			m_sqB;				// square of the length of side b
 
-		float			m_area;			// for rectangular lights
-		float			m_invArea;		// for rectangular lights
+	float			m_area;			// for rectangular lights
+	float			m_invArea;		// for rectangular lights
 
 		
-		Vector3f m_v;
-		float    m_lenV;
-		std::shared_ptr<Sampler> m_sampler;
+	Vector3f m_v;
+	float    m_lenV;
+	std::shared_ptr<Sampler> m_sampler;
 	
-	};
-}
+};
+//////////////////////////////////////////////////////////////////////////////////////////////////
+class QuadCC : public Primitive {
+
+public:
+	QuadCC();
+	QuadCC(const Vector3f& a, const Vector3f& b, const Vector3f& c, const Vector3f& d);
+	~QuadCC();
+
+	void hit(Hit &hit);
+	bool shadowHit(Ray &ray, float &hitParameter);
+	Vector3f getNormal(const Vector3f& pos);
+	Vector3f getTangent(const Vector3f& pos);
+	Vector3f getBiTangent(const Vector3f& pos);
+	Vector3f getNormalDu(const Vector3f& pos);
+	Vector3f getNormalDv(const Vector3f& pos);
+	std::pair <float, float> getUV(const Vector3f& a_pos);
+	void flipNormal();
+	float pdf(const Hit &hit);
+private:
+
+	void calcBounds();
+
+	Vector3f m_a, m_b, m_c, m_d;
+	float m_invArea;
+};
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class OpenCylinder : public Primitive{
 
@@ -501,7 +535,6 @@ private:
 	double		m_top;				// top y value
 	double		m_radius;			// radius
 	double		m_invRadius;  		// one over the radius	
-	Vector3f    m_normal;
 };
 //////////////////////////////////////////////////////////////////////////////////////////////////
 class OpenCone : public Primitive{

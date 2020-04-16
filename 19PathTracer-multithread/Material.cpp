@@ -199,9 +199,7 @@ Color Phong::shade(Hit &hit){
 ////////////////////////////////////////////////////Matte///////////////////////////////////////////////////////////
 Matte::Matte() : Material(){
 	m_ka = 1.0;
-	m_kd = 1.0;
-
-	
+	m_kd = 1.0;	
 }
 
 Matte::Matte(const Color &ambient, const Color &diffuse, const Color &specular) : Material(ambient, diffuse, specular){
@@ -217,12 +215,10 @@ Matte::Matte(const std::shared_ptr<Material> material) : Material(material){
 Matte::~Matte(){}
 
 void Matte::setKd(const float kd){
-
 	m_kd = kd;
 }
 
 void Matte::setKa(const float ka){
-
 	m_ka = ka;
 }
 
@@ -473,24 +469,21 @@ Color Reflective::shade(Hit &hit){
 ////////////////////////////////////////////////////Emissive//////////////////////////////////////////////////////
 Emissive::Emissive() : Material(), m_ls(1.0) { }
 
-Emissive::Emissive(const Color &ambient, const Color &diffuse, const Color &specular) : Material(ambient, diffuse, specular), m_ls(1.0){}
+Emissive::Emissive(const Color &ambient, const Color &diffuse, const Color &specular) : Material(ambient, diffuse, specular), m_ls(1.0){ }
 
-Emissive::Emissive(const std::shared_ptr<Material> material) : Material(material){}
+Emissive::Emissive(const std::shared_ptr<Material> material) : Material(material){ }
 
 Emissive::~Emissive(){}
 
 void Emissive::setScaleRadiance(const float ls){
-
 	m_ls = ls;
 }
 
 Color Emissive::getLe(Hit &hit) const{
-
 	float dot = Vector3f::dot(hit.originalRay.direction, hit.normal);
 
 	if (dot <= 0.0){
 		return m_ambient * m_ls;
-
 	}else{
 		return Color(0.0, 0.0, 0.0);
 	}

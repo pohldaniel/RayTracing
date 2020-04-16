@@ -1,48 +1,56 @@
 #pragma once
-
+#include <memory>
 #include "TVector3.h"
 #include "SMaterial.h"
 #include "SRayHitInfo.h"
-
+#include "Hit.h"
+#include "Material.h"
 // assumes a,b,c,d are counter clockwise
 struct SQuad
 {
-    SQuad(const TVector3& a, const TVector3& b, const TVector3& c, const TVector3& d, const SMaterial& material)
+    SQuad(const Vector3f& a, const Vector3f& b, const Vector3f& c, const Vector3f& d, const SMaterial& material)
         : m_material(material)
         , m_a(a)
         , m_b(b)
         , m_c(c)
         , m_d(d)
     {
-        TVector3 e1 = m_b - m_a;
-        TVector3 e2 = m_c - m_a;
-        m_normal = Normalize(Cross(e1, e2));
+		Vector3f e1 = m_b - m_a;
+		Vector3f e2 = m_c - m_a;
+        m_normal = Vector3f::cross(e1, e2).normalize();
+		
     }
 
-    TVector3    m_a, m_b, m_c, m_d;
-    SMaterial   m_material;
+	void setMaterial(Material* material2) {
+		m_material2 = material2;
+	}
 
+	Vector3f    m_a, m_b, m_c, m_d;
+    SMaterial   m_material;
+	Material* m_material2;
     // calculated!
-    TVector3    m_normal;
+	Vector3f    m_normal;
 };
 
+
+
 //=================================================================================
-inline bool RayIntersects(const TVector3& rayPos, const TVector3& rayDir, const SQuad& quad, SRayHitInfo& info)
+inline bool RayIntersects(const Vector3f& rayPos, const Vector3f& rayDir, const SQuad& quad, SRayHitInfo& info, Hit& hit)
 {
     // This function adapted from "Real Time Collision Detection" 5.3.5 Intersecting Line Against Quadrilateral
     // IntersectLineQuad()
-    TVector3 pa = quad.m_a - rayPos;
-    TVector3 pb = quad.m_b - rayPos;
-    TVector3 pc = quad.m_c - rayPos;
+	Vector3f pa = quad.m_a - rayPos;
+	Vector3f pb = quad.m_b - rayPos;
+    Vector3f pc = quad.m_c - rayPos;
     // Determine which triangle to test against by testing against diagonal first
-    TVector3 m = Cross(pc, rayDir);
-    TVector3 r;
-    float v = Dot(pa, m); // ScalarTriple(pq, pa, pc);
+	Vector3f m = Vector3f::cross(pc, rayDir);
+	Vector3f r;
+    float v = Vector3f::dot(pa, m); // ScalarTriple(pq, pa, pc);
     if (v >= 0.0f) {
         // Test intersection against triangle abc
-        float u = -Dot(pb, m); // ScalarTriple(pq, pc, pb);
-        if (u < 0.0f) return false;
-        float w = ScalarTriple(rayDir, pb, pa);
+        float u = -Vector3f::dot(pb, m); // ScalarTriple(pq, pc, pb);
+        if (u < 0.0f) return false;	
+        float w = Vector3f::dot(Vector3f::cross(rayDir, pb), pa);
         if (w < 0.0f) return false;
         // Compute r, r = u*a + v*b + w*c, from barycentric coordinates (u, v, w)
         float denom = 1.0f / (u + v + w);
@@ -53,10 +61,10 @@ inline bool RayIntersects(const TVector3& rayPos, const TVector3& rayDir, const 
     }
     else {
         // Test intersection against triangle dac
-        TVector3 pd = quad.m_d - rayPos;
-        float u = Dot(pd, m); // ScalarTriple(pq, pd, pc);
-        if (u < 0.0f) return false;
-        float w = ScalarTriple(rayDir, pa, pd);
+		Vector3f pd = quad.m_d - rayPos;
+        float u = Vector3f::dot(pd, m); // ScalarTriple(pq, pd, pc);
+        if (u < 0.0f) return false;		
+        float w = Vector3f::dot(Vector3f::cross(rayDir, pa), pd);
         if (w < 0.0f) return false;
         v = -v;
         // Compute r, r = u*a + v*d + w*c, from barycentric coordinates (u, v, w)
@@ -69,9 +77,9 @@ inline bool RayIntersects(const TVector3& rayPos, const TVector3& rayDir, const 
 
     // make sure normal is facing opposite of ray direction.
     // this is for if we are hitting the object from the inside / back side.
-    TVector3 normal = quad.m_normal;
-    if (Dot(quad.m_normal, rayDir) > 0.0f)
-        normal *= -1.0f;
+	Vector3f normal = quad.m_normal;
+    if (Vector3f::dot(quad.m_normal, rayDir) > 0.0f)
+        normal = -normal;
 
     // figure out the time t that we hit the plane (quad)
     float t;
@@ -87,12 +95,18 @@ inline bool RayIntersects(const TVector3& rayPos, const TVector3& rayDir, const 
         return false;
 
     //enforce a max distance if we should
-    if (info.m_collisionTime >= 0.0 && t > info.m_collisionTime)
-        return false;
+    /*if (info.m_collisionTime >= 0.0 && t > info.m_collisionTime)
+        return false;*/
 
     info.m_collisionTime = t;
     info.m_intersectionPoint = r;
     info.m_material = &quad.m_material;
     info.m_surfaceNormal = normal;
+
+	hit.t = t;
+	hit.hitPoint = r;
+	hit.normal = normal;
+	//hit.material = quad.m_material2;
+
     return true;
 }

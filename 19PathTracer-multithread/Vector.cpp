@@ -432,8 +432,6 @@ float Vector3f::dot(const Vector3f &p, const Vector3f &q){
 	return (p.vec[0] * q.vec[0]) + (p.vec[1] * q.vec[1]) + (p.vec[2] * q.vec[2]);
 }
 
-
-
 float Vector3f::magnitude() const{
 
 	return sqrtf((vec[0] * vec[0]) + (vec[1] * vec[1]) + (vec[2] * vec[2]));

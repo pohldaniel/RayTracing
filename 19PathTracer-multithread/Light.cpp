@@ -213,7 +213,7 @@ float AreaLight::G(Hit &hit) const {
 	return (lambda1 / d2);
 }
 
-float AreaLight::pdf(Hit &hit) const {
+float AreaLight::pdf(const Hit &hit) const {
 	return (m_primitive->pdf(hit));
 	
 }

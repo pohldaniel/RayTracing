@@ -9,7 +9,8 @@
 
 
 class Scene;
-//class Primitive;
+class Primitive;
+class Material;
 
 class Hit {
 
@@ -25,8 +26,9 @@ public:
 	Vector3f hitPoint;
 	Ray originalRay;
 	Ray transformedRay;
-	//std::shared_ptr<Primitive> primitive;
-	std::shared_ptr<Scene> scene;
+	const Primitive* primitive;
+	Material* material;
+	Scene* scene;
 	
 	Hit();
 	

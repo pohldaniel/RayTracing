@@ -104,6 +104,6 @@ private:
 class AreaLight : public Light {	friend class Matte;public:		AreaLight();	AreaLight(const Color &ambiente, const Color &diffuse, const Color &specular);	AreaLight(const Color &color);	~AreaLight();	void setObject(Primitive* primitive);	Vector3f getDirection(const Vector3f &hitPoint);
 	Color L(Hit &hit);
 	float G(Hit &hit) const;
-	float pdf(Hit &hit) const;
+	float pdf(const Hit &hit) const;
 		std::shared_ptr<Primitive> m_primitive;private:		std::shared_ptr<Material> m_material;	Vector3f m_samplePoint;	Vector3f m_lightNormal;	Vector3f m_wi;};
 #endif

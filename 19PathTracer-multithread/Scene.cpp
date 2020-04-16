@@ -88,6 +88,46 @@ ViewPlane Scene::getViewPlane(){
 	return m_vp;
 }
 
+Hit Scene::hitObjects2(Ray& _ray) {
+
+	float	 tmin = FLT_MAX;
+	Hit		 hit;
+	
+	hit.scene= this;
+	hit.originalRay = _ray;
+
+	Ray ray;
+	int index = 0;
+	bool hitObject = false;
+
+	 Primitive* primitive = NULL;
+
+	for (unsigned int j = 0; j < m_primitives.size(); j++) {
+		hit.transformedRay = _ray;
+		m_primitives[j]->hit(hit);
+
+		if (hit.hitObject && hit.t < tmin) {
+			tmin = hit.t;
+			index = j;
+			ray = hit.transformedRay;
+			hitObject = true;
+			primitive = m_primitives[j].get();
+		}
+
+	}
+
+	if (hitObject ) {
+		//calculate the hitpoint an other hit parameters inside the hit function to speed up the rendering
+		hit.hitPoint = ray.origin + ray.direction * tmin;	
+		hit.normal = primitive->getNormal(hit.hitPoint);
+		hit.color = primitive->getColor(hit.hitPoint);
+		hit.material = primitive->getMaterial().get();
+		hit.primitive = primitive;
+		hit.hitObject = true;
+	}
+
+	return hit;
+}
 
 Hit Scene::hitObjects(Ray& _ray)  {
 	
@@ -100,7 +140,7 @@ Hit Scene::hitObjects(Ray& _ray)  {
 	Hit		 hit;
 	
 	hit.color = m_background;
-	hit.scene = m_scene;
+	hit.scene = this;
 	hit.originalRay = _ray;
 	m_primitive = NULL;
 	//after the for loop the hit.transformedRay is transformed to next local space of the primitive
@@ -126,7 +166,6 @@ Hit Scene::hitObjects(Ray& _ray)  {
 	}
 
 	if (hitObject){
-	
 			hit.t = tmin;
 			hit.hitPoint = ray.origin + ray.direction * tmin;
 			hit.color = m_primitive->getColor(hit.hitPoint);
@@ -241,7 +280,7 @@ Hit Scene::pathTracerIt(Ray& primaryRay){
 	Hit		 hit;
 
 	hit.color = m_background;
-	hit.scene = m_scene;
+	hit.scene = this;
 	hit.originalRay = ray;
 	m_primitive = NULL;
 	bool hitObject = false;

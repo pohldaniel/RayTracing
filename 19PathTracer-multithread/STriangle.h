@@ -67,7 +67,7 @@ inline bool RayIntersects (const TVector3& rayPos, const TVector3& rayDir, const
     if (Dot(triangle.m_normal, rayDir) > 0.0f)
         normal *= -1.0f;
 
-    info.m_collisionTime = t;
+    /*info.m_collisionTime = t;
     info.m_intersectionPoint = rayPos + rayDir * t;
     info.m_material = &triangle.m_material;
     info.m_surfaceNormal = normal;
@@ -81,7 +81,7 @@ inline bool RayIntersects (const TVector3& rayPos, const TVector3& rayDir, const
         float mind = min(d0, min(d1, d2));
         if (mind < 0.02f)
             info.m_material = &c_outlineMaterial;
-    #endif
+    #endif*/
 
     return true;
 }

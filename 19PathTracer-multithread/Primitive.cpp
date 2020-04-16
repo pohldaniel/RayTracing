@@ -1,5 +1,6 @@
 #include <array>
 #include <random>
+#include <iostream>
 #include "Model.h"
 
 bool BBox::intersect(const Ray& a_ray) {
@@ -135,7 +136,7 @@ void Primitive::setColor(Color color){
 }
 
 Color Primitive::getColor(const Vector3f& pos){
-	
+
 	if (m_texture){
 		
 		if (m_texture->getProcedural()){
@@ -169,7 +170,7 @@ Vector3f Primitive::sample(void){
 	return Vector3f(0.0, 0.0, 0.0);
 }
 
-float Primitive::pdf(Hit &hit){
+float Primitive::pdf(const Hit &hit){
 	return 0.0;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -203,6 +204,8 @@ void Instance::rotate(const Vector3f &axis, float degrees){
 		rotMtx[0][1], rotMtx[1][1], rotMtx[2][1], rotMtx[3][1],
 		rotMtx[0][2], rotMtx[1][2], rotMtx[2][2], rotMtx[3][2],
 		rotMtx[0][3], rotMtx[1][3], rotMtx[2][3], rotMtx[3][3]);
+
+	orientation = rotMtx * orientation;
 
 	T = rotMtx * T;
 	invT = invT * invRotMtx;
@@ -249,10 +252,10 @@ void Instance::hit(Hit &hit){
 
 	if (m_primitive->bounds && !m_primitive->box.intersect(hit.transformedRay)){
 
-		hit.hitObject = false;
+		//hit.hitObject = false;
 		return;
 	}else{
-
+		
 		m_primitive->hit(hit);
 		
 	}
@@ -346,8 +349,8 @@ std::shared_ptr<Material>Instance::getMaterial(){
 }
 
 Vector3f Instance::getNormal(const Vector3f& pos){
-
-	return m_primitive->getNormal(pos) * invT;
+	
+	return m_primitive->getNormal(pos)* invT;
 }
 
 Vector3f Instance::getTangent(const Vector3f& pos){
@@ -1859,8 +1862,165 @@ std::pair <float, float> Cube::getUV(const Vector3f& a_pos){
 	return std::make_pair(u, v);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-using namespace primitive;
-Rectangle::Rectangle() : Primitive(){
+AABB::AABB() : Primitive() {
+
+	AABB::m_pos = Vector3f(0.0, 0.0, 0.0);
+	AABB::m_size = Vector3f(1.0, 1.0, 1.0);
+	calcBounds();
+}
+
+AABB::AABB(Vector3f pos, Vector3f size) : Primitive() {
+
+	AABB::m_pos = pos;
+	AABB::m_size = size;
+	calcBounds();
+
+}
+
+AABB::~AABB() {
+
+}
+
+void AABB::calcBounds() {
+
+	AABB::bounds = false;
+}
+
+void AABB::hit(Hit &hit) {
+
+	float rayMinTime = 0.0;
+	float rayMaxTime = hit.hitObject ? hit.t : FLT_MAX;
+
+
+	// find the intersection of the intersection times of each axis to see if / where the
+	// ray hits.
+	for (int axis = 0; axis < 3; ++axis)	{
+		//calculate the min and max of the box on this axis
+		float axisMin = m_pos[axis] - m_size[axis];
+		float axisMax = m_pos[axis] + m_size[axis];
+
+		//if the ray is paralel with this axis
+		if (abs(hit.transformedRay.direction[axis]) < 0.0001f){
+
+			//if the ray isn't in the box, bail out we know there's no intersection
+			if (hit.transformedRay.origin[axis] < axisMin || hit.transformedRay.origin[axis] > axisMax){
+				hit.hitObject = false;
+				return;
+			}
+				
+		}else{
+
+			//figure out the intersection times of the ray with the 2 values of this axis
+			float axisMinTime = (axisMin - hit.transformedRay.origin[axis]) / hit.transformedRay.direction[axis];
+			float axisMaxTime = (axisMax - hit.transformedRay.origin[axis]) / hit.transformedRay.direction[axis];
+
+			//make sure min < max
+			if (axisMinTime > axisMaxTime){
+
+				float temp = axisMinTime;
+				axisMinTime = axisMaxTime;
+				axisMaxTime = temp;
+			}
+
+			//union this time slice with our running total time slice
+			if (axisMinTime > rayMinTime)
+				rayMinTime = axisMinTime;
+
+			if (axisMaxTime < rayMaxTime)
+				rayMaxTime = axisMaxTime;
+
+			//if our time slice shrinks to below zero of a time window, we don't intersect
+			if (rayMinTime > rayMaxTime) {
+				hit.hitObject = false;
+				return;
+			}			
+		}
+	}
+
+	//if we got here, we do intersect, return our collision info
+	bool fromInside = (rayMinTime == 0.0);
+	float collisionTime;
+	if (fromInside)
+		collisionTime = rayMaxTime;
+	else
+		collisionTime = rayMinTime;
+
+	Vector3f intersectionPoint = hit.transformedRay.origin + hit.transformedRay.direction * collisionTime;
+
+	// figure out the surface normal by figuring out which axis we are closest to
+	float closestDist = FLT_MAX;
+	Vector3f normal;
+	float u = 0.0f;
+	float v = 0.0f;
+	for (int axis = 0; axis < 3; ++axis){
+
+		float distFromPos = abs(m_pos[axis] - intersectionPoint[axis]);
+		float distFromEdge = abs(distFromPos - m_size[axis]);
+
+		if (distFromEdge < closestDist){
+
+			closestDist = distFromEdge;
+			normal = { 0.0f, 0.0f, 0.0f };
+			if (intersectionPoint[axis] < m_pos[axis])
+				normal[axis] = -1.0;
+			else
+				normal[axis] = 1.0;
+		}
+	}
+
+	// make sure normal is facing opposite of ray direction.
+	// this is for if we are hitting the object from the inside / back side.
+	/*if (Vector3f::dot(normal, hit.transformedRay.direction) > 0.0f)
+		normal = -normal;*/
+
+
+	hit.t = collisionTime;
+	hit.hitObject = true;
+	m_normal = normal;
+}
+
+bool AABB::shadowHit(Ray &ray, float &hitParameter) {
+
+	Hit	hitShadow;
+	hitShadow.transformedRay = ray;
+	hit(hitShadow);
+	hitParameter = hitShadow.t;
+	return hitShadow.hitObject;
+}
+
+Vector3f AABB::getNormal(const Vector3f& a_pos) {
+
+	//calaculated at the hit function
+	return m_normal;
+}
+
+
+Vector3f AABB::getTangent(const Vector3f& a_pos) {
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+
+Vector3f AABB::getBiTangent(const Vector3f& a_pos) {
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+Vector3f AABB::getNormalDu(const Vector3f& pos) {
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+Vector3f AABB::getNormalDv(const Vector3f& pos) {
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+std::pair<float, float> AABB::getUV(const Vector3f& a_pos) {
+
+	float u = 0.0;
+	float v = 1.0;
+
+	return std::make_pair(u, v);
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+Quad::Quad() : Primitive(){
 
 	m_pos = Vector3f(-1.0, 0.0, -1.0);
 	m_a = Vector3f(0.0, 0.0, 2.0);
@@ -1877,7 +2037,7 @@ Rectangle::Rectangle() : Primitive(){
 	calcBounds();
 }
 
-Rectangle::Rectangle(Vector3f pos, Vector3f a, Vector3f b) : Primitive(){
+Quad::Quad(Vector3f pos, Vector3f a, Vector3f b) : Primitive(){
 
 	m_pos = pos;
 	m_a = a;
@@ -1898,26 +2058,26 @@ Rectangle::Rectangle(Vector3f pos, Vector3f a, Vector3f b) : Primitive(){
 
 }
 
-Rectangle::~Rectangle(){
+Quad::~Quad(){
 
 }
 
-void Rectangle::flipNormal(){
+void Quad::flipNormal(){
 
 	m_normal = -m_normal;
 }
 
-void Rectangle::calcBounds(){
+void Quad::calcBounds(){
 
 	double delta = 0.0001;
 
 	box.m_pos = m_pos - Vector3f(delta, delta, -delta);
 	box.m_size = m_a + m_b + Vector3f(delta, delta, +delta);
 	
-	Rectangle::bounds = false;
+	bounds = false;
 }
 
-void  Rectangle::hit(Hit &hit){
+void  Quad::hit(Hit &hit){
 	
 	float result = Vector3f::dot(m_pos - hit.transformedRay.origin, m_normal) / Vector3f::dot(hit.transformedRay.direction, m_normal);
 
@@ -1948,7 +2108,7 @@ void  Rectangle::hit(Hit &hit){
 	hit.hitObject = true;
 }
 
-bool Rectangle::shadowHit(Ray &ray, float &hitParameter){
+bool Quad::shadowHit(Ray &ray, float &hitParameter){
 
 	Hit	hitShadow;
 	hitShadow.transformedRay = ray;
@@ -1957,31 +2117,31 @@ bool Rectangle::shadowHit(Ray &ray, float &hitParameter){
 	return hitShadow.hitObject;
 }
 
-Vector3f Rectangle::getNormal(const Vector3f& a_pos){
+Vector3f Quad::getNormal(const Vector3f& a_pos){
 
-		return m_normal;	
+	return m_normal;	
 }
 
-Vector3f Rectangle::getTangent(const Vector3f& a_pos){
+Vector3f Quad::getTangent(const Vector3f& a_pos){
 
 	return Vector3f(0.0, 0.0, 0.0);
 }
 
 
-Vector3f Rectangle::getBiTangent(const Vector3f& a_pos){
+Vector3f Quad::getBiTangent(const Vector3f& a_pos){
 
 	return Vector3f(0.0, 0.0, 0.0);
 }
 
-Vector3f Rectangle::getNormalDu(const Vector3f& pos){
+Vector3f Quad::getNormalDu(const Vector3f& pos){
 	return Vector3f(0.0, 0.0, 0.0);
 }
 
-Vector3f Rectangle::getNormalDv(const Vector3f& pos){
+Vector3f Quad::getNormalDv(const Vector3f& pos){
 	return Vector3f(0.0, 0.0, 0.0);
 }
 
-std::pair <float, float> Rectangle::getUV(const Vector3f& pos){
+std::pair <float, float> Quad::getUV(const Vector3f& pos){
 
 	//transform the hitPoint to the local system of the rectangle (pos - m_pos)
 	Vector3f transformedPos = pos - m_pos;
@@ -1995,12 +2155,12 @@ std::pair <float, float> Rectangle::getUV(const Vector3f& pos){
 	//return std::make_pair((pos[0] - m_pos[0]) * (1.0 / (m_lenB)), 1.0 - (pos[2] - m_pos[2]) * (1.0 / (m_lenA )));
 }
 
-void Rectangle::setSampler(Sampler* sampler){
+void Quad::setSampler(Sampler* sampler){
 
 	m_sampler = std::shared_ptr<Sampler>(sampler);
 }
 
-Vector3f Rectangle::sample(){
+Vector3f Quad::sample(){
 
 	Vector2f samplePoint = m_sampler->sampleUnitSquare();
 
@@ -2024,8 +2184,144 @@ Vector3f Rectangle::sample(){
 	return tmp;
 }
 
-float Rectangle::pdf(Hit &hit){
+float Quad::pdf(const Hit &hit){
 	
+	return m_invArea;
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+QuadCC::QuadCC() {
+
+}
+QuadCC::QuadCC(const Vector3f& a, const Vector3f& b, const Vector3f& c, const Vector3f& d) {
+
+	m_a = a; m_b = b; m_c = c; m_d = d;
+	Vector3f e1 = m_b - m_a;
+	Vector3f e2 = m_c - m_a;
+	m_normal = Vector3f::cross(e1, e2).normalize();
+	
+	m_invArea = 1.0 / (e1.magnitude() * e2.magnitude());
+}
+
+QuadCC::~QuadCC() {
+
+}
+
+void QuadCC::calcBounds() {
+	QuadCC::bounds = false;
+}
+
+void QuadCC::flipNormal() {
+	m_normal = -m_normal;
+}
+
+void QuadCC::hit(Hit &hit) {
+	
+	// This function adapted from "Real Time Collision Detection" 5.3.5 Intersecting Line Against Quadrilateral
+	// IntersectLineQuad()
+	Vector3f pa = m_a - hit.transformedRay.origin;
+	Vector3f pb = m_b - hit.transformedRay.origin;
+	Vector3f pc = m_c - hit.transformedRay.origin;
+	// Determine which triangle to test against by testing against diagonal first
+	Vector3f m = Vector3f::cross(pc, hit.transformedRay.direction);
+	Vector3f r;
+	float v = Vector3f::dot(pa, m); // ScalarTriple(pq, pa, pc);
+	if (v >= 0.0f) {
+		// Test intersection against triangle abc
+		float u = -Vector3f::dot(pb, m); // ScalarTriple(pq, pc, pb);
+		if (u < 0.0f) {
+			hit.hitObject = false;
+			return;
+		}
+		float w = Vector3f::dot(Vector3f::cross(hit.transformedRay.direction, pb), pa);	
+		if (w < 0.0f) {
+			hit.hitObject = false;
+			return;
+		}
+				
+		// Compute r, r = u*a + v*b + w*c, from barycentric coordinates (u, v, w)
+		float denom = 1.0f / (u + v + w);
+		u *= denom;
+		v *= denom;
+		w *= denom; // w = 1.0f - u - v;
+		r = u*m_a + v*m_b + w*m_c;
+
+	}else {
+		// Test intersection against triangle dac
+		Vector3f pd = m_d - hit.transformedRay.origin;
+		float u = Vector3f::dot(pd, m); // ScalarTriple(pq, pd, pc);
+		if (u < 0.0f) {
+			hit.hitObject = false;
+			return;
+		}
+			
+		float w = Vector3f::dot(Vector3f::cross(hit.transformedRay.direction, pa), pd);
+		if (w < 0.0f) {
+			hit.hitObject = false;
+			return;
+		}
+
+		v = -v;
+		// Compute r, r = u*a + v*d + w*c, from barycentric coordinates (u, v, w)
+		float denom = 1.0f / (u + v + w);
+		u *= denom;
+		v *= denom;
+		w *= denom; // w = 1.0f - u - v;
+		r = u*m_a + v*m_d + w*m_c;
+	}
+
+	// figure out the time t that we hit the plane (quad)
+	float t;
+	if (abs(hit.transformedRay.direction[0]) > 0.0f)
+		t = (r[0] - hit.transformedRay.origin[0]) / hit.transformedRay.direction[0];
+	else if (abs(hit.transformedRay.direction[1]) > 0.0f)
+		t = (r[1] - hit.transformedRay.origin[1]) / hit.transformedRay.direction[1];
+	else if (abs(hit.transformedRay.direction[2]) > 0.0f)
+		t = (r[2] - hit.transformedRay.origin[2]) / hit.transformedRay.direction[2];
+
+	// only positive time hits allowed!
+	if (t < 0.0f) {
+		hit.hitObject = false;
+		return;
+	}
+
+	hit.t = t;
+	hit.hitObject = true;
+}
+
+bool QuadCC::shadowHit(Ray &ray, float &hitParameter) {
+	Hit	hitShadow;
+	hitShadow.transformedRay = ray;
+	hit(hitShadow);
+	hitParameter = hitShadow.t;
+	return hitShadow.hitObject;
+}
+
+Vector3f QuadCC::getNormal(const Vector3f& a_pos) {
+	return m_normal;
+}
+
+Vector3f QuadCC::getTangent(const Vector3f& a_pos) {
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+
+Vector3f QuadCC::getBiTangent(const Vector3f& a_pos) {
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+Vector3f QuadCC::getNormalDu(const Vector3f& pos) {
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+Vector3f QuadCC::getNormalDv(const Vector3f& pos) {
+	return Vector3f(0.0, 0.0, 0.0);
+}
+
+std::pair <float, float> QuadCC::getUV(const Vector3f& pos) {
+	return std::make_pair(0.0, 0.0);
+}
+
+float QuadCC::pdf(const Hit &hit) {
 	return m_invArea;
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2143,7 +2439,6 @@ bool OpenCylinder::shadowHit(Ray &ray, float &hitParameter){
 }
 
 Vector3f OpenCylinder::getNormal(const Vector3f& a_pos){
-
 		//calaculated at the hit function
 		return m_normal;
 }
@@ -2437,27 +2732,27 @@ void SolidCone::setTexture(Texture* texture, Components components){
 Box::Box() : CompoundedObject(){
 
 	//front
-	primitive::Rectangle* rectangle = new primitive::Rectangle(Vector3f(-1.0, -1.0, 1.0), Vector3f(2.0, 0.0, 0.0), Vector3f(0.0, 2.0, 0.0));
+	Quad* rectangle = new Quad(Vector3f(-1.0, -1.0, 1.0), Vector3f(2.0, 0.0, 0.0), Vector3f(0.0, 2.0, 0.0));
 	addPrimitive(rectangle);
 
 	//back
-	rectangle = new primitive::Rectangle(Vector3f(1.0, -1.0, -1.0), Vector3f(-2.0, 0.0, 0.0), Vector3f(0.0, 2.0, 0.0));
+	rectangle = new Quad(Vector3f(1.0, -1.0, -1.0), Vector3f(-2.0, 0.0, 0.0), Vector3f(0.0, 2.0, 0.0));
 	addPrimitive(rectangle);
 
 	//top
-	rectangle = new primitive::Rectangle(Vector3f(-1.0, 1.0, 1.0), Vector3f(2.0, 0.0, 0.0), Vector3f(0.0, 0.0, -2.0));
+	rectangle = new Quad(Vector3f(-1.0, 1.0, 1.0), Vector3f(2.0, 0.0, 0.0), Vector3f(0.0, 0.0, -2.0));
 	addPrimitive(rectangle);
 	
 	//bottom
-	rectangle = new primitive::Rectangle(Vector3f(-1.0, -1.0, -1.0), Vector3f(2.0, 0.0, 0.0), Vector3f(0.0, 0.0, 2.0));
+	rectangle = new Quad(Vector3f(-1.0, -1.0, -1.0), Vector3f(2.0, 0.0, 0.0), Vector3f(0.0, 0.0, 2.0));
 	addPrimitive(rectangle);
 
 	//right
-	rectangle = new primitive::Rectangle(Vector3f(1.0, -1.0, 1.0), Vector3f(0.0, 0.0, -2.0), Vector3f(0.0, 2.0, 0.0));
+	rectangle = new Quad(Vector3f(1.0, -1.0, 1.0), Vector3f(0.0, 0.0, -2.0), Vector3f(0.0, 2.0, 0.0));
 	addPrimitive(rectangle);
 
 	//left
-	rectangle = new primitive::Rectangle(Vector3f(-1.0, -1.0, -1.0), Vector3f(0.0, 0.0, 2.0), Vector3f(0.0, 2.0, 0.0));
+	rectangle = new Quad(Vector3f(-1.0, -1.0, -1.0), Vector3f(0.0, 0.0, 2.0), Vector3f(0.0, 2.0, 0.0));
 	addPrimitive(rectangle);
 
 	m_pos = Vector3f(-1.0, -1.0, 1.0);
@@ -2469,27 +2764,27 @@ Box::Box(const Vector3f& pos, const Vector3f& size) : CompoundedObject(){
 
 
 	//front
-	primitive::Rectangle* rectangle = new primitive::Rectangle(Vector3f(pos[0], pos[1], pos[2]), Vector3f(size[0], 0.0, 0.0), Vector3f(0.0, size[1], 0.0));
+	Quad* rectangle = new Quad(Vector3f(pos[0], pos[1], pos[2]), Vector3f(size[0], 0.0, 0.0), Vector3f(0.0, size[1], 0.0));
 	addPrimitive(rectangle);
 
 	//back
-	rectangle = new primitive::Rectangle(Vector3f(pos[0] + size[0], pos[1], pos[2] + size[2]), Vector3f(-size[0], 0.0, 0.0), Vector3f(0.0, size[1], 0.0));
+	rectangle = new Quad(Vector3f(pos[0] + size[0], pos[1], pos[2] + size[2]), Vector3f(-size[0], 0.0, 0.0), Vector3f(0.0, size[1], 0.0));
 	addPrimitive(rectangle);
 
 	///top
-	rectangle = new primitive::Rectangle(Vector3f(pos[0], pos[1] + size[1], pos[2]), Vector3f(size[0], 0.0, 0.0), Vector3f(0.0, 0.0, size[2]));
+	rectangle = new Quad(Vector3f(pos[0], pos[1] + size[1], pos[2]), Vector3f(size[0], 0.0, 0.0), Vector3f(0.0, 0.0, size[2]));
 	addPrimitive(rectangle);
 
 	//bottom
-	rectangle = new primitive::Rectangle(Vector3f(pos[0], pos[1], pos[2] + size[2]), Vector3f(size[0], 0.0, 0.0), Vector3f(0.0, 0.0, -size[2]));
+	rectangle = new Quad(Vector3f(pos[0], pos[1], pos[2] + size[2]), Vector3f(size[0], 0.0, 0.0), Vector3f(0.0, 0.0, -size[2]));
 	addPrimitive(rectangle);
 
 	//right
-	rectangle = new primitive::Rectangle(Vector3f(pos[0] + size[0], pos[1], pos[2]), Vector3f(0.0, 0.0, size[2]), Vector3f(0.0, size[1], 0.0));
+	rectangle = new Quad(Vector3f(pos[0] + size[0], pos[1], pos[2]), Vector3f(0.0, 0.0, size[2]), Vector3f(0.0, size[1], 0.0));
 	addPrimitive(rectangle);
 
 	//left
-	rectangle = new primitive::Rectangle(Vector3f(pos[0], pos[1], pos[2] + size[2]), Vector3f(0.0, 0.0, -size[2]), Vector3f(0.0, size[1], 0.0));
+	rectangle = new Quad(Vector3f(pos[0], pos[1], pos[2] + size[2]), Vector3f(0.0, 0.0, -size[2]), Vector3f(0.0, size[1], 0.0));
 	addPrimitive(rectangle);
 
 	
@@ -2559,7 +2854,7 @@ void Box::flipNormals(){
 
 	for (unsigned int i = 0; i < m_primitives.size(); i++){
 	
-		static_cast<primitive::Rectangle*>(m_primitives[i].get())->flipNormal();		
+		static_cast<Quad*>(m_primitives[i].get())->flipNormal();
 	}
 }
 

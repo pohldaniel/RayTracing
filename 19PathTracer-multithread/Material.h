@@ -174,7 +174,7 @@ public:
 	Color shadePath(Hit &hit);
 	Color shadePath(Hit &hit, Color &pathWeight);
 	void setScaleRadiance(const float radiance);
-
+	
 private:
 
 	float m_ls;

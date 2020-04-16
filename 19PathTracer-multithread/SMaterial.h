@@ -1,16 +1,16 @@
 #ifndef _SMATERIAL_H
 #define _SMATERIAL_H
 
-
+#include "Path.h"
 
 struct SMaterial{
 
-    SMaterial(const TPixelRGBF32& emissive, const TPixelRGBF32& diffuse)
+    SMaterial(const Vector3f& emissive, const Vector3f& diffuse)
         : m_emissive(emissive)
         , m_diffuse(diffuse)
     { }
-    TPixelRGBF32    m_emissive;
-    TPixelRGBF32    m_diffuse;
+	Vector3f    m_emissive;
+	Vector3f    m_diffuse;
 };
 
 #endif 

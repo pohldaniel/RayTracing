@@ -67,13 +67,10 @@ bool BBox::intersect(const Ray& a_ray) {
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
-
 Primitive::Primitive() {
 
 	m_color = Color(0.0, 0.0, 1.0);
-
-	bounds = false;
-	
+	bounds = false;	
 	box = BBox(Vector3f(FLT_MAX, FLT_MAX, FLT_MAX), Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX));
 	m_texture = NULL;
 	m_material = NULL;
@@ -310,8 +307,6 @@ Color Instance::getColor(const Vector3f& pos){
 		//deactivate the texture from the primitive temporary and calculte the color. Set it back after for the next instance
 		m_primitive->m_useTexture = false;
 		Color color = m_primitive->getColor(pos);
-		
-
 		m_primitive->m_useTexture = true;
 		
 		return	color;
@@ -855,11 +850,6 @@ Vector3f Triangle::getNormalDu(const Vector3f& pos){
 		//third triangle
 		float d3 = Vector3f::cross(apos, bpos).magnitude() / abc;
 
-		/*std::cout << m_nDu1[0] << "  " << m_nDu1[1] << "  " << m_nDu1[2] << std::endl;
-		std::cout << m_nDu2[0] << "  " << m_nDu2[1] << "  " << m_nDu2[2] << std::endl;
-		std::cout << m_nDu3[0] << "  " << m_nDu3[1] << "  " << m_nDu3[2] << std::endl;
-		std::cout << "-------------------------" << std::endl;*/
-
 		return  (m_nDu1 * d1 + m_nDu2 * d2 + m_nDu3 * d3).normalize();
 
 	}else{
@@ -920,7 +910,6 @@ void Sphere::hit(Hit &hit) {
 
 	//Use position - origin to get a negative b
 	Vector3f L = m_centre - hit.transformedRay.origin;
-
 
 	float b = Vector3f::dot(L, hit.transformedRay.direction);
 	float c = Vector3f::dot(L, L) - m_sqRadius;
@@ -983,7 +972,6 @@ std::pair <float, float>  Sphere::getUV(const Vector3f& pos){
 
 	return std::make_pair(u, v);
 }
-
 
 Vector3f Sphere::getNormal(const Vector3f& a_pos){
 
@@ -1121,7 +1109,6 @@ std::pair <float, float>  Plane::getUV(const Vector3f& a_pos){
 
 	return std::make_pair(u, v);
 }
-
 
 Vector3f Plane::getNormal(const Vector3f& pos){
 
@@ -1530,9 +1517,7 @@ bool Torus::shadowHit(Ray &ray, float &hitParameter){
 
 void Torus::calcBounds(){
 
-
-	Torus::bounds = false;
-	
+	Torus::bounds = false;	
 }
 
 std::pair <float, float>  Torus::getUV(const Vector3f& pos){
@@ -1540,7 +1525,6 @@ std::pair <float, float>  Torus::getUV(const Vector3f& pos){
 	float mainAngle = atan2(pos[2], pos[0]) + 1.5 * PI;
 	// map phi from [-pi, pi] to [0, 1]
 	float v = 1.0 - (mainAngle / TWO_PI) ;
-
 
 	// Determine its angle from the x-axis.
 	float len = sqrt(pos[2] * pos[2] + pos[0] * pos[0]);
@@ -1574,7 +1558,6 @@ Vector3f Torus::getNormal(const Vector3f& pos){
 		normal[2] = pos[2];
 	}
 	
-
 	return normal.normalize();
 	
 	// calculate the normal with the gradient dp/dx
@@ -1603,8 +1586,7 @@ Vector3f Torus::getNormal(const Vector3f& pos){
 
 	Vector3f normal = Vector3f(cosMainSegment*cosTubeSegment, sinTubeSegment, sinMainSegment*cosTubeSegment);
 
-	return normal;*/
-		
+	return normal;*/		
 }
 
 Vector3f Torus::getTangent(const Vector3f& pos){
@@ -1622,8 +1604,7 @@ Vector3f Torus::getTangent(const Vector3f& pos){
 	float sinTubeSegment = sinf(tubeAngle);
 	float cosTubeSegment = cosf(tubeAngle);
 
-	return Vector3f(-sinTubeSegment *cosMainSegment, cosTubeSegment, -sinTubeSegment *sinMainSegment);
-	
+	return Vector3f(-sinTubeSegment *cosMainSegment, cosTubeSegment, -sinTubeSegment *sinMainSegment);	
 }
 
 Vector3f Torus::getBiTangent(const Vector3f& pos){
@@ -1632,10 +1613,7 @@ Vector3f Torus::getBiTangent(const Vector3f& pos){
 
 	Vector3f bitangent = Vector3f(-sinf(mainAngle), 0.0, cosf(mainAngle));
 
-	
-
-	return bitangent;
-	
+	return bitangent;	
 }
 
 Vector3f Torus::getNormalDu(const Vector3f& pos){
@@ -1659,7 +1637,6 @@ Vector3f Torus::getNormalDu(const Vector3f& pos){
 	float n3u = -tmp * sinMainSegment * sinTubeSegment;
 
 	return Vector3f(n1u, n2u, n3u).normalize();
-
 }
 
 Vector3f Torus::getNormalDv(const Vector3f& pos){
@@ -1680,8 +1657,6 @@ Vector3f Torus::getNormalDv(const Vector3f& pos){
 
 	return normalDv;
 }
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 Cube::Cube() : Primitive(){
@@ -1737,7 +1712,6 @@ void Cube::hit(Hit &hit){
 	tymin = (bounds[sign[1]][1] - hit.transformedRay.origin[1]) * invDirection[1];
 	tymax = (bounds[1 - sign[1]][1] - hit.transformedRay.origin[1]) * invDirection[1];
 
-
 	if ((tmin > tymax) || (tymin > tmax)){
 		hit.hitObject = false;
 		side = Sides::None;
@@ -1754,8 +1728,6 @@ void Cube::hit(Hit &hit){
 			side = Sides::Top;
 
 		}
-
-		
 	}
 
 	if (tymax < tmax){
@@ -1775,11 +1747,8 @@ void Cube::hit(Hit &hit){
 
 		if (sign[2] < 0){
 			side = Sides::Front;
-
 		}else{
-
 			side = Sides::Back;
-
 		}
 
 	}
@@ -1833,13 +1802,11 @@ Vector3f Cube::getNormal(const Vector3f& a_pos){
 
 
 Vector3f Cube::getTangent(const Vector3f& a_pos){
-
 	return Vector3f(0.0, 0.0, 0.0);
 }
 
 
 Vector3f Cube::getBiTangent(const Vector3f& a_pos){
-
 	return Vector3f(0.0, 0.0, 0.0);
 }
 

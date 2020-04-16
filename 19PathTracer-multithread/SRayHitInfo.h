@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TVector3.h"
+#include "Vector.h"
 
 struct SMaterial;
 
@@ -12,7 +13,7 @@ struct SRayHitInfo
     { }
 
     const SMaterial*    m_material;
-    TVector3            m_intersectionPoint;
-    TVector3            m_surfaceNormal;
+	Vector3f            m_intersectionPoint;
+	Vector3f            m_surfaceNormal;
     float               m_collisionTime;
 };

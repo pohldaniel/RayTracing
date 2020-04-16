@@ -55,8 +55,8 @@ inline bool RayIntersects(const TVector3& rayPos, const TVector3& rayDir, const 
         return false;
 
     // convert surface normal back to global space and calculate global space intersection point
-    TVector3 newSurfaceNormal = UndoChangeBasis(info.m_surfaceNormal, obb.m_XAxis, obb.m_YAxis, obb.m_ZAxis);
+    /*Vector3 newSurfaceNormal = UndoChangeBasis(info.m_surfaceNormal, obb.m_XAxis, obb.m_YAxis, obb.m_ZAxis);
     info.m_intersectionPoint = rayPos + rayDir * info.m_collisionTime;
-    info.m_surfaceNormal = newSurfaceNormal;
+    info.m_surfaceNormal = newSurfaceNormal;*/
     return true;
 }

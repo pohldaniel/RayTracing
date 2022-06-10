@@ -57,3 +57,4 @@ Output from 15RayTracer-normalMap.
 
 ![altair](https://user-images.githubusercontent.com/30089026/45578328-1062c300-b881-11e8-8aa6-d51df21199af.jpg)
 
+Ich war hier
